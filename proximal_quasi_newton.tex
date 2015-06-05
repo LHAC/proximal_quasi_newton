@@ -1,0 +1,1278 @@
+% Set this variable to control whether the report format or the journal format 
+% is used
+\def\coralreport{1}
+
+% Unformtunately, there is no way to automatically switch document classes.
+% You have to manually switch to article format when using the tech report 
+% style.  
+\documentclass[11pt]{article}
+%\documentclass[matprg]{svjour}
+
+% This is so you can use conditionals depending on whether it is a tech report 
+% or not
+\usepackage{ifthen}
+
+% This is the block in which you set the report number if it is a tech report
+\ifthenelse{\coralreport = 1}{
+\usepackage{isetechreport}
+\def\reportyear{13T}
+% The report number is the same one used in the ISE tech report series
+\def\reportno{02}
+% This is the revision number (increment for each revision)
+\def\revisionno{1}
+% This is the date f the original report
+\def\originaldate{November 25, 2013}
+% This is the date of the latest revision
+\def\revisiondate{November 25, 2013}
+% Set these variables according to whether this should be a CORAL or CVCR 
+% report
+\coraltrue
+\cvcrfalse
+
+}{}
+
+
+\usepackage[left=1in,top=1in,right=1in,bottom=1in,dvips,letterpaper]{geometry} 
+\usepackage[leqno]{amsmath}
+\usepackage{amsxtra, amsfonts,amscd,  amssymb, graphicx,subfigure}
+
+\usepackage[algo2e, vlined,ruled,linesnumbered]{algorithm2e}
+\numberwithin{equation}{section}
+
+
+\input{inexact_Newton_define}
+\input{math_symbol_define}
+
+
+% \usepackage[normalem]{ulem}
+
+
+% \renewcommand{\thefootnote}{\arabic{footnote}}
+
+\begin{document}
+
+\title{Practical Inexact Proximal Quasi-Newton Method with Global  Complexity Analysis}
+
+% You probably need different styles for authors. the tech report uses the 
+% authblk package to parse the list of authors and format it for both the 
+% title page and the list of authors on the first page. There are a number
+% of ways of listing authors with this package, but the easiest is to list 
+% them one by one. 
+
+% \author{first author} 
+% \affil{first author's affiliation}
+% \author{second author} 
+% \affil{second author's affiliation}
+
+% If more than one author is listed before giving an affiliation, then all
+% authors listed before each affiliation will be given that same affiliation.
+
+% \author{first author} 
+% \author{second author} 
+% \affil{first and second author's affiliations}
+% \author{third author} 
+% \affil{third author's affiliations}
+
+% Use \thanks to add e-mail addresses if desired 
+
+\ifthenelse{\coralreport = 1}{
+
+\author{Katya Scheinberg\thanks{
+\texttt {katyas@lehigh.edu}. The work of this author is partially supported by NSF Grants DMS 10-16571, DMS 13-19356, 
+ AFOSR Grant FA9550-11-1-0239, and  DARPA grant FA 9550-12-1-0406 negotiated by AFOSR.}}
+\author{Xiaocheng Tang\thanks{ \texttt{xct@lehigh.edu}. The work of this author is partially supported by   DARPA grant FA 9550-12-1-0406 negotiated by AFOSR.}}
+\affil{Department of Industrial and Systems Engineering, Lehigh University,
+Harold S. Mohler Laboratory, 200 West Packer Avenue, Bethlehem, PA 18015-1582, USA.}
+
+
+\titlepage
+
+%}{
+%
+%\author{Ted K. Ralphs \and Joe Q. Blow}
+%\institute{Ted K. Ralphs\\
+%Department of Industrial and Systems Engineering, Lehigh University, USA\\
+%\email{ted@lehigh.edu}
+%\and 
+%Joe Q. Blow\\
+%Department of Mathematics and Computer Science, Podunk University\\
+%\email{joe@podunk.edu}
+%}
+%\subclass{90C10, 90C57, 90C60, 90C99}
+
+\date{\today}
+
+}
+
+\maketitle
+
+\begin{abstract}
+Recently several methods were proposed for sparse optimization which make careful use of second-order information \cite{Hsieh2011,nGLMNET,Olsen2012,Chin2012} to improve local convergence  rates. These methods construct a composite quadratic  approximation using Hessian information, optimize this approximation using a first-order method, such as coordinate descent and employ a line search to  ensure sufficient descent.
+Here we propose a general framework, which includes slightly modified versions of existing algorithms and also a new algorithm, which uses limited memory BFGS Hessian approximations,   and provide a global convergence rate analysis in the spirit of proximal gradient methods, which includes analysis of method based on coordinate descent. 
+\ifthenelse{\coralreport = 0}{
+\bigskip\noindent
+{\bf Keywords:} Convex optimization,  proximal Newton methods, convergence rates, coordinate descent, quasi-Newton methods.
+}{}
+
+\end{abstract}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Introduction} % (fold)
+\label{sec:introduction}
+In this paper, we are interested in the following convex optimization problem: \bea\label{prob:P} \min_{x\in\br^n} F(x)\equiv
+f(x)+g(x), \eea where $f,g:\br^n\rightarrow\br$ are both convex
+functions such that  $\nabla f(x)$ is assumed to be Lipschitz continuous with Lipschitz constant $L(f)$, i.e., \beaa \|\nabla f(x) - \nabla f(y) \|_2 \leq L(f) \|x-y\|_2, \quad \forall x,y\in\br^n,\eeaa
+and $g(x)$ is convex and has some structure that can be exploited. In particular,  in much of the research on first order methods for problem \eqref{prob:P}  $g(x)$ is considered to be such that   the following problem has a closed form solution
+ for any $z\in\br^n$:
+% \bea\label{prob:g-shrink}
+ \[\min_{x\in\br^n}\left\{g(x)+\frac{1}{2}\|x-z\|^2 \right\}.
+ \]
+ %\eea
+ 
+ Here our general requirement on $g(x)$ is slightly different - we assume that the following problem is
+ computationally inexpensive to solve approximately, relative to minimizing $F(x)$
+ for any $z\in\br^n$ and some class of positive definite matrices $H$:
+ \bea\label{prob:g-shrink}\min_{x\in\br^n}\left\{g(x)+\frac{1}{2}\|x-z\|_H^2 \right\}.\eea
+ Here $\|y\|^2_H$ denotes $y^\top H y$.   Clearly, the computational cost of approximately solving \eqref{prob:g-shrink} depends on the choice of matrix $H$ and the solution approach. 
+ 
+We are particularly interested in the  case of sparse optimization, where $g(x)=\lambda \|x\|_1$.
+% and $\lambda > 0$ is the regularization parameter that  controls the sparsity of the optimal solution.  
+While the theory we present here applies to the general form \eqref{prob:P},  the efficient method for solving \eqref{prob:g-shrink} that we consider in this paper is designed with $g(x)=\lambda \|x\|_1$ example in mind.  In this case problem \eqref{prob:g-shrink} takes a form of an unconstrained Lasso problem \cite{Tibshirani_1996}. 
+We consider matrices $H$ which are a sum of a diagonal matrix and a low-rank matrix and we  apply randomized coordinate descent to solve \eqref{prob:g-shrink} approximately. An extension to the group sparsity term $g(x)=\lambda\sum \|x_i\|_2$ \cite{Qin2010}, is rather straightforward.
+
+Problems of the form (\ref{prob:P}) with $g(x)=\lambda \|x\|_1$ have been the focus of much research lately in the fields of signal processing and machine learning. This form encompasses a variety of machine learning models, 
+in which feature selection is desirable, such as sparse logistic regression \cite{Yuan2010,nGLMNET,shalev2009stochastic}, sparse inverse covariance selection \cite{Hsieh2011,Olsen2012,Sinco2009} and unconstrained Lasso \cite{Tibshirani_1996}, etc. These settings often present common difficulties to optimization algorithms due to their large scale. During the past decade most optimization effort aimed at these problems focused on development of efficient first-order methods, such as accelerated proximal gradient methods \cite{Nesterov,Beck2009,Sparsa}, block coordinate descent methods \cite{nGLMNET,GLMNET,glasso_2008,Sinco2009} and alternating directions methods \cite{Alm_Scheinberg}. These methods enjoy low per-iteration complexity, but typically have slow local convergence rates. Their performance is often hampered by small step sizes. This, of course, has been known about first-oder methods for a long time, however, due to the very large size of these problems, second-order methods are often not a practical alternative.
+In particular, constructing and storing a Hessian matrix, let alone inverting it, is prohibitively expensive for values of $n$ larger than $10000$, which often makes the use of the Hessian in large-scale problems prohibitive, regardless of the benefits of fast local convergence rate. 
+
+Nevertheless, recently several new methods were proposed for sparse optimization which make careful use of second-order information \cite{Hsieh2011,nGLMNET,Olsen2012,Chin2012}. 
+%These methods explore the following 
+%special properties of the sparse problems:  at optimality many of the elements of $x$ are expected to equal $0$, hence methods which explore active set-like approaches can benefit from small sizes of subproblems. Whenever the subproblems are not small, 
+These new methods are designed to exploit the special structure of the Hessian of  specific functions to improve  efficiency of  solving \eqref{prob:g-shrink}. Several successful methods employ coordinate descent to approximately solve   \eqref{prob:g-shrink}. While other approaches to solve Lasso subproblem were considered in 
+\cite{Chin2012},  none generally outperform coordinate descent, which is well suited when special structure of the Hessian approximation, $H$,
+ can be exploited and when low accuracy of the subproblem solutions is sufficient. 
+In particular, \cite{nGLMNET} proposes a specialized GLMNET \cite{GLMNET} implementation for sparse logistic regression, where coordinate descent method is applied to the unconstrained Lasso subproblem constructed using the Hessian of $f(x)$. The special structure of the Hessian is used to reduce the complexity cost of each coordinate step so that it is linear in the number of training instances, and a two-level shrinking scheme proposed to focus the minimization on  smaller subproblems. Similar ideas are used in \cite{Hsieh2011} in a specialized algorithm called QUIC for sparse inverse covariance selection, where the Hessian of $f(x)$ also has a favorable structure for solving Lasso subproblems.
+Another specialized method for graphical Markov random fields  was recently proposed in \cite{icml2013_wytock13}. This method also exploits special Hessian structure to improve coordinate descent efficiency. 
+
+There are other common features shared by the  methods described above. These methods are often referred to as proximal Newton-type methods.
+ The overall algorithmic framework can be described as follows:
+\begin{itemize}
+\item At each  iteration $k$ the smooth function $f(x)$ is approximated near the current iterate $x^k$ by a convex quadratic function $q^k(x)$. 
+\item A working subset of coordinates (elements) of $x$ is selected for subproblem optimization. 
+\item Then $l(k)$ passes of coordinate descent are applied   to optimize (approximately) 
+the function $q^k(x)+g(x)$ over the working set, which results in a trial point. Here $l(k)$ is some linear function of $k$.
+\item The trial point is  accepted as the new iterate if it satisfies some sufficient decrease condition (to be specified).
+\item Otherwise,  a line search is applied to compute a new trial point. 
+\end{itemize}
+
+In this paper we {\em do not } include the theoretical analysis of various working set selection strategies. Some of these have been analyzed in the prior literature (e.g., see \cite{LewisWright11}). Combining such existing analysis with the rate of convergence results in this paper is a subject of a future study. 
+
+This paper contains the following  three main results. 
+\begin{enumerate}
+\item We discuss the  theoretical properties of the above framework in terms of global convergence rates.
+In particular, we show that if we replace the line search by a prox-parameter update mechanism, we can derive sublinear global convergence results for the above methods under mild assumptions on Hessian approximation matrices, which can include diagonal, quasi-Newton and limited memory quasi-Newton approximations. We also provide the convergence rate for the case of inexact subproblem optimization. 
+\item The heuristic of applying $l(k)$ passes of coordinate descent to the subproblem is very useful in practice, but has not yet been theoretically justified, due to the lack of known complexity estimates. Here we use probabilistic complexity bounds of randomized coordinate descent to show that this heuristic is indeed  well justified theoretically.
+In particular, it guarantees the sufficiently rapid decrease of the expectation of the error in the subproblems  and hence allows for sublinear global convergence rate to hold for the entire algorithm (again, in expectation). This gives us the  first complete global convergence rate result for the algorithmic schemes for  practical proximal Newton-type methods. 
+\item
+Finally, we propose an efficient {\em general purpose} algorithm that uses the same theoretical framework, but  which does not rely on the special structure of the Hessian, and yet in our tests compares favorably with the state-of-the-art, specialized methods such as   QUIC and GLMNET. We replace the exact Hessian computation by the limited memory BFGS Hessian approximations  \cite{NoceWrig06}  (LBFGS) and exploit their special structure within a coordinate descent approach to solve the subproblems.
+%We also propose and implement  another efficient active set selection strategy (different from those implemented in QUIC and GLMNET), but, as mentioned above, we treat these strategies as heuristic aimed at speeding up computations.  
+\end{enumerate}
+
+Let us elaborate a bit further on the new approaches and results developed in this paper and discuss related prior work. 
+
+In \cite{Byrdetal2013} Byrd et al. propose that the methods in the framework  described above should be referred to as sequential quadratic approximation (SQA) instead of proximal Newton methods.  They reason that there is no proximal operator or proximal term involved in this framework. This is indeed the case, if a line search is used to ensure sufficient decrease. Here we propose to consider a prox term as a part of the quadratic approximation. 
+Instead of a line search procedure, we update the prox term of our quadratic model, which allows us to extend global convergence bounds of proximal gradient methods to the case of proximal (quasi-)Newton methods. The criteria for accepting a new iteration is based on sufficient decrease condition (much like in trust region methods, and unlike that in proximal gradient methods).
+We show that our mechanism of updating the prox parameter, based on sufficient decrease condition, leads to an improvement in performance and robustness of the algorithm compared to the line search approach as well as enabling us to develop global convergence rates. 
+
+Convergence results for, so-called, proximal Newton method have been shown 
+in \cite{Saundersetal} and more recently in \cite{Byrdetal2013} (with the same sufficient decrease condition as ours, but applied within a line search). These results apply to our framework when exact Hessian of $f(x)$ is used to construct $q(x)$. But  they do not apply in the case of LBFGS Hessian approximations, moreover they do not provide global convergence rates.  
+
+To provide such rates  we use techniques similar to those in 
+ \cite{Beck2009} and \cite{Schmidtetal} for the proof of convergence rates of the (inexact) proximal gradient method, where we replace the diagonal Hessian approximation with  a general positive definite Hessian approximation matrix.
+ We extend the results in  \cite{Beck2009} and \cite{Schmidtetal}  to accept iterates based on sufficient decrease condition instead of full decrease, which allows more flexibility in the algorithm. 
+ Finally, we use the complexity analysis of randomized coordinate descent in \cite{Richtarik2012} to provide a simple and efficient stopping criterion for the subproblems and thus derive the total complexity of  proximal (quasi-)Newton methods based on randomized coordinate descent to solve Lasso subproblems. 
+Our theory can be easily extended to the case of inexact gradient computation, in addition to inexact subproblem optimization, similarly to  
+ the theory developed in \cite{Schmidtetal}.  
+ 
+ Another very relevant work \cite{Jiangetal2012} was brought to our attention. In that paper the authors analyze global convergence rates of an accelerated proximal quasi-Newton method, as an extension of FISTA method \cite{Beck2009}. The convergence rate they obtain match that of accelerated proximal gradient methods, hence it is a faster rate
+than that of our method presented here. However, as in the case of many accelerated gradient methods,  they have to impose much stricter conditions on the Hessian approximation matrix, in particular they require  that the difference between any two consecutive Hessian approximations (i.e., $H_{k+1}-H_k$) is positive semidefinite. This is a natural extensions of the FISTA's  requirement  that the prox parameter is never increased. Such a condition is fairly restrictive in practice and in particular would not apply to our simple LBFGS approximation strategy. 
+ Additionally, the convergence rate dependence on the error in the subproblem minimization is more complex for the method in  \cite{Jiangetal2012} and it is unclear whether the use of randomized coordinate descent will maintain the convergence rate of this method, as it does for ours. Investigating accelerated version of our approach without restrictive assumptions on the Hessian approximations and with the use of randomized coordinate descent is a subject of future research. 
+ 
+ 
+The paper is organized as follows: in Section \ref{sec:basic}  we describe the  algorithmic framework. Then,  in Section \ref{sec:conv_exact}  we 
+present the  convergence rate for the exact method using sufficient decrease condition, and address the inexact case in  Section \ref{sec:conv_inexact}.
+We show the convergence analysis for randomized coordinate descent in Section \ref{sec:coordinate_descent_iteration_complexity}. 
+Brief description of the details of our  proposed algorithm are in Section \ref{sec:alg} and  computational results  validating the theory are  presented in Section \ref{sec:comp}.
+
+
+% section our_algorithm_to_solve_large_ell_1_regularization_problems (end)
+
+
+
+
+
+\section{Basic algorithmic framework and theoretical analysis}\label{sec:basic} 
+
+The following function is used throughout the paper as an approximation of the objective function $F(x)$.
+
+%\begin{definition}\label{def-Qf}
+\bea \label{def-Qf}
+Q(H, u,v) := f(v) +
+\langle \nabla f(v),  u-v \rangle + \frac{1}{2} \langle (u-v), H(u-v)\rangle + g(u).
+\eea 
+%\end{definition}
+
+%We make a nonrestrictive assumption upfront that $\|H\|\leq M$ for some large constant $M$. 
+
+%W For a fixed vector $\lambda$, Hessian approximation $H$ and 
+%
+For a fixed point $\bar x$, the function $Q(H,  x, \bar x)$ serves as an approximation of $F(x)$ around  $\bar x$. 
+Matrix $H$ controls the quality of this approximation. In particular, if $f(x)$ is smooth  and  $H=\frac{1}{\mu}I$, then $Q(H, x , \bar x)$ is a sum of the prox-gradient approximation of $f(x)$ at $\bar x$ and $g(x)$. This particular form of $H$ plays a key role in the design and analysis of proximal gradient methods (e.g., see  \cite{Beck2009}) 
+and alternating direction augmented Lagrangian methods (e.g, see \cite{Alm_Scheinberg}).
+% i.e., $f(\bar x)+\langle \nabla f(\bar x), x-\bar x \rangle + \frac{1}{2\mu} \|x -\bar x \|^2$ and $g(x)$. 
+ If  $H=\nabla^2 f(\bar x)$, then  $Q(H, x ,\bar x)$
+is a second order approximation of $F(x)$  \cite{Saundersetal, SchmidtQP}.
+In this paper we assume that  $H$ is a positive definite matrix such that $M I \succeq H\succeq \sigma I$ for some positive constants $M$ and $\sigma$. 
+
+Minimizing the function $Q(H, u,v)$ over $u$ reduces to solving problem \eqref{prob:g-shrink}. We will use the following notation to denote the accurate and approximate solutions of \eqref{prob:g-shrink}.
+\begin{equation}\label{eq:pv}
+p_H(v):=\arg\min_u Q(H, u,v),  
+\end{equation}
+and 
+\begin{equation}\label{eq:pvphi}
+p_{H, \phi}(v) {\rm \ is \ a\ vector\ such\ that:\ } \  \begin{array}{l}  Q(H, p_{H, \phi}(v),v)\leq Q(H, v,v)=F(v),\ {\rm and }\\
+Q(H, p_{H, \phi}(v),v)\leq Q(H, p_{H}(v),v)+\phi. \end{array}
+\end{equation}
+
+The method that we consider in this paper computes iterates by (approximately) optimizing $Q(H, u,v)$ with respect to $u$ using some particular  $H$  which is chosen at each iteration.
+ The basic algorithm is described in Algorithms \ref{alg:ISTA-SD} and \ref{alg:Backtrack_SD}. 
+\begin{algorithm2e}\caption{Proximal Quasi-Newton method}
+    \label{alg:ISTA-SD}%
+%\linesnumberedhidden \dontprintsemicolon 
+{\rm Choose }
+$0<\rho\leq 1$ and  $x^0$\; 
+\For{$k=0,1,2,\cdots$}{
+ Choose $0<\bar \mu_k,  \phi_k>0, G_k\succeq 0$\;
+Find  $H_k=G_k+\frac{1}{2\mu_k}I$ and  $x^{k+1}  := p_{H_k}(x^k)$  \\ by applying {\em Prox\ Parameter\ Update\ }$(\bar \mu_k, G_k, x^k, \rho)$\;
+%Set $H_k=B_k+\frac{1}{2\mu_k}I$ and compute $x^{k+1}  := p_{H_k}(x^k)$, with \;
+}
+\end{algorithm2e}
+
+
+
+
+\begin{algorithm2e}\caption{Prox Parameter Update $(\bar \mu, G, x, \rho)$ }
+    \label{alg:Backtrack_SD}%
+%\linesnumberedhidden \dontprintsemicolon 
+Select $0<\beta<1$ and set $\mu=\bar \mu$\; \For{$i=1,2,\cdots$}{
+Define $H=G+\frac{1}{2\mu} I$ and compute $p(x):=p_{H}(x)$\;
+If $F(p(x))- F(x) \leq \rho (Q(H,  p(x),x)- F(x))$, then output $H$ and $p(x)$, {\bf Exit} \;
+Else $\mu=\beta^{i}\bar  \mu$\;
+}
+\end{algorithm2e}
+
+
+
+
+Algorithm \ref{alg:Backtrack_SD}  chooses Hessian approximations of the form $H_k=\frac{1}{\mu_k}I +G_k$. However, it is possible to consider any procedure of choosing positive definite $H_k$ which ensures $M I \succeq H_k\succeq \sigma I$ and 
+$F(p_{H_k}(x))- F(x) \leq \rho (Q(H_k, p_{H_k}(x),x)- F(x))$, for a given $0<\rho\leq1$, - a step acceptance condition which is a relaxation of conditions used in  \cite{Beck2009} and \cite{Schmidtetal}.
+
+An inexact version of Algorithm \ref{alg:ISTA-SD}  is obtained by simply replacing $p_{H_k}$ by $p_{H_k, \phi_k}$ in both Algorithms  \ref{alg:ISTA-SD} and \ref{alg:Backtrack_SD} for some sequence of $\phi_k$ values.  
+
+\section{Sufficient decrease condition and convergence rate}
+\label{sec:conv_exact}
+
+In the next three sections we present the analysis of convergence rate of  Algorithm \ref{alg:ISTA-SD}. Recall that we assume that $f(x)$ is convex and smooth, in other words $\|\nabla f(x)-\nabla f(y)\|\leq L(f)\|x-y\|$ for all $x$ and $y$ in the domain of interest, while $g(x)$ is simply convex. In Section \ref{sec:coordinate_descent_iteration_complexity} we assume that $g(x)=\lambda \|x\|_1$. Note that we do not assume that $f(x)$ is strongly convex or that it is twice continuously differentiable, because we do not rely on any accurate second order information in our framework. We only assume that the Hessian approximations are positive definite and bounded, but their accuracy can be arbitrary, as long as sufficient decrease condition holds. Hence we only achieve sublinear rate of convergence. To achieve higher local rates of convergence stronger assumptions on $f(x)$ and on the Hessian approximations have to be made, see for instance, \cite{Byrdetal2013} and \cite{Saundersetal} for related local convergence analysis. 
+
+First we present a helpful lemma which is a simple extension of Lemma 2 in \cite{Schmidtetal} to the case of general positive definite Hessian estimate. This lemma establishes some simple properties of an $\epsilon$-optimal solution to the proximal problem (\ref{prob:g-shrink}).  It uses the concept of the $\epsilon$-subdifferential of a convex function $a$ at $x$, 
+$\partial_{\epsilon} a(x)$, which is defined as the set of vectors $y$ such that $a(x) - y^Tx \leq a(t) - y^Tt + \epsilon$ for all $t$. 
+\begin{lemma}
+    \label{lem:inexact_1st_opt_cond}
+    Given $\epsilon >0$, a p.d. matrix $H$ and $v\in \br^n$, let $p_{\epsilon}(v)$ denote the $\epsilon$-optimal solution to the proximal problem (\ref{prob:g-shrink}) in the sense that
+    \begin{align}
+        \label{equ:eps_minimizer}
+        g(p_{\epsilon}(v))+\frac{1}{2}\|p_{\epsilon}(v)-z\|_H^2 \leq \epsilon +
+        \min_{x\in\br^n}\left\{g(x)+\frac{1}{2}\|x-z\|_H^2 \right\},
+    \end{align}
+    where $z = v - H^{-1} \nabla f(v)$. Then there exists $\eta$ such that $\frac{1}{2} \| \eta \|^2_{H^{-1}} \leq \epsilon$ and
+    \begin{align}
+        \label{equ:inexact_solvQ_lem}
+        H(v-p_{\epsilon}(v))  - \eta \in \partial_{\epsilon}g(p_{\epsilon}(v)).
+    \end{align}
+\end{lemma}
+
+
+\begin{proof}
+    (\ref{equ:eps_minimizer}) indicates that $p_{\epsilon}(v)$ is an $\epsilon$-minimizer of the convex function $a(x) := \frac{1}{2}\|x-z\|_H^2+g(x)$. If we let $a_1(x) = \frac{1}{2}\|x-z\|_H^2$ and $a_2(x) = g(x)$, then this is equivalent to
+    \begin{align}
+        \label{equ:zero_in_subdiff}
+        0 \subset \partial_{\epsilon} a(p_{\epsilon}(v)) \subset \partial_{\epsilon} a_1(p_{\epsilon}(v)) + \partial_{\epsilon} a_2(p_{\epsilon}(v)).
+    \end{align}
+    Hence,
+    \begin{align*}
+        \partial_{\epsilon} a_1(p_{\epsilon}(v)) &= \left\{ y \in \br^n ~|~ \frac{1}{2} \| y + H(z-p_{\epsilon}(v)) \|^2_{H^{-1}} \leq \epsilon \right\} \\
+        &= \left\{ y \in \br^n, ~y = \eta - H(z-p_{\epsilon}(v)) ~|~ \frac{1}{2} \|\eta\|^2_{H^{-1}} \leq \epsilon \right\}.
+    \end{align*}
+    From (\ref{equ:zero_in_subdiff}) we have
+    \begin{align}
+        H(z-p_{\epsilon}(v)) - \eta \in \partial_{\epsilon}g(p_{\epsilon}(v)) \mbox{ with } \frac{1}{2} \|\eta\|^2_{H^{-1}} \leq \epsilon.
+    \end{align}
+    Then (\ref{equ:inexact_solvQ_lem}) follows using $z = v - H^{-1} \nabla f(v)$.
+\end{proof}
+
+The following lemma,  is a  generalization of Lemma 2.3 in \cite{Beck2009} and of a similar lemma in \cite{Schmidtetal}.
+This lemma serves to provide a bound on the change in the objective function $F(x)$. 
+\begin{lemma}
+    \label{lem:subp_inexact}
+    Given $\epsilon$, $\phi$ and $H$ such that
+    \begin{align}
+        \label{lem:BT2.3-assump-g}
+        F(p_{\phi}(v)) &\leq Q(H, p_{\phi}(v),v) +\epsilon \\
+        Q(H, p_{\phi}(v),v) &\leq \min_{x\in\br^n} Q(H,  x,v) + \phi, \nonumber
+    \end{align}
+    where $p_{\phi}(v)$ is the $\phi$-approximate minimizer of $Q(H, x,v)$, then for any $u$ and $\eta$ such that $\frac{1}{2} \| \eta \|^2_{H^{-1}} \leq \phi$
+    \begin{align}
+        2(F(u) - F(p_{\phi}( v))) \geq \|p_{\phi}( v)-u\|_H^2 - \|v-u\|_H^2-2\epsilon-2\phi-2 \langle \eta, u - p_{\phi}(v) \rangle. \nonumber
+    \end{align}
+\end{lemma}
+
+\vskip5mm
+
+\begin{proof}   
+    The proof closely follows that in \cite{Beck2009}.
+    Recall that $p_{\phi}(v)$ denotes $p_{H,\phi}(v)$.
+    From \eqref{lem:BT2.3-assump-g} and \eqref{def-Qf}, we have 
+    \bea\label{lem:BT2.3-proof-eq-1}\hskip0.5cm
+    \ba{rll} F(u) - F(p_{\phi}(v))& 
+      \geq & F(u) - Q(H,  p_{\phi}(v),v) -\epsilon\\
+         & = & F(u) - (f(v)+ g(p_{\phi}(v)) + \langle \nabla f(v),p_{\phi}(v)-v\rangle  \\
+         &+& \frac{1}{2}\|p_{\phi}(v)-v\|_H^2)-\epsilon.\ea\eea
+    Also
+    \begin{align}
+        \label{lem:BT2.3-proof-eq-a}
+        g(u) \geq g(p_{\phi}(v)) + \langle u-p_{\phi}(v), \gamma_g(p_{\phi}(v)) \rangle - \phi
+    \end{align}
+    by the definition of $\phi$-subgradient, and
+    \bea\label{lem:BT2.3-proof-eq-b} f(u) \geq f(v) + \langle u- v, \nabla f(v) \rangle, \eea 
+    due to the convexity of $f$. Here 
+     $\gamma_g(\cdot)$ is any subgradient of $g(\cdot)$ and  $\gamma_g(p_{\phi}(v))$ is an $\phi$-subgradient, which satisfies the first-order optimality conditions for 
+    $\phi$-approximate minimizer from Lemma \ref{lem:inexact_1st_opt_cond}, i.e.,
+    \begin{align}
+        \label{def:p_g(v)-1st-opt-cond}
+        \gamma_g(p_{\phi}(v)) = H(v-p_{\phi}(v)) - \nabla f(v) - \eta, \mbox{ with } \frac{1}{2} \| \eta \|^2_{H^{-1}} \leq \phi.
+    \end{align}
+    Summing \eqref{lem:BT2.3-proof-eq-a} and \eqref{lem:BT2.3-proof-eq-b} yields
+    \bea\label{lem:BT2.3-proof-eq-2}F(u) \geq g(p_{\phi}(v)) + \langle u-p_{\phi}(v), \gamma_g(p_{\phi}(v)) \rangle - \phi + f(v) + \langle u- v, \nabla f(v)\rangle. \eea
+    Therefore, from \eqref{lem:BT2.3-proof-eq-1}, \eqref{def:p_g(v)-1st-opt-cond} and \eqref{lem:BT2.3-proof-eq-2} it follows that
+    \begin{align*}
+    F(u) - F(p_{\phi}(v)) & \geq \langle \nabla f(v)+\gamma_g(p_{\phi}(v)), u-p_{\phi}(v) \rangle - \frac{1}{2}\|p_{\phi}(v)-v\|_H^2 - \epsilon - \phi \\
+                                        & = \langle -H(p_{\phi}(v)-v) - \eta, u-p_{\phi}(v)\rangle - \frac{1}{2}\|p_{\phi}(v)-v\|_H^2-\epsilon - \phi \\
+                                        & = \frac{1}{2}\|p_{\phi}( v)-u\|_H^2 - \frac{1}{2} \|v-u\|_H^2-\epsilon-\phi- \langle \eta, u - p_{\phi}(v) \rangle. 
+    \end{align*}
+    
+\end{proof}
+
+
+\vskip5mm
+
+Note that if $\phi=0$, that is the subproblems are solved accurately, then we have $2(F(u) - F(p( v))) \geq \|p( v)-u\|_H^2 - \|v-u\|_H^2-2\epsilon$.
+
+If the sufficient decrease  condition 
+\bea\label{eq:dec_cond}
+(F(x^{k+1})-F(x^k))\leq \rho (Q(H_k, x^{k+1}, x^k)- F(x^k))
+\eea
+is satisfied, then
+\begin{align*}
+    F(x^{k+1})
+    &\leq Q(H_k, x^{k+1}, x^k)  - (1-\rho) \left( Q(H_k, x^{k+1}, x^k)- F(x^k) \right) \\
+    &\leq Q(H_k,  x^{k+1}, x^k)  - \frac{1-\rho}{\rho} (F(x^{k+1})- F(x^k))
+\end{align*}
+and  Lemma \ref{lem:subp_inexact} holds at each iteration $k$ of Algorithm \ref{alg:ISTA-SD} with  $\epsilon=-\frac{1-\rho}{\rho}(F(x^{k+1})- F(x^k))$. 
+
+ ISTA  \cite{Beck2009} is a particular case of Algorithm \ref{alg:ISTA-SD} with $G_k=0$, for all $k$, and $\rho=1$. 
+In this case, the value of  $\mu_k$ is chosen so that the conditions of Lemma \ref{lem:subp_inexact} hold with $\epsilon=0$. In other words, the reduction achieved in the objective function $F(x)$ is at least the amount of reduction achieved in the model 
+$ Q(\mu_k,p(x^k),x^k)$. It is well known that as long as $\mu_k\leq 1/L(f)$ (recall that $L(f)$ is the Lipschitz constant of the gradient) then  condition \eqref{eq:dec_cond}
+ holds with $\rho=1$.  Relaxing condition \eqref{eq:dec_cond} by using $\rho<1$ allows us to accept larger values of $\mu_k$, which in turn implies larger steps taken by the algorithm.   This basic idea is the cornerstone of step size selection in most nonlinear optimization algorithms. Instead of insisting on achieving "full" predicted reduction of the objective function (even when possible), a fraction of this reduction is usually sufficient. In our experiments small values of $\rho$ provided much better performance than values close to $1$. 
+
+We now derive the complexity bound for  the exact version of Algorithm \ref{alg:ISTA-SD}. 
+
+\begin{theorem}\label{the:ISTA-SD}
+In Algorithm \ref{alg:ISTA-SD}, suppose that at iteration $k$,  $H_k$, is chosen so that the sufficient decrease condition \eqref{eq:dec_cond} holds.
+Then the iterates $\{x^k\}$ in Algorithm \ref{alg:ISTA-SD} satisfy
+\begin{align}\label{the:ISTA-nonsmooth-conclude} 
+F(x^k)-F(x^*)\leq \frac{\|x^0-x^*\|_{H_0}^2}{2k}+\frac{(1-\rho)(F(x^0)-F(x^*))}{2k\rho}+\frac{\sum_{i=0}^{k-1}M_{i+1}\|x^i-x^{i+1}\|^2}{2k}, \quad\forall k, \end{align}
+where $x^*$ is an optimal solution of \eqref{prob:P} and $M_{i+1}=\|H_{i+1}-H_i\|$. Thus, the sequence $\{F(x^k)\}$ produced by Algorithm \ref{alg:ISTA-SD} converges to $F(x^*)$ if  
+\[
+\frac{\sum_{i=0}^{k-1}M_{i+1}\| x^i-x^{i+1}\|^2}{k}\to 0\ {\rm as\ } k\to 0.
+\]
+Moreover,  the number of iterations needed to obtain an $\cal{\epsilon}$-optimal solution is at most $O(\frac{1}{\cal{\epsilon}})$, if 
+\begin{equation}\label{eq:sumboundK}
+\sum_{i=0}^{k-1}M_{i+1}\| x^i-x^{i+1}\|^2\leq K, \ {\rm  for\  some\ } K>0\   \forall k. 
+\end{equation}
+\end{theorem}
+
+The proof of this result is included as a special case in the proof of the convergence rate of the inexact method, which is presented below. 
+Here we will discuss the existence of the uniform bound on $\sum_{i=0}^{k-1}M_{i+1}\| x^i-x^{i+1}\|^2$.
+First, from the assumption $M I \succeq H_k\succeq \sigma I$ for all $k$, we have  
+\bea\label{eq:bound_Kh}
+\|H_k-H_{k+1}\|=M_{k+1}\leq M^\prime\leq M, \quad \forall k,
+\eea
+where $M^\prime$ is the bound on the norm change of the Hessian approximations. 
+ We know that 
+  $\mu_k$, computed in Algorithm \ref{alg:Backtrack_SD}, is bounded from below by $\beta/L(f)$ for any positive definite $G_k$, hence as long as $G_k$ are bounded, then
+ \eqref{eq:bound_Kh}  is satisfied by our algorithm.  Moreover, the changes in the Hessian estimates from one iteration to the next ideally are  expected to decrease (as they would, if full memory BFGS method is used). While we do not assume that $M_k\to 0$, using  $M_{i+1}$ on the right hand side of \eqref{the:ISTA-nonsmooth-conclude} explicitly, instead of the upper bound $M$, allows us to demonstrate the fact that diminishing change in Hessian approximations will reduce the constants in the bound \eqref{the:ISTA-nonsmooth-conclude}. For that same reason, in what follows we will use $M^\prime$ instead of $M$ as an upper bound on $M_{i+1}$.
+  
+ Recall now our assumption that  $H_k\succeq \sigma I$ for some $\sigma>0$ for all $k$. This assumption is also easy to enforce, by simply enforcing an upper bound on $\bar \mu_k$ in Algorithm~\ref{alg:ISTA-SD}.
+
+We note the following simple result from \cite{Saundersetal}.
+\begin{align}
+    \label{equ:bound_delta_x}
+    \| p(x^k)-x^k \|_{H_k}^2 \leq 2 (Q(H_k,  x^{k}, x^k) - Q(H_k,  x^{k+1}, x^k)).
+\end{align}
+Using  \eqref{eq:bound_Kh},  $H_k\succeq \sigma I$  and \eqref{equ:bound_delta_x} we have 
+\begin{eqnarray}\label{eq:x2_bound_exact}
+    &\sum_{i=0}^{k-1}M_{i+1}\|x^{i+1}-x^i\|^2  \leq \frac{ M^\prime }{\sigma} \sum_{i=0}^{k-1}\|x^{i+1}-x^i\|_{H_i}^2\leq \frac{ 2M^\prime }{\sigma} \sum_{i=0}^{k-1} (Q(H_i, x^{i}, x^i) - Q(H_i, x^{i+1}, x^i))\nonumber \\
+    & \leq \frac{2M^\prime  }{\sigma \rho}  \sum_{i=0}^{k-1}( F(x^i) - F(x^{i+1})) \leq \frac{2M^\prime  }{\sigma \rho} (F(x^0)-F(x^*)).
+\end{eqnarray}
+Hence we have established  bound \eqref{eq:sumboundK} and a sublinear convergence rate of  Algorithm \ref{alg:ISTA-SD}.
+\begin{corollary}\label{the:ISTA-SD-cor}
+In Algorithm \ref{alg:ISTA-SD}, suppose that at each iteration $k$,  $H_k$, is chosen so that the sufficient decrease condition \eqref{eq:dec_cond} holds and $MI\succeq H_k\succeq \sigma I$ for some $M, \sigma>0$.
+Then the iterates $\{x^k\}$ in Algorithm \ref{alg:ISTA-SD} satisfy
+\begin{align}\label{the:ISTA-final-bound} 
+F(x^k)-F(x^*)\leq \frac {C}{k}\, \quad\forall k, \end{align}
+where $x^*$ is an optimal solution of \eqref{prob:P} and 
+\[
+C=\frac{\|x^0-x^*\|_{H_0}^2}{2}+\left (\frac{(1-\rho)}{2\rho}+\frac{M^\prime }{\sigma \rho} \right )(F(x^0)-F(x^*)).
+\]
+\end{corollary}
+
+Note that $\rho$, $M^\prime $ and $\sigma$ are parameters that can be controlled (i.e.,   reduced  or increased) at a possible expense of making shorter steps or obtaining less accurate Hessian approximations. In particular, it is possible to set $\rho=1$ and $M^\prime =0$ by reverting the simple proximal gradient algorithm with $\mu_k=1/{L(f)}$, thus recovering to the standard proximal gradient complexity bound. 
+\section{Analysis of inexact proximal Quasi-Newton method} % (fold)
+\label{sec:conv_inexact}
+
+We now follow the theory proposed in  \cite{Schmidtetal} to analyze Algorithm \ref{alg:ISTA-SD}  in the case when the computation of $p_H( v)$ is performed inexactly. 
+In other words, we consider the version of Algorithm \ref{alg:ISTA-SD} (and \ref{alg:Backtrack_SD}) where we compute 
+$x^{k+1}  := p_{H_k, \phi_k}(x^k)$.
+
+As in the exact case, we need to  establish  bound  \eqref{eq:sumboundK} to obtain global sublinear rate of convergence. We first present a lemma below, which establishes an upper bound on the step size, similar to \eqref{equ:bound_delta_x}, but in the case where the step is not required to be the exact minimizer of the quadratic function $Q(\cdot)$. In fact, the bound holds when the step can be arbitrarily far from the optimal point with the error characterized by $\phi$ defined in \eqref{lem:BT2.3-assump-g}.
+
+
+\begin{lemma}
+Consider some vector $v\in \br^n$,  a scalar $\phi>0$ and a matrix $H\succeq \sigma I$. Let $p_\phi(v)\equiv p_{H, \phi}(v)$ be defined as in \eqref{eq:pvphi}. Then
+    \begin{align}
+    \label{equ:bound_delta_x_inexact}
+        || v - p_\phi(v) ||^2 \leq  \frac{8}{\sigma} ( Q(H, v, v) - Q(H, p_\phi(v), v) + \phi ).
+    \end{align}
+    
+\end{lemma}
+
+\begin{proof}
+    We use \eqref{equ:bound_delta_x} with $H=H_k$ and  the definition of $\sigma$ to  obtain the upper bounds on the distances between $v$ and $p(v)$ (the exact minimizer of $Q(H,u,v)$) and between $p_\phi(v)$ and $p(v)$, respectively, by
+    \begin{align*}
+        ||v - p(v)||^2 &\leq \frac{2}{\sigma} ( Q(H, v, v) - Q(H, p(v), v) ), \\
+        ||p_\phi(v) - p(v)||^2 &\leq \frac{2}{\sigma} ( Q(H, p_\phi(v), v) - Q(H, p(v), v) ).
+    \end{align*}
+    Taking square root on both sides of the above inequalities, we have
+    \begin{align*}
+        ||v - p(v)|| &\leq \sqrt{ \frac{2}{\sigma} ( Q(H, v, v) - Q(H, p(v), v) ) },\\
+        ||p_\phi(v) - p(v)|| &\leq \sqrt{ \frac{2}{\sigma} ( Q(H, p_\phi(v), v) - Q(H, p(v), v) ) }.
+    \end{align*}
+    Then,
+    \begin{align*}
+        || v - p_\phi(v) || 
+        &\leq ||v - p(v)|| + ||p_\phi(v) - p(v)|| \\
+        &\leq \sqrt{ \frac{2}{\sigma} ( Q(H, v, v) - Q(H, p(v), v) ) } + \sqrt{ \frac{2}{\sigma} ( Q(H, p_\phi(v), v) - Q(H, p(v), v) ) }   \\
+        &\leq 2\sqrt{ \frac{2}{\sigma} ( Q(H, v, v) - Q(H, p(v), v) ) }   \\
+        &= 2\sqrt{ \frac{2}{\sigma} ( Q(H, v, v) - Q(H, p_\phi(v), v) + Q(H, p_\phi(v), v) - Q(H, p(v), v) ) }   \\
+        &\leq 2\sqrt{ \frac{2}{\sigma} ( Q(H, v, v) - Q(H, p_\phi(v), v) + \phi ) }, 
+    \end{align*}
+    where the third and the last inequalities follow from \eqref{lem:BT2.3-assump-g} the definition of $p_\phi(v)$. Hence, \eqref{equ:bound_delta_x_inexact} follows by taking square on both sides of the above inequality.
+\end{proof}
+
+
+%  Since we do not optimize subproblems accurately we need  to impose the following additional condition 
+% \begin{align}
+%     \label{equ:bound_delta_x_inexact}
+%     \| p_\phi(x^k)-x^k \|_{H_k}^2 \leq 2 \theta (Q(H_k, x^{k}, x^k) - Q(H_k, x^{k+1}, x^k)), \ {\rm with\ some\ } \theta >1,  \forall k\ 
+% \end{align}
+% This condition is a relaxation of  \eqref{equ:bound_delta_x}, thus it holds automatically with $\theta=1$ in the case of exact subproblem minimization. 
+% %Note that (\ref{equ:bound_delta_x_inexact}) will eventually be satisfied with the exact solution $\Delta x_k^*$ because, from Lemma \ref{lem:decrease_bound}, $\| \Delta x_k^* \|_{H_k}^2 \leq 2 (Q_k(0) - Q_k(\Delta x_k^*)) \leq 2 \theta (Q_k(0) - Q_k(\Delta x_k^*))$. 
+% In the inexact case this assumption is easy to enforce and to check because all necessary quantities are available during the subproblem optimization (whether using coordinate descent or another approach). 
+% This assumption is standard in optimization theory with inexact steps (for instance in trust-region methods) and is imposed to  achieve some minimal level of  the model improvement. 
+
+ Applying \eqref{equ:bound_delta_x_inexact} instead of \eqref{equ:bound_delta_x} within the derivation of \eqref{eq:x2_bound_exact} and replacing $v$ and $p_\phi(v)$ in \eqref{equ:bound_delta_x_inexact} with $x^i, x^{i+1}$, respectively, 
+we have 
+
+\begin{align}\label{sub:bounding_the_function_values}
+    &\sum_{i=0}^{k-1}M_{i+1}\|x^{i+1}-x^i\|^2  \\
+    \nonumber&\leq M^\prime \sum_{i=0}^{k-1}\|x^{i+1}-x^i\|^2\leq \frac{ 8M^\prime}{\sigma} \sum_{i=0}^{k-1} (Q(H_i, x^{i}, x^i) - Q(H_i, x^{i+1}, x^i) + \phi_i)\\
+    \nonumber& \leq \frac{8M^\prime }{\sigma \rho}  \sum_{i=0}^{k-1}( F(x^i) - F(x^{i+1})) + \frac{ 8M^\prime}{\sigma} \sum_{i=0}^{k-1} \phi_i = \frac{8M^\prime}{\sigma \rho} (F(x^0)-F(x^*)) + \frac{ 8M^\prime}{\sigma} \sum_{i=0}^{k-1} \phi_i.
+\end{align}
+
+% \begin{equation}
+%     \sum_{i=0}^{k-1}\|x^{i+1}-x^i\|_{H_i-H_{i+1}}^2 \leq \frac{2\theta K_H }{\rho\sigma} (F(x^0)-F(x^*))
+% \end{equation}
+Hence bound   \eqref{eq:sumboundK} holds with appropriately chosen $K$ if the errors  $\phi_i$'s are summable. 
+
+Before presenting the  main result, we state  the following auxiliary  lemma from \cite{Schmidtetal}. 
+\begin{lemma}
+    \label{lem:bach}
+    Assume that the nonnegative sequence $\{u_k\}$ satisfies the following recursion for all $k \geq 1$
+    \begin{align*}
+        u_k^2 \leq S_k + \sum_{i=1}^k \nu_i u_i,
+    \end{align*}
+    with $\{ S_k \}$ an increasing sequence, $S_0 \geq u_0^2$ and $\nu_i \geq 0$ for all $i$. Then, for all $k \geq 1$, then
+    \begin{align*}
+        u_k \leq \frac{1}{2} \sum_{i=1}^k \nu_i + \left( S_k + \left( \frac{1}{2} \sum_{i=1}^k \nu_i \right)^2 \right)^{1/2}.
+    \end{align*}
+\end{lemma}
+
+We can now state the general convergence rate result for the inexact version of Algorithm \ref{alg:ISTA-SD}.
+\begin{theorem}\label{th:inexact_conv_rate}
+Assume that for all  iterates $\{x^k\}$ of inexact Algorithm \ref{alg:ISTA-SD} \eqref{equ:bound_delta_x_inexact} holds for some $\phi_k>0$, then
+\begin{align}
+    \label{eq:bound_F_F*}
+    F(x^k) - F(x^*) \leq \frac{1}{k} \left( \frac{\sigma (B_k + C)}{2} + (2A_k + \sqrt{C} + \sqrt{B_k}) A_k \right),
+\end{align}
+with
+\begin{align*}
+    A_k = \sum_{i=0}^{k-1} \sqrt{2M\phi_i}, ~~C = \frac{1}{\sigma}  \|x^0-x^*\|_{H_0}^2 + \frac{2(M_{\sigma}  +1 - \rho)}{\rho \sigma} (F(x^0)-F(x^*)), ~~B_k =  \frac{2(M_{\sigma}+1)}{\sigma} \sum_{i=0}^{k-1}\phi_i,
+\end{align*}
+where $x^*$ is an optimal solution of \eqref{prob:P}, $M_{\sigma}=4M^\prime/\sigma$ and $M$ and $\sigma$ are bounds of the smallest and largest eigenvalues of $H_k$.
+\end{theorem}
+
+
+\begin{proof}
+    As is done in  \cite{Beck2009} and \cite{Schmidtetal},  we apply Lemma \ref{lem:subp_inexact}, sequentially, with $u=x^*$ and $p_{\phi}(v)=x^i$ for $i=1, \ldots, k+1$. Adding up resulting inequalities, we obtain  
+    \begin{align}
+        &\sum_{i=0}^{k-1} F(x^*) - \sum_{i=0}^{k-1} F(x^{i+1}) \\
+        \nonumber &\geq \frac{1}{2} \sum_{i=0}^{k-1} \left( \|x^{i+1}-x^*\|_{H_{i}}^2 - \|x^i-x^*\|_{H_{i}}^2 \right)- \sum_{i=0}^{k-1} \epsilon_i- \sum_{i=0}^{k-1}\phi_i- \sum_{i=0}^{k-1} \langle \eta_i,x^* - x^{i+1} \rangle \\
+        \label{equ:bound_F_diff}
+        &= \frac{1}{2} \left( \|x^k-x^*\|_{H_k}^2-\|x^0-x^*\|_{H_0}^2 - \sum_{i=0}^{k-1}M_{i+1}\|x^{i+1}-x^i\|^2 \right) -\sum_{i=0}^{k-1}\epsilon_i - \sum_{i=0}^{k-1}\phi_i- \sum_{i=0}^{k-1}\langle \eta_i,x^* - x^{i+1} \rangle\\
+        \nonumber &\geq \frac{1}{2} \left( - \|x^0-x^*\|_{H_0}^2 - \sum_{i=0}^{k-1}M_{i+1}\|x^{i+1}-x^i\|^2 \right) -\frac{(1-\rho)(F(x^0)-F(x^*))}{\rho} - \sum_{i=0}^{k-1}\phi_i- \sum_{i=0}^{k-1} \|\eta_i\| \cdot \|x^* - x^{i+1}\|.
+    \end{align}
+
+    Here we used the already established bound $\sum_{i=0}^{k-1}\epsilon_i \leq \frac{(1-\rho)(F(x^0)-F(x^*))}{\rho}$. We can now apply the bound \eqref{sub:bounding_the_function_values}
+    with $M_{\sigma}=4M^\prime/\sigma$ and obtain
+    \begin{align*}
+        &\sum_{i=0}^{k-1} F(x^{i+1}) - \sum_{i=0}^{k-1} F(x^*) \\
+        &\leq \frac{1}{2} \|x^0-x^*\|_{H_0}^2 + \frac{M_{\sigma}  + 1 - \rho}{\rho} (F(x^0)-F(x^*)) + (M_{\sigma} + 1) \sum_{i=0}^{k-1}\phi_i + \sum_{i=0}^{k-1} \|\eta_i\| \cdot \|x^* - x^{i+1}\|. 
+    %   &\leq \frac{m B_k + C}{2} + (2A_k + \sqrt{\frac{C}{m}} + \sqrt{B_k}) A_k
+    \end{align*}
+    Note that $\|\eta_i\|\leq \sqrt{2M\phi_i}$. 
+    
+    We now need to establish a global bound on $\| x^k - x^* \|$. This bound, while it still holds,  is not needed in the case when all subproblems are solved accurately. 
+
+    % \subsection{Bound $\| x^k - x^* \|$} % (fold)
+    % \label{sub:bound2}
+
+    Following  \cite{Schmidtetal} we use Lemma \ref{lem:bach} to bound $\|x^k-x^*\|^2 $. First, observe in the inequality \eqref{equ:bound_F_diff} that its left-hand side is always less than zero since $F(x^*) - F(x^{i+1}) \leq 0$ holds in every iteration. Setting the left-hand side to zero and moving $|| x^k - x^* ||^2_{H_k}$ to the left, we obtain 
+    \begin{align*}
+        &\|x^k-x^*\|_{H_k}^2  \\
+        &\leq  \|x^0-x^*\|_{H_0}^2 + \sum_{i=0}^{k-1}M_{i+1}\|x^{i+1}-x^i\|^2  + 2\sum_{i=0}^{k-1}\epsilon_i + 2\sum_{i=0}^{k-1}\phi_i + 2\sum_{i=0}^{k-1} \sqrt{2M\phi_i} \cdot \|x^* - x^{i+1}\| \\
+        &\leq \|x^0-x^*\|_{H_0}^2 
+        + \frac{2M_{\sigma} }{\rho} (F(x^0)-F(x^*))  + 2M_{\sigma} \sum_{i=0}^{k-1} \phi_i
+        + 2\sum_{i=0}^{k-1}\epsilon_i + 2\sum_{i=0}^{k-1}\phi_i + 2\sum_{i=0}^{k-1} \sqrt{2M\phi_i} \cdot \|x^* - x^{i+1}\|,
+    \end{align*}
+    hence,
+    \begin{align*}
+        &\|x^k-x^*\|^2  \leq \frac{1}{\sigma} \|x^k-x^*\|_{H_k}^2  \\
+        &\leq \frac{1}{\sigma} \left( \|x^0-x^*\|_{H_0}^2 
+        + \frac{2M_{\sigma} }{\rho} (F(x^0)-F(x^*)) + 2M_{\sigma} \sum_{i=0}^{k-1} \phi_i + 2\sum_{i=0}^{k-1}\epsilon_i + 2\sum_{i=0}^{k-1}\phi_i + 2\sum_{i=0}^{k-1} \sqrt{2M\phi_i} \cdot \|x^* - x^{i+1}\| \right).
+    \end{align*}
+    Now using Lemma \ref{lem:bach} with $S_k = \frac{1}{\sigma} \left ( \|x^0-x^*\|_{H_0}^2 + \frac{2M_{\sigma} }{\rho} (F(x^0)-F(x^*)) + 2M_{\sigma} \sum_{i=0}^{k-1} \phi_i + 2\sum_{i=0}^{k-1}(\epsilon_i + \phi_i) \right)$,  $\nu_i = 2\sqrt{2M\phi_i}$) and $\epsilon_i = \frac{1-\rho}{\rho} (F(x^i) - F(x^{i+1}))$ we obtain
+    \begin{align*}
+        & \|x^k-x^*\| \leq \sum_{i=0}^{k-1} \sqrt{2M\phi_i}  \\
+        & 
+        + \sqrt{\frac{1}{\sigma} ( \|x^0-x^*\|_{H_0}^2 + \frac{2(M_{\sigma}  +1 - \rho)}{\rho} (F(x^0)-F(x^*)) + 2M_{\sigma} \sum_{i=0}^{k-1} \phi_i + 2\sum_{i=0}^{k-1} \phi_i ) + (\sum_{i=0}^{k-1} \sqrt{2M\phi_i})^2}.
+    \end{align*}
+    Denoting $A_k = \sum_{i=0}^{k-1} \sqrt{2M\phi_i},  C = \frac{1}{\sigma}  \|x^0-x^*\|_{H_0}^2 + \frac{2(M_{\sigma}  +1 - \rho)}{\rho \sigma} (F(x^0)-F(x^*))$ and $B_k =  \frac{2(M_{\sigma}+1)}{\sigma} \sum_{i=0}^{k-1}\phi_i$, we obtain
+    \begin{align*}
+        \|x^k-x^*\| \leq A_k + \left( C + B_k + A_k^2 \right)^{1/2}.
+    \end{align*}
+    Since $A_i$ and $B_i$ are increasing sequences, we have, for $i < k$
+    \begin{align*}
+        \|x^i-x^*\| &\leq A_i + \left( \frac{1}{\sigma} ( \|x^0-x^*\|_{H_0}^2 + \frac{2(M_{\sigma}  +1 - \rho)}{\rho} (F(x^0)-F(x^*)) + B_i + A_i^2 \right)^{1/2} \\
+        &\leq A_k + \left( \frac{1}{\sigma} ( \|x^0-x^*\|_{H_0}^2 + \frac{2(M_{\sigma}  +1 - \rho)}{\rho} (F(x^0)-F(x^*)) + B_k + A_k^2 \right)^{1/2} \\
+        &\leq A_k + \sqrt{C} + \sqrt{B_k} + A_k.
+    \end{align*}
+
+    Using the bound on $\|x^i-x^*\|$ above we can now derive the main complexity bound using
+         \begin{align*}
+        &\sum_{i=0}^{k-1} F(x^{i+1}) - \sum_{i=0}^{k-1} F(x^*) \\
+        &\leq \frac{1}{2} \|x^0-x^*\|_{H_0}^2 + \frac{M_{\sigma}  + 1 - \rho}{\rho} (F(x^0)-F(x^*)) + (M_{\sigma} + 1) \sum_{i=0}^{k-1}\phi_i + \sum_{i=0}^{k-1} \|\eta_i\| \cdot \|x^* - x^{i+1}\| \\
+        % &\leq \frac{1}{2} \|x^0-x^*\|_{H_0}^2 + \frac{M_{\sigma}  + 1 - \rho}{\rho} (F(x^0)-F(x^*)) + \sum_{i=0}^{k-1}\phi_i + \sum_{i=0}^{k-1} \|\eta_i\| \cdot \|x^* - x^{i+1}\|. \\
+        &\leq \frac{\sigma (B_k + C)}{2} + (2A_k + \sqrt{C} + \sqrt{B_k}) A_k.
+    \end{align*}
+    Hence,
+    \begin{align*}
+        F(x^k) - F(x^*) &\leq \frac{1}{k}( \sum_{i=0}^{k-1} F(x^{i+1}) - \sum_{i=0}^{k-1} F(x^*) )\\
+        &\leq \frac{1}{k} \left( \frac{\sigma (B_k + C)}{2} + (2A_k + \sqrt{C} + \sqrt{B_k}) A_k \right).
+    \end{align*}
+\end{proof}
+
+As in  \cite{Schmidtetal}  it follows that the inexact version of Algorithm \ref{alg:ISTA-SD} converges  to the optimal value if $(\sum_{i=0}^{k-1} \sqrt{\phi_i})/k \to 0$ and it has sublinear convergence rate if $\sum_{i=0}^{\infty} \sqrt{\phi_i}$ is  bounded.
+To ensure such a  bound, it is sufficient to require that  $\phi_i\leq \alpha^i$, for some $\alpha\in (0,1)$ for all $i$. We are hence interested in practical approaches to subproblem optimization which can be terminated upon reducing the gap in the function value of the subproblem to $\alpha^i$, where $0<\alpha<1$ is a fixed number and  $i=1, 2, \ldots$ is the  index of the corresponding iteration of  Algorithm \ref{alg:ISTA-SD}. 
+The question now is: what method and what stopping criterion should we use for subproblem optimization, so that sufficient accuracy is achieved and no excessive computations are performed, in other word, how can we guarantee the bound on $\phi_i$,  while maintaining efficiency of the subproblem optimization? It is possible to consider terminating
+ the optimization of the $i$-th subproblem once the duality gap is smaller than $\alpha^i$.  However, checking duality gap can be computationally  very expensive. 
+ Alternatively one can use an algorithm with a known  convergence rate. This way it can be determined apriori how many iterations of such an algorithm should be applied to the $i$-th subproblem to achieve $\alpha^i$ accuracy. In particular, we note that the objective functions in our subproblems  are all $\sigma$-strongly convex, so a simple proximal gradient method, or some of its accelerated versions,  will enjoy linear convergence rates when applied to these subproblems.  Hence, after $i$ iterations of optimizing
+  $Q_i$,  such a method will achieve accuracy $\alpha^i$, for some fixed $\alpha\in (0,1)$.  Under this trivial termination criterion,  the subproblem is solved more and more accurately as the outer iteration approaches optimality, which is a common condition required in classic inexact Newton method analysis \cite{DemboEisenstatSteihaug1982}. 
+Note that the same property holds for any linearly convergent  method, such as the proximal gradient or a semi-smooth Newton method, as discussed  above. 
+
+As we pointed out in the introduction, the most efficient  practical approach to subproblem optimization, in the cases when  $g(x)=\lambda \|x\|_1$, seems to be the coordinate descent method. One iteration of a coordinate descent step can be a lot less expensive 
+than that of a proximal gradient or a Newton method. In particular, if matrix $H$ is constructed via the LBFGS approach, then one step of a coordinate decent takes a constant number 
+of operations, $m$ (the memory size of LBFGS, which is typically 10-20). On the other hand, one step of proximal gradient takes $O(mn)$ operations and Newton method takes $O(nm^2)$. 
+
+Unfortunately,  cyclic (Gauss-Seidel) coordinate descent, does not have deterministic complexity bounds, hence it is not possible to know when the work on a particular subproblem can be terminated to guarantee the desired (i.e.,  $\alpha^i$) level of accuracy. However, a randomized coordinate descent has probabilistic complexity bounds, which can be used to demonstrate the linear rate of convergence in expectation. Hence we will terminate the randomized coordinate descent after it performs a number of iterations which is a linear function of $i$ (it is possible to simply use $i$ for the number of iteration, but other linear functions of $i$ are more practical, as we will discuss below). 
+
+In the next section we bring practice and theory together by showing that randomized coordinate descent can guarantee sufficient accuracy for subproblem solutions and hence maintain the sub linear convergence rate (in expectation) of Algorithm \ref{alg:ISTA-SD}. Moreover, we show in Section \ref{sec:comp}, that the randomized coordinate descent is as efficient in practice as the cyclic one. 
+
+
+\section{Analysis of Subproblem Optimization via Randomized Coordinate Descent} % (fold)
+\label{sec:coordinate_descent_iteration_complexity}
+Here we propose a simple termination rule for the subproblem optimization phase,  when using randomized coordinate descent  which ensures overall convergence rates shown in the previous section.  In randomized coordinate descent the model function $Q(\cdot)$ is iteratively minimized over one randomly chosen coordinate, while the others remain fixed. 
+The method  is presented in Algorithm \ref{alg:randomized_cd} and is applied for $l$ steps, with $l$ being an input parameter. 
+
+\begin{algorithm2e}\caption{Randomized Coordinate Descent for optimizing Model Function $Q(H, v, x)$ over $v$: {\em RCD\ }$(Q(H, v, x), x, l)$ }
+    \label{alg:randomized_cd}%
+%\linesnumberedhidden \dontprintsemicolon 
+Set $p(x) \gets x $\; 
+\For{$i=1,2,\cdots, l$}{
+Choose $j \in \{ 1,2, ..., n\}$ with probability $\frac{1}{n}$\;
+$z^* = \arg \underset{z}{\min}~ Q(H, p(x) + ze_j, x)$\;
+$p(x) \gets p(x) + z^*e_j$\;
+}
+Return $p(x)$.
+\end{algorithm2e}
+
+
+
+% The key observation here is that  the number of coordinate descent steps  the current subproblem grows proportionally with the number of outer iterations. 
+
+
+
+
+
+Our analysis is based on Richtarik and Takac's results on iteration complexity of randomized coordinate descent  \cite{Richtarik2012}. In particular, we make use of Theorem 7 in \cite{Richtarik2012}, which we restate below without proof, while adapting it to our context.
+
+\begin{lemma}\label{lem:randomized_CD}
+
+Let $v$ be the initial point and $Q^* := \min_{u\in\br^n} Q(H, u,v)$. If $v_i$ is the random point generated by applying $i$ randomized coordinate descent steps to a strongly convex function $Q$, then for some constant $0 < \alpha < 1$ (dependent only on $n$ and $\sigma$ - the bound on the smallest eigenvalue of $H$) we have
+\begin{align}
+    E[Q(H,v_i,v) - Q^*] \leq  \alpha^i (Q(H,v,v) - Q^*).
+\end{align}
+\end{lemma}
+
+Next, we establish a bound on the maximal possible reduction of the model function $Q(\cdot)$ objective function value, for any positive definite matrix $H \succ 0$,  and fixed point $v \in \Rmbb^n$. 
+
+\begin{lemma}\label{lem:bound_Q_Qstar}
+Assume  that for any  $v \in \br^n$ such that $F(v) \leq F(x^0)$, all of the the subgradients of $F$ at $v$ are bounded in norm by a constant $\kappa$, i.e. $\| \nabla f(v) + \gamma \| \leq \kappa $ for all $\gamma \in \partial g(v)$.  Then the maximum function reduction for $Q(\cdot)$ is uniformly bounded from above by 
+\begin{align}
+    \label{equ:bound_Q_Qstar}
+    Q(H, v,v) - Q^* \leq R, \mbox{ with $R = \frac{M \kappa^2}{2 \sigma^2}$},
+\end{align}
+where $M$ and $\sigma$ are respectively the bounds on the largest and smallest eigenvalues of $H$ and $Q^* := \min_{u\in\br^n} Q(H, u,v)$.
+\begin{proof}
+    Let $v^*=\arg\min_{u\in\br^n} Q(H, u,v)$ and let $\gamma_g(v^*)$ be any subgradient of $g(\cdot)$ at $v^*$. From the first-order optimality conditions 
+    \begin{align}
+        \label{equ:bound_Q_Qstar_1st_optima}
+        H(v^* - v) + \nabla f(v) + \gamma_g = 0,
+    \end{align}
+    we can obtain an upper bound on  $\|v^* - v\|$
+    \begin{align}
+        \|v^* - v\|
+        = \|H^{-1}\| \cdot \| \nabla f(v) + \gamma_g \|\leq \kappa / \sigma.
+    \end{align} 
+    Now, we bound the reduction in the objective function  in terms of $||v^* - v||$. From the convexity of $g$,
+    \begin{align}
+        \label{equ:convex_g_bound_Q_Qstar}
+        g(v) - g(v^*) \leq \langle \gamma_g, v - v^* \rangle.
+    \end{align}
+    Multiplying  (\ref{equ:bound_Q_Qstar_1st_optima}) with $v^* - v$, we obtain
+    \begin{align}
+        \label{equ:lambda_v_bound_Q_Qstar}
+        -\langle \nabla f(v), v^* - v \rangle = \|v^* - v\|_H^2 + \langle \gamma_g, v^* - v \rangle.
+    \end{align}
+    From (\ref{equ:lambda_v_bound_Q_Qstar}), (\ref{equ:bound_Q_Qstar_1st_optima}),  (\ref{equ:convex_g_bound_Q_Qstar}) and the definition of $Q$, we have
+    \begin{align}
+        Q(H,v,v) - Q^* 
+        &= g(v) - g(v^*) - \langle \nabla f(v), v^* - v \rangle - \frac{1}{2}\|v^* - v\|^2_H \nonumber \\
+        \nonumber&\leq \langle \gamma_g, v - v^* \rangle + \|v^* - v\|_H^2 + \langle \gamma_g, v^* - v \rangle - \frac{1}{2}\|v^* - v\|^2_H \\
+        \nonumber&= \frac{1}{2}\|v^* - v\|^2_H \leq \frac{M \kappa^2}{2 \sigma^2},
+    \end{align}
+    which concludes the proof of the lemma.
+\end{proof}
+\end{lemma}
+
+It follows immediately from Lemma \ref{lem:bound_Q_Qstar} that the subproblem optimization error $\phi_i$ is also  bounded for all $i$, say by $\Phi$, and that $\Phi \leq R$. 
+Using this bound we now present the auxiliary result that derives the bounds on separate terms that appear on the right hand side of \eqref{eq:bound_F_F*} and involve $\phi_i$. 
+
+\begin{lemma}\label{lem:E_bound}
+Assume that $\phi_i$ are nonnegative bounded independent random variables whose value lies in an interval $[0, \Phi]$. Assume also that $E[\phi_i] \leq \bar R \bar \alpha^i$ for all $i$, and some constants  $0 < \bar \alpha < 1$ and $\bar R > 0$.  Then the following inequalities hold 
+\begin{align}
+    \label{equ:squre_root_E_bound}
+    E[\sum_{i=1}^{k} \sqrt{\phi_i}] &\leq \frac{ \sqrt{\bar{R} \bar\alpha}}{ 1 - \sqrt{\bar\alpha}} \\
+    \label{equ:single_sum}
+    E[(\sum_{i=1}^{k} \sqrt{\phi_i})^2] &\leq \frac{2\bar{R} \bar\alpha}{ (1 - \sqrt{\bar\alpha})^2} \\
+    \label{equ:double_sum}
+    E[\sqrt{\sum_{i=1}^{k}\phi_i}\sum_{i=1}^{k} \sqrt{\phi_i}] &\leq \frac{\bar{R} \sqrt{\bar\alpha} }{ \sqrt{1 - \bar\alpha} (1 - \sqrt{\bar\alpha})}.
+\end{align} 
+\end{lemma}
+\begin{proof}
+    First we note that 
+    \begin{align}
+        \label{equ:A2_independence}
+        E[\sqrt{\phi_i \phi_j}] = E[\sqrt{\phi_i}] E[\sqrt{\phi_j}],
+    \end{align}
+    due to independence of $\phi_i$'s, and
+    \begin{align}
+        \label{equ:A2_jensen}
+        E[\sqrt{\phi_i}] \leq \sqrt{E[\phi_i]},
+    \end{align}
+    due to Jensen inequality and the fact that the square root function is concave and $\phi_i\geq 0$. Then, given (\ref{equ:A2_independence}) and (\ref{equ:A2_jensen}), we  derive \eqref{equ:squre_root_E_bound}  using a bound on $E[\phi_i]$.
+    \begin{align*}
+        E[\sum_{i=1}^{k} \sqrt{\phi_i}]
+        = \sum_{i=1}^k E[\sqrt{\phi_i}] \leq \sum_{i=1}^k \sqrt{E[\phi_i]} \leq \sum_{i=1}^k \sqrt{\bar{R}}\bar\alpha^{i/2} \leq \frac{\sqrt{\bar{R}\bar\alpha}}{1 - \sqrt{\bar\alpha}}.
+    \end{align*}
+    Similarly, we establish \eqref{equ:single_sum}. Observe:
+    \begin{align*}
+        E[(\sum_{i=1}^{k} \sqrt{\phi_i})^2]&=E[\sum_{i,j=1, i \neq j}^k\sqrt{\phi_i \phi_j} +\sum_{i=1}^k \phi_i] \\
+        &= \sum_{i,j=1, i \neq j}^k E[\sqrt{\phi_i \phi_j}] +\sum_{i=1}^k E[\phi_i] \\
+        &= \sum_{i,j=1, i \neq j}^k E[\sqrt{\phi_i}] E[\sqrt{\phi_j}] +\sum_{i=1}^k E[\phi_i]\\
+        &\leq \sum_{i,j=1, i \neq j}^k \sqrt{E[\phi_i]} \sqrt{E[\phi_j]} +\sum_{i=1}^k E[\phi_i] \\
+        &\leq \sum_{j=1}^k \sqrt{\bar{R}} \bar\alpha^{j/2} \sum_{i=1}^k \sqrt{\bar{R}} \bar\alpha^{i/2} +\sum_{i=1}^k \bar{R}\bar\alpha^i \\
+        &\leq  (\sqrt{\bar{R} \bar\alpha} \frac{1 - \sqrt{\bar\alpha^k}}{1 - \sqrt{\bar\alpha}})^2 + \bar{R} \bar\alpha \frac{1 - \bar\alpha^k}{1 - \bar\alpha}\\
+        &\leq  \frac{\bar{R} \bar\alpha}{(1 - \sqrt{\bar\alpha})^2} +  \frac{\bar{R} \bar\alpha}{1 - \bar\alpha} \leq \frac{2 \bar{R} \bar\alpha}{ (1 - \sqrt{\bar\alpha})^2}.
+    \end{align*}
+    
+    To bound $E[\sqrt{\sum_{i=1}^{k}\phi_i}\sum_{i=1}^{k} \sqrt{\phi_i}]$, and hence establish \eqref{equ:double_sum}, we again use Jensen inequality - $E(C)^2\leq E(C^2)$ for any random variable $C$. Specifically,
+    \begin{align}
+        \label{equ:E_bound_double_sum1}
+        (E[\sqrt{\sum_{i=1}^{k}\phi_i}\sum_{i=1}^{k} \sqrt{\phi_i}]) ^2 
+        \leq E[ \sum_{l=1}^{k}\phi_l (\sum_{i=1}^{k} \sqrt{\phi_i})^2] 
+        \leq  E[\sum_{l=1}^{k}\phi_l \sum_{i=1}^{k}\sum_{j=1}^{k} \sqrt{\phi_j} \sqrt{\phi_i}].
+    \end{align}
+    We now consider  three cases, and derive a  bound for each, respectively. 
+    \begin{itemize}
+    \item[(i)] For any fixed $l$, consider the case when $i \neq j \neq l$,
+    \begin{align*}
+        &E[\phi_l \sum_{i \neq j \neq l; i,j = 1}^k \sqrt{\phi_j} \sqrt{\phi_i}] \\
+        &\leq E[\phi_l] \sum_{i \neq j \neq l; i,j = 1}^k \sqrt{E[\phi_j]} \sqrt{E[\phi_i]}] 
+        \leq \bar\alpha^l \bar{R}^2 \sum_{i \neq j \neq l; i,j = 1}^k \bar\alpha^{i/2 + j/2} \\
+        &\leq \bar\alpha^l \bar{R}^2 \sum_{i,j = 1}^k \bar\alpha^{i/2 + j/2} 
+        \leq \bar\alpha^l \bar{R}^2 (\frac{\sqrt{\bar\alpha} (1 - \bar\alpha^{k/2})} {1 - \sqrt{\bar\alpha}})^2 
+        \leq \bar\alpha^l \frac{\bar\alpha \bar{R}^2}{(1 - \sqrt{\bar\alpha})^2}.
+    \end{align*}
+    \item[(ii)] Next, we consider  $i \neq j = l$ or $j \neq i = l$, in which case we recall that $\phi$ is bounded and lies in an interval $[0, \Phi]$, hence $E[\phi_i^{3/2}]\leq \Phi^{1/2}E[\phi_i]$, and it follows that
+    \begin{align*}
+        &E[2 \sum_{i = 1}^{l-1} \phi_l^{3/2} \sqrt{\phi_i} + 2 \sum_{i=l+1}^k \phi_l^{3/2} \sqrt{\phi_i}] \\
+        &= 2 E[\phi_l^{3/2}] E[ \sum_{i = 1}^{l-1}  \sqrt{\phi_i} + \sum_{i=l+1}^k \sqrt{\phi_i}] \\
+        &\leq 2 \Phi^{1/2} E[\phi_l] (\sum_{i = 1}^{l-1}  \sqrt{E[\phi_i]} + \sum_{i=l+1}^k \sqrt{E[\phi_i]}) \\
+        &\leq 2 \Phi^{1/2} \bar\alpha^l \bar{R}\sqrt{\bar{R}} (\sum_{i = 1}^{l-1}  \bar\alpha^{i/2} + \sum_{i=l+1}^k \bar\alpha^{i/2}) \\
+        &\leq 2 \Phi^{1/2} \bar\alpha^l \bar{R}\sqrt{\bar{R}} \frac{\sqrt{\bar\alpha}(1-\bar\alpha^{k/2})}{1-\sqrt{\bar\alpha}}
+        \leq  \bar\alpha^l \frac{2\bar{R} \sqrt{\bar\alpha \Phi \bar{R}}}{1-\sqrt{\bar\alpha}}.
+    \end{align*}
+    
+    \item[(iii)] Finally, we consider the case when $i = j = l$. Again, we note $E[\phi_i^2]\leq \Phi E[\phi_i]$ from the fact that $\phi$ is bounded from above by $\Phi$. Then,
+    % \begin{align*}
+    %   E[\phi_l \sum_{i=1}^k \phi_i] 
+    %   &= E[\phi_l \sum_{i=1}^{l-1} \phi_i + \phi_l^2 + \phi_l \sum_{i = l+1}^k \phi_i] \\
+    %   &= E[\phi_l] \sum_{i=1}^{l-1} E[\phi_i] + E[\phi_l^2] + E[\phi_l] \sum_{i = l+1}^k E[\phi_i] \\
+    %   &\leq \bar\alpha^l \bar{R} ( \bar{R}\sum_{i=1}^{l-1} \bar\alpha^i + \Phi + \bar{R}\sum_{i = l+1}^k \bar\alpha^i) \\
+    %   &\leq \bar\alpha^l \bar{R} ( \bar{R}\frac{\bar\alpha(1-\bar\alpha^k)}{1-\bar\alpha} + \Phi)
+    %   \leq \bar\alpha^l \bar{R}( \frac{\bar{R}\bar\alpha}{1-\bar\alpha} + \Phi)
+    % \end{align*}
+    \begin{align*}
+           E[\phi_l^2]\leq \Phi E[\phi_l] \leq \Phi \bar{R} \bar\alpha^l.
+    \end{align*}            
+    \end{itemize} 
+    
+    Hence, accounting for  all three cases in one sum, we have
+    \begin{align}
+        \nonumber&E[\sum_{l=1}^{k}\phi_l \sum_{i=1}^{k}\sum_{j=1}^{k} \sqrt{\phi_j} \sqrt{\phi_i}] = \sum_{l=1}^k E[\phi_l \sum_{i=1}^{k}\sum_{j=1}^{k} \sqrt{\phi_j} \sqrt{\phi_i}] \\
+        \nonumber&\leq \bar{R}\sum_{l=1}^k \bar\alpha^l \left( \Phi + \frac{2 \sqrt{\bar\alpha \Phi \bar{R}}}{1-\sqrt{\bar\alpha}} + \frac{\bar\alpha \bar{R}}{(1 - \sqrt{\bar\alpha})^2}  \right) \\
+        \label{equ:E_bound_double_sum2}
+        &\leq  \frac{\bar{R}\bar\alpha}{1-\bar\alpha} \left( \Phi + \frac{2 \sqrt{\bar\alpha \Phi \bar{R}}}{1-\sqrt{\bar\alpha}} + \frac{\bar\alpha \bar{R}}{(1 - \sqrt{\bar\alpha})^2}  \right).
+    \end{align}
+    From (\ref{equ:E_bound_double_sum1}) and (\ref{equ:E_bound_double_sum2}) it follows that
+    \begin{align*}
+        E[\sqrt{\sum_{i=1}^{k}\phi_i}\sum_{i=1}^{k} \sqrt{\phi_i}]
+        &\leq \sqrt{ E[\sum_{l=1}^{k}\phi_l \sum_{i=1}^{k}\sum_{j=1}^{k} \sqrt{\phi_j} \sqrt{\phi_i}]} \\
+        &\leq \sqrt{ \frac{\bar{R}\bar\alpha}{1-\bar\alpha} \left( \Phi + \frac{2 \sqrt{\bar\alpha \Phi \bar{R}}}{1-\sqrt{\bar\alpha}} + \frac{\bar\alpha \bar{R}}{(1 - \sqrt{\bar\alpha})^2}  \right)  } \nonumber \\
+        &\mbox{since $\Phi \leq \bar{R}$} \nonumber \\
+        &\leq \sqrt{ \frac{\bar{R}^2\bar\alpha}{1-\bar\alpha} \left( 1 + \frac{2 \sqrt{\bar\alpha}}{1-\sqrt{\bar\alpha}} + \frac{\bar\alpha}{(1 - \sqrt{\bar\alpha})^2}  \right)}. \nonumber \\
+        & = \frac{\bar{R} \sqrt{\bar\alpha} }{ \sqrt{1 - \bar\alpha} (1 - \sqrt{\bar\alpha})} \nonumber.
+    \end{align*}
+This completes the proof by establishing inequality (\ref{equ:double_sum}). 
+\end{proof}
+
+\subsection{Complexity of inexact proximal Quasi-Newton method, based on randomized coordinate descent}.
+ The key result in this section is showing that, to provide convergence rates developed in the previous sections, the number of the coordinate descent steps should increase as a linear function
+of the index of the outer iteration.  Here,  we  assume that some linear function of $k$, $l(k)=ak+b$ is chosen to indicate the number of coordinate steps 
+for the $k$-th subproblem.  In our computational experiments we use a step function which adds $n_k$ coordinate decent steps to subproblem optimization after each $m$ iterations, where $m$ is the size of L-BFGS memory and $n_k$ is the size of the working set at the $k$-th iteration - in other words it is the number of variables in the $k$-th subproblem. 
+While this function is more complicated than a simple linear function of $k$ it can always be bounded from below by such a linear function, hence for simplicity of analysis we consider only simple linear functions $l(k)$.
+
+Let us now state the version of  Algorithms \ref{alg:ISTA-SD} and \ref{alg:Backtrack_SD} which combines the ideas from the previous sections and for which we will be able to derive complexity in expectation.
+
+\begin{algorithm2e}\caption{Proximal Quasi-Newton method using randomized coordinate descent}
+    \label{alg:ISTA-SD_RCD}%
+%\linesnumberedhidden \dontprintsemicolon 
+{\rm Choose }
+$0<\rho\leq 1$,  $a,b>0$ and  $x^0$\; 
+\For{$k=0,1,2,\cdots$}{
+ Choose $0<\bar \mu_k,  \theta_k>0, G_k\succeq 0$.\;
+Find  $H_k=G_k+\frac{1}{2\mu_k}I$ and  $x^{k+1}  := p_{H_k,\phi_k}(x^k)$  \\ by applying {\em Prox\ Parameter\ Update\ with\ RCD\ }$(\bar \mu_k, G_k, x^k, \rho, a, b)$.\;
+%Set $H_k=B_k+\frac{1}{2\mu_k}I$ and compute $x^{k+1}  := p_{H_k}(x^k)$, with \;
+}
+\end{algorithm2e}
+
+
+
+
+\begin{algorithm2e}\caption{Prox Parameter Update with RCD $(\bar \mu, G, x, \rho, a,b)$ }
+    \label{alg:Backtrack_SD_RCD}%
+%\linesnumberedhidden \dontprintsemicolon 
+Select $0<\beta<1$ and set $\mu=\bar \mu$\; \For{$i=1,2,\cdots$}{
+Define $H=G+\frac{1}{2\mu} I$,  and compute $p(x):=p_{H,\phi}(x)$\\ by applying {\em RCD \ }$(Q(H,  v,x), x, \lceil ak+b\rceil)$\;
+If $F(p(x))- F(x) \leq \rho (Q(H,  p(x),x)- F(x))$, then output $H$ and $p(x)$, {\bf Exit} \;
+Else $\mu=\beta^{i}\bar  \mu$\;
+}
+\end{algorithm2e}
+
+Note that $\phi_k$  and $\phi$ used in in the $p_{H,\phi_k}(x)$ and $p_{H,\phi}(x)$ in Algorithms \ref{alg:ISTA-SD_RCD} and \ref{alg:Backtrack_SD_RCD} are used to indicate 
+that the inexact subproblem optimization is performed. The algorithm does not select the values of $\phi_k$, the value of each $\phi_k$ is a consequence of applying $ak+b$ RCD iterations to the subproblem.  
+By Lemma \ref{lem:randomized_CD} we know that there exists a constant $\alpha\in (0, 1)$ such that, if $ak+b$ iterations of RCD are applied for the $k$-th subproblem, then $E(\phi_k)\leq R \alpha^{ak+b}=\bar R \bar \alpha^k$, for $\bar R=R\alpha^b$ and $\bar \alpha = \alpha^a$. Applying now Lemma \ref{lem:E_bound}
+we can bound each element in \eqref{eq:bound_F_F*} and derive the following theorem. 
+\begin{theorem}\label{th:inexact_conv_rate_rand}
+Assume that for each iterate $\{x^k\}$ of  Algorithm \ref{alg:ISTA-SD_RCD}  the following iterate $\{x^{k+1}\}$   is generated by applying $ak+b$ steps of Algorithm \ref{alg:randomized_cd}, then
+\begin{align*}
+    E[F(x^k)] - F(x^*) \leq \frac{\zeta}{k},
+\end{align*}
+where $x^*$ is an optimal solution of \eqref{prob:P} and $\zeta$ is a constant.
+\end{theorem}
+
+\begin{proof}
+    Taking expectation on both sides of \eqref{eq:bound_F_F*} in Theorem \ref{th:inexact_conv_rate}, we have
+    \begin{align}
+    \label{eq:exp_bound}
+        E[F(x^k)] - F(x^*) \leq \frac{1}{k} \left( \frac{\sigma}{2} E[B_k] +\frac{\sigma}{2} C + 2E[A_k^2] + \sqrt{C} E[A_k] + E[\sqrt{B_k} A_k] \right).
+    \end{align}
+    Next, we show how to bound $E[B_k], E[A_k], E[A_k^2]$ and $E[\sqrt{B_k} A_k]$. We first note a key observation, that, as a result of Lemma \ref{lem:randomized_CD}, Lemma \ref{lem:bound_Q_Qstar} and Algorithm \ref{alg:randomized_cd}, the expectation of subproblem optimization error $\phi_i$ can be upper bounded by a geometric progression such that
+    \begin{align*}
+        E[\phi_i] \leq R \alpha^{ai+b}=\bar R\bar \alpha^i,
+    \end{align*}
+    where $0 < \alpha < 1$ and $R$ are specified respectively in Lemma \ref{lem:randomized_CD} and Lemma \ref{lem:bound_Q_Qstar} and $\bar \alpha=\alpha^a$ and $\bar R=R\alpha^b$. It immediately follows that
+    \begin{align*}
+        E[B_k] = \frac{2(M_{\sigma}+1)}{\sigma} \sum_{i=0}^{k-1} E[\phi_i] \leq \frac{2(M_{\sigma}+1)}{\sigma} \sum_{i=0}^{k-1} \bar R\bar \alpha \leq \frac{2(M_{\sigma}+1)\bar R}{\sigma} \frac{1}{1 -\bar \alpha}.
+    \end{align*}
+    Recalling Lemma \ref{lem:E_bound}, we then obtain
+    \begin{align*}
+        E[A_k] &= \sqrt{2M}  E[\sum_{i=0}^{k-1} \sqrt{\phi_i}] \leq \frac{ \sqrt{2M\bar R}}{ 1 - \sqrt{\bar \alpha}} \\
+        E[A_k^2] &= E[(\sum_{i=1}^{k} \sqrt{2M\phi_i})^2] = 2M E[(\sum_{i=0}^{k-1} \sqrt{\phi_i})^2] \leq \frac{4M\bar R }{ (1 - \sqrt{\bar \alpha})^2} \\
+        E[\sqrt{B_k} A_k] &= E[\sqrt{\frac{2(M_{\sigma}+1)}{\sigma} \sum_{i=1}^{k}\phi_i}\sum_{i=1}^{k} \sqrt{2M\phi_i}] = \sqrt{\frac{4M(M_{\sigma}+1)}{\sigma}} E[\sqrt{\sum_{i=1}^{k}\phi_i}\sum_{i=1}^{k} \sqrt{\phi_i}] \\
+        &\leq \sqrt{\frac{4M(M_{\sigma}+1)}{\sigma}} \frac{\bar R  }{ \sqrt{1 - \bar \alpha} (1 - \sqrt{\bar \alpha})},
+    \end{align*}
+    and $\zeta$ is equal to
+    \begin{align*}
+        \zeta = \frac{\bar R (M_{\sigma}+1)}{1 - \bar \alpha }  + \frac{\sigma}{2} C + \frac{8M\bar R }{ (1 - \sqrt{\bar \alpha})^2} + \sqrt C \frac{ \sqrt{2M\bar R }}{ 1 - \sqrt{\bar \alpha}} + \sqrt{\frac{4M(M_{\sigma}+1)}{\sigma}} \frac{\bar R }{ \sqrt{1 - \bar \alpha} (1 - \sqrt{\bar \alpha})}.
+    \end{align*}
+    
+    
+\end{proof}
+    
+    \begin{remark}
+    Note that the choice of the number of coordinates decent steps in each applications of RCD, in other words, the choice of constants $a$ and $b$ has a direct affect on the constants in  the complexity bound.  Clearly taking more RCD steps leads to fewer iterations of the main algorithm, as larger values of $a$ and $b$ lead to smaller value of $\zeta$.  On the other hand, each iterations becomes more expensive. We believe that our 
+    practical approach described in Section \ref{sec:comp} strikes a good balance in this trade-off.  \end{remark} 
+%    \begin{remark}
+%    Note that we require that condition \eqref{equ:bound_delta_x_inexact} holds at each iteration. This condition is easy and cheap to check, is eventually satisfied, if we allow the coordinate descent to run long enough, and was always satisfied in our numerical experiments. However, in theory, enforcing  this condition  at each iteration may imply that some of the
+%    subproblems require more coordinate descent steps than $k$ (or $l(k)$). This condition is needed to derive the constant $C$ in \eqref{eq:exp_bound}. Instead of deriving $C$ as a  constant one can consider bounding the expectation of $C$, and require that \eqref{equ:bound_delta_x_inexact} only holds in expectation. This will make the derivations of our results a lot more complicated, while not necessarily providing a significant theoretical improvement, hence we omit this analysis in the paper. 
+%    \end{remark}
+
+
+% section coordinate_descent_iteration_complexity (end)
+
+%\section{Optimization Algorithm}
+%\label{sec:alg}
+%
+%In this section we briefly describe the specifics of the general purpose algorithm that we propose within the framework of Algorithms \ref{alg:ISTA-SD_RCD}-\ref{alg:randomized_cd}and that takes advantage of approximate second order information while maintaining low complexity of subproblem optimization steps.
+% The algorithm is designed to solve problems of the form \eqref{prob:P} with $g(x)=\lambda \|x\|_1$, but it does not use any special structure of the smooth part of the objective, $f(x)$.
+%
+%
+% At iteration $k$ a step $d_k$  is obtained, approximately, as follows
+%\begin{equation}
+%    \label{equ:compute_d_outer_Ak}
+%    \nonumber d_k = \arg\min_{d} \{\nabla f(x^k)^T d + d^T H_k d + \lambda\|x^k + d\|_1; \ \mbox{s.t.}~ d_i = 0, \forall i \in \Acal_k\}
+%\end{equation}
+%with $H_k=G_k+\frac{1}{2\mu_k}I$ - a positive definite matrix  and $\Acal_k$ -  a set of coordinates fixed at the current iteration.
+%
+%%\subsection{Low-Rank Hessian Approximation $B_k$} % (fold)
+%%\label{ssub:low_rank_hessian_approximation_b_k_} 
+%The positive definite matrix $G_k$ is computed by a limited memory BFGS approach. In particular,
+% we use a  specific form of the low-rank Hessian estimate, (see e.g. \cite{Byrd1994,NoceWrig06}),
+%\begin{equation}
+%    \label{equ:LBFGS}
+%    G_k = \gamma_k I - QRQ^T = \gamma_k I - Q\hat Q \quad \mbox{with  } \hat Q= RQ^T,
+%\end{equation}
+%where $Q$, $\gamma_k$ and $R$ are defined below,
+%\begin{align}
+%    Q = 
+%    \begin{bmatrix}
+%        \gamma_kS_k &T_k
+%    \end{bmatrix}, ~
+%    R = 
+%    \begin{bmatrix}
+%        \gamma_kS_k^TS_k &M_k\\
+%        M_k^T   &-D_k
+%    \end{bmatrix}^{-1}, ~
+%    \gamma_k = \frac{t^T_{k-1}t_{k-1}}{t^T_{k-1}s_{k-1}}    .
+%\end{align}
+%Let $m$ be a small integer which defines the number of latest
+%BFGS updates that are "remembered" at any given iteration (we used $10-20$).
+%Then $S_k$ and $T_k$ are the $p \times m$ matrices with columns defined by  vector pairs $\{s_i,t_i\}_{i=k-m}^{k-1}$ that satisfy $s_i^Tt_i > 0, s_i = x^{i+1} - x_i$ and $t_i = \nabla f(x^{i+1}) - \nabla f(x^{i}) $, 
+% $M_k$ and $D_k$ are the $k \times k$ matrices
+%    \begin{equation*}
+%        (M_k)_{i,j} = 
+%        \begin{cases}
+%            s_{i-1}^Tt_{j-1} \quad &\mbox{if }i > j \\
+%            0   \quad &\mbox{otherwise,}
+%        \end{cases} \quad D_k = \diag[s^T_{k-m}t_{k-m},...,s_{k-1}^Tt_{k-1}].
+%    \end{equation*}
+% The particular choice of $\gamma_k$ is designed to ensure that the search direction is well-scaled so that less time is spent on line search or updating prox parameter $\mu_k$ \cite{NoceWrig06}. In fact instead of updating and maintaining $\mu_k$, exactly as described in Algorithm \ref{alg:Backtrack_SD}  we simply
+% double $\gamma_k$ in \eqref{equ:LBFGS} at each backtracking step. This can be viewed as choosing   $\mu_k=\infty$ the first step of backtracking, and $\mu_k=1/(2^{i-1}-1)\gamma_k$ for the $i$-th backtracking step, when $i>1$. As long as $G_K$ in \eqref{equ:LBFGS}, is positive definite, with smallest eigenvalue bounded by $\sigma>0$, out theory applies to this particular backtracking procedure. 
+%
+%% subsection low_rank_hessian_approximation_b_k_ (end)
+%
+%\subsection{Greedy Active-set Selection $\mathcal{A}_k(\Ical_k)$} % (fold)
+%\label{ssub:greedy_active_set_selection}
+%An active-set selection strategy maintains a sequence of sets of indices $\Acal_k$ that iteratively estimates the optimal active set $\Acal^*$ which contains indices of zero entries in the optimal solution $x^*$ of (\ref{prob:P}). We introduce this strategy as a heuristic aiming to improve the efficiency of the implementation and to make it competitive with state-of-the-art methods, which also use active set strategies. A theoretical analysis of the effects of these strategies is a subject of future study. 
+%%: $\Acal^* = \{i \in \Pcal ~|~ (x^*)_i = 0\}$, where $\Pcal = \{1,2,...,p\}$.
+%%We use $\Acal_k$ to denote the set $\Acal$ at $k$-th iteration. 
+%The complement set of $\Acal_k$ is $\Ical_k = \{i \in \Pcal ~|~ i \notin \Acal_k\}$. 
+%Let $(\partial F(x^k))_i$ be the $i$-th component of the subgradient of $F(x)$ at $x^k$. We define two sets, 
+%%=\max \{sign(x^k_i)(\nabla f(x^k))_i-\lambda , 0\}$ 
+%\begin{align}
+%    \Ical^{(1)}_k &= \{i \in \Pcal ~|~(\partial F(x^k))_i \neq 0\}, \ \Ical^{(2)}_k = \{i \in \Pcal~|~ (x^k)_i \neq 0\}   
+%\end{align}
+%We select $\Ical_k$ to include the entire set $\Ical^{(2)}_k$ and a small subset of  indices from $\Ical^{(1)}_k$ for which the corresponding elements of a sub gradient of $F$ and $x_k$  is the largest.  In contrast,
+%the strategy  used by \cite{nGLMNET} and \cite{Hsieh2011} select the entire set $\Ical^{(1)}_k$, which results  in a larger size of subproblems (\ref{equ:compute_d_outer_Ak}) at the early stages of the algorithm. 
+%
+%\subsection{Solving the inner problem via coordinate descent}\label{sec:innerprob} % (fold)
+%\label{sub:the_algorithm}
+%We apply coordinate descent method to the  piecewise quadratic subproblem (\ref{equ:compute_d_outer_Ak}) to obtain the direction $d_k$ and exploit the special structure of $H_k$. 
+%Suppose $j$-th coordinate in $d$ is updated, hence $d' = d + ze_j$ ($e_j$ is the $j$-th vector of the identity). Then $z$ is obtained by solving the following one-dimensional problem
+%\begin{align}
+%    \label{equ:compute_z_prob}
+%    \nonumber\min_z  &(H_k)_{jj} z^2 + ( (\nabla f(x^k))_j + (2H_kd)_j  )z + \lambda | (x^k)_j + d_j + z |
+%\end{align}
+%which has a simple closed-form solution \cite{Donoho92de-noisingby,Hsieh2011}. 
+%
+%The special form of  $G_k$ in $H_k=G_k+\frac{1}{\mu} I$ provides us an opportunity to accelerate the coordinate descent process, reducing the complexity from problem-dependent $O(n)$ to $O(m)$ with $m$ chosen as a small constant. In particular we only store the diagonal elements of $G_k$, $(G_k)_{ii} = \gamma_k - q_i^T\hat q_i$, where $q_i$ is the $i$th row of the matrix $Q$ and $\hat q_i$ is the $i$th column vector of the matrix $\hat Q$. We compute $(G_kd)_i$,  whenever it is needed, by 
+% maintaining a $2m$ dimensional vector $v := \hat Qd$, 
+%which takes $O(2m)$ flops, and using  $(G_kd)_i = \gamma_k d_i - q_i^T v$.
+%After each coordinate step $v$ is updated by $v \gets v + z_i \hat q_i$, which costs $O(m)$. We also need to use extra memory for caching $\hat Q$ and $\hat d$ which takes $O(2mp + 2m)$ space. With the other $O(2p + 2mn)$ space for storing the diagonal of $G_k$, $Q$ and $d$, altogether we need $O(4mp + 2n + 2m)$ space, which is essentially $O(4mn)$ when $n \gg m$.
+
+\section{Optimization Algorithm}
+\label{sec:alg}
+
+In this section we briefly describe the specifics of the general purpose algorithm that we propose within the framework of Algorithms 
+\ref{alg:ISTA-SD_RCD}, \ref{alg:Backtrack_SD_RCD} and \ref{alg:randomized_cd} and that takes advantage of approximate second order information while maintaining low complexity of subproblem optimization steps.
+The algorithm is designed to solve problems of the form \eqref{prob:P} with $g(x)=\lambda \|x\|_1$, but it does not use any special structure of the smooth part of the objective, $f(x)$.
+
+
+
+
+ At iteration $k$ a step $d_k$  is obtained, approximately, as follows
+\begin{equation}
+    \label{equ:compute_d_outer_Ak}
+    \nonumber d_k = \arg\min_{d} \{\nabla f(x^k)^T d + d^T H_k d + \lambda\|x^k + d\|_1; \ \mbox{s.t.}~ d_i = 0, \forall i \in \Acal_k\},
+\end{equation}
+with $H_k=G_k+\frac{1}{2\mu_k}I$ - a positive definite matrix  and $\Acal_k$ -  a set of coordinates fixed at the current iteration.
+
+%\subsection{Low-Rank Hessian Approximation $B_k$} % (fold)
+%\label{ssub:low_rank_hessian_approximation_b_k_} 
+The positive definite matrix $G_k$ is computed by a limited memory BFGS approach. In particular,
+ we use a  specific form of Hessian estimate, (see e.g. \cite{Byrd1994,NoceWrig06}),
+\begin{equation}
+    \label{equ:LBFGS}
+    G_k = \gamma_k I - QRQ^T = \gamma_k I - Q\hat Q \quad \mbox{with  } \hat Q= RQ^T,
+\end{equation}
+where $Q$, $\gamma_k$ and $R$ are defined below,
+\begin{align}
+    Q = 
+    \begin{bmatrix}
+        \gamma_kS_k &T_k
+    \end{bmatrix}, ~
+    R = 
+    \begin{bmatrix}
+        \gamma_kS_k^TS_k &M_k\\
+        M_k^T   &-D_k
+    \end{bmatrix}^{-1}, ~
+    \gamma_k = \frac{t^T_{k-1}t_{k-1}}{t^T_{k-1}s_{k-1}}.   .
+\end{align}
+Note that there is low-rank structure present in $G_k$, the matrix given by $Q \hat Q$, which we can exploit, but $G_k$ itself by definition is always positive definite. 
+Let $m$ be a small integer which defines the number of latest
+BFGS updates that are "remembered" at any given iteration (we used $10-20$).
+Then $S_k$ and $T_k$ are the $p \times m$ matrices with columns defined by  vector pairs $\{s_i,t_i\}_{i=k-m}^{k-1}$ that satisfy $s_i^Tt_i > 0, s_i = x^{i+1} - x_i$ and $t_i = \nabla f(x^{i+1}) - \nabla f(x^{i}) $, 
+ $M_k$ and $D_k$ are the $k \times k$ matrices
+    \begin{equation*}
+        (M_k)_{i,j} = 
+        \begin{cases}
+            s_{i-1}^Tt_{j-1} \quad &\mbox{if }i > j \\
+            0   \quad &\mbox{otherwise,}
+        \end{cases} \quad D_k = \diag[s^T_{k-m}t_{k-m},...,s_{k-1}^Tt_{k-1}].
+    \end{equation*}
+ The particular choice of $\gamma_k$ is meant  to promote   well-scaled quasi-Newton steps, so that less time is spent on line search or updating of prox parameter $\mu_k$ \cite{NoceWrig06}. In fact instead of updating and maintaining $\mu_k$, exactly as described in Algorithm \ref{alg:Backtrack_SD}  we simply
+ double $\gamma_k$ in \eqref{equ:LBFGS} at each backtracking step. This can be viewed as choosing   $\mu_k=\infty$ the first step of backtracking, and $\mu_k=1/(2^{i-1}-1)\gamma_k$ for the $i$-th backtracking step, when $i>1$. As long as $G_K$ in \eqref{equ:LBFGS}, is positive definite, with smallest eigenvalue bounded by $\sigma>0$, our theory applies to this particular backtracking procedure. 
+
+% subsection low_rank_hessian_approximation_b_k_ (end)
+
+\subsection{Greedy Active-set Selection $\mathcal{A}_k(\Ical_k)$} % (fold)
+\label{ssub:greedy_active_set_selection}
+An active-set selection strategy maintains a sequence of sets of indices $\Acal_k$ that iteratively estimates the optimal active set $\Acal^*$ which contains indices of zero entries in the optimal solution $x^*$ of (\ref{prob:P}). We introduce this strategy as a heuristic aiming to improve the efficiency of the implementation and to make it comparable with state-of-the-art methods, which also use active set strategies. A theoretical analysis of the effects of these strategies is a subject of future study. 
+%: $\Acal^* = \{i \in \Pcal ~|~ (x^*)_i = 0\}$, where $\Pcal = \{1,2,...,p\}$.
+%We use $\Acal_k$ to denote the set $\Acal$ at $k$-th iteration. 
+The complement set of $\Acal_k$ is $\Ical_k = \{i \in \Pcal ~|~ i \notin \Acal_k\}$. 
+Let $(\partial F(x^k))_i$ be the $i$-th component of a subgradient of $F(x)$ at $x^k$. We define two sets, 
+%=\max \{sign(x^k_i)(\nabla f(x^k))_i-\lambda , 0\}$ 
+\begin{align}
+    \Ical^{(1)}_k &= \{i \in \Pcal ~|~(\partial F(x^k))_i \neq 0\}, \ \Ical^{(2)}_k = \{i \in \Pcal~|~ (x^k)_i \neq 0\}.
+\end{align}
+%We select $\Ical_k$ to include the entire set $\Ical^{(2)}_k$ and a small subset of  indices from $\Ical^{(1)}_k$ for which the corresponding elements of a sub gradient of $F$ and $x_k$  is the largest.  
+As is done in  \cite{nGLMNET} and \cite{Hsieh2011} we select $\Ical_k$ to include the entire set $\Ical^{(2)}_k$ and the entire set $\Ical^{(1)}_k$. We also  tested a strategy which  includes only  a small subset of  indices from $\Ical^{(1)}_k$ for which the corresponding elements $|(\partial F(x^k))_i|$    are the largest.  This strategy  resulted  in a smaller size of subproblems (\ref{equ:compute_d_outer_Ak}) at the early stages of the algorithm, but did not appear to improve the overall performance of the algorithm. 
+
+ 
+
+\subsection{Solving the inner problem via coordinate descent}\label{sec:innerprob} % (fold)
+\label{sub:the_algorithm}
+We apply coordinate descent method to the  piecewise quadratic subproblem (\ref{equ:compute_d_outer_Ak}) to obtain the direction $d_k$ and exploit the special structure of $H_k$. 
+Suppose $j$-th coordinate in $d$ is updated, hence $d' = d + ze_j$ ($e_j$ is the $j$-th vector of the identity). Then $z$ is obtained by solving the following one-dimensional problem
+\begin{align}
+    \label{equ:compute_z_prob}
+    \nonumber\min_z  &(H_k)_{jj} z^2 + ( (\nabla f(x^k))_j + (2H_kd)_j  )z + \lambda | (x^k)_j + d_j + z |,
+\end{align}
+which has a simple closed-form solution \cite{Donoho92de-noisingby,Hsieh2011}. 
+
+The most costly step of an iteration of the coordinate descent method is computing or maintaining vector  $H_kd$. Naively, or in the case of general $H_k$, this step takes $O(n)$ flops, since the vector needs to be updated at the end of each iteration, when one of the coordinates of vector $d$ changes.  The special form of  $G_k$ in $H_k=G_k+\frac{1}{\mu} I=\gamma_kI-Q\hat Q$ provides us an opportunity to accelerate this step, reducing the complexity from problem-dependent $O(n)$ to $O(m)$ with $m$ chosen as a small constant. In particular we only store the diagonal elements of $G_k$, $(G_k)_{ii} = \gamma_k - q_i^T\hat q_i$, where $q_i$ is the $i$th row of the matrix $Q$ and $\hat q_i$ is the $i$th column vector of the matrix $\hat Q$. We compute $(G_kd)_i$,  whenever it is needed, by 
+ maintaining a $2m$ dimensional vector $v := \hat Qd$, 
+which takes $O(2m)$ flops, and using  $(G_kd)_i = \gamma_k d_i - q_i^T v$.
+After each coordinate step $v$ is updated by $v \gets v + z_i \hat q_i$, which costs $O(m)$. We also need to use extra memory for caching $\hat Q$ and $\hat d$ which takes $O(2mp + 2m)$ space. With the other $O(2p + 2mn)$ space for storing the diagonal of $G_k$, $Q$ and $d$, altogether we need $O(4mp + 2n + 2m)$ space, which is essentially $O(4mn)$ when $n \gg m$.
+
+
+\section{Computational experiments} % (fold)
+\label{sec:comp}
+
+The aim of this section is to provide validation for our general purpose algorithm, but not to conduct extensive comparison of various inexact proximal Newton approaches. 
+In particular, we aim to demonstrate a) that using the exact Hessian is not necessary in these methods, b) that backtracking using prox parameter, based on sufficient decrease condition, which our theory uses, does in fact work well in practice and c) that randomized coordinate descent is at least as effective as the cyclic one, which is standardly used by other methods.
+
+LHAC, for \textbf{L}ow rank \textbf{H}essian \textbf{A}pproximation in \textbf{A}ctive-set \textbf{C}oordinate descent, is a C/C++ package that implements Algorithms \ref{alg:randomized_cd}- \ref{alg:ISTA-SD_RCD} for solving general $\ell_1$ regularization problems. We conduct experiments on two of the most well-known $\ell_1$ regularized models -- Sparse Inverse Covariance Selection (SICS) and Sparse Logistic Regression (SLR). The following two specialized C/C++ solvers are included in our comparisons:
+
+\begin{itemize}
+    \item QUIC: the quadratic inverse covariance algorithm for solving SICS described in \cite{Hsieh2011}. 
+    \item LIBLINEAR: an improved version of GLMNET for solving SLR described in \cite{GLMNET,nGLMNET}.
+\end{itemize}
+
+Note that both of these  packages have been shown to be the state-of-the-art solvers in their respective categories (see e.g. \cite{nGLMNET,Yuan2010,Hsieh2011,Olsen2012}). 
+
+Both QUIC and LIBLINEAR adopt line search to ensure function reduction. We have  implemented line search in LHAC as well to see how it compares to the updating of prox parameter proposed in Algorithm \ref{alg:Backtrack_SD}.  In all the experiments presented below use the following notation. 
+\begin{itemize}
+    \item LHAC: Algorithm \ref{alg:ISTA-SD_RCD} with backtracking on prox parameter.
+    \item LHAC-L: Algorithm \ref{alg:ISTA-SD_RCD} with Armijo line search procedure described below in \eqref{equ:line_search}.
+\end{itemize}
+
+% subsection lhac_scriptsize_normalsize_l_ow_rank_normalsize_h_essian_normalsize_a_pproximation_in_active_set_normalsize_c_oordinate_descent (end)
+
+\subsection{Experimental Settings} % (fold)
+\label{sub:data_sets_and_experimental_settings}
+
+For all of the experiments we choose the initial point $x_0 = \mathbf{0}$, and we report running time results in seconds, plotted against log-scale relative objective function decrease given by
+\begin{align}        
+    \log(\frac{ F(x) - F^* }{ F^* }),
+\end{align}
+where $F^*$ is the optimal function value. Since $F^*$ is not available, we compute an approximation by setting a small optimality tolerance,  specifically $10^{-7}$, in QUIC and LIBLINEAR. All the experiments are executed through the MATLAB mex interface. 
+%For LIBLINEAR a short string containing ``-s 6 -e $e^{-7}$'' is passed to its mex function as the parameters that specifies the model to be solved -- SLR, and the optimality tolerance to use.  For QUIC it is simply a matter of passing the number $10^{-7}$ as the third parameter to its mex function. 
+We also modify the source code of LIBLINEAR in both its optimization routine and mex gateway function to obtain the records of function values and the running time. We note that we simply store, in a double array, and pass the function values which the algorithm already computes,  so this adds little to nothing to LIBLINEAR's computational costs. We also adds a function call of \emph{clock()} at every iteration to all the tested algorithms, except  QUIC, which includes  a ``trace'' mode that returns automatically the track of function values and running time,  by calling \emph{clock()} iteratively. For both QUIC and LIBLINEAR we downloaded the latest versions of the publicly available source code from their official websites, compiled and built the software on the  machine on which all experiments were executed, and which uses 2.4GHz quad-core Intel Core i7 processor, 16G RAM and Mac OS.  
+
+The optimal objective values $F^*$ obtained approximately by QUIC and LIBLINEAR are later plugged in LHAC and LHAC-L to terminate the algorithm when the following condition is satisfied
+\begin{align}
+    \frac{ F(x) - F^* }{ F^* } \leq 10^{-8}.
+\end{align}
+
+In LHAC we chose $\bar \mu = 1, \beta = 1/2$ and $\rho = 0.01$ for sufficient decrease (see Algorithm \ref{alg:Backtrack_SD_RCD}), and for LBFGS we use $m = 10$. 
+%We also scale down the Hessian approximation pre-conditioner $\gamma$ defined in \eqref{equ:LBFGS} in most of the experiments to make the step less conservative. 
+
+When solving the subproblems, we terminate the RCD procedure whenever the number of coordinate steps exceeds
+\begin{align}        
+\label{cond:subprob_tol}
+     (1 + \lfloor \frac{k}{m} \rfloor ) |\Ical_k|,
+ \end{align} 
+where $|\Ical_k|$ denotes the number of coordinates in the current working set. Condition \eqref{cond:subprob_tol} indicates that we expect to update each coordinate in $\Ical_k$ only once when $k < m$, and that when $k > m$ we increase the number of expected passes through $\Ical_l$ by 1 every $m$ iterations, i.e., after LBFGS receives a full update. The idea is not only to avoid spending too much time on the subproblem especially at the beginning of the algorithm when the Hessian approximations computed by LBFGS are often fairly coarse, but also to solve the subproblem more accurately as the iterate moves closer to the optimality. Note that in practice when $|\Ical_k|$ is large, the value of  \eqref{cond:subprob_tol} almost always dominates $k$, hence it can be lower bounded by $l(k)=ak+b$ with some reasonably large values of $a$ and $b$, which, as we analyzed in Section \ref{sec:coordinate_descent_iteration_complexity},  guarantees the sub linear convergence rate. We also find that \eqref{cond:subprob_tol} works quite well in practice in preventing from ``over-solving'' the subproblems, particularly for LBFGS type algorithms. In \ref{fig:sics-cd} and \ref{fig:slr-cd} we plot the data with respect to the number of RCD iterations. In particular Figures \ref{fig:sics-cd-iter} and \ref{fig:slr-cd-iter} show the number of RCD steps taken at the $k$-th iteration, as a function of  $k$. Figures \ref{fig:sics-cd-obj} and \ref{fig:slr-cd-obj} show convergence of the objective function to its optimal value as a function of the total number of RCD steps taken so far (both values are plotted in logarithmic scale). Note that RCD steps are not the only component of the CPU time of the algorithms, since gradient computation has to be performed at least once per iteration. 
+
+In LHAC-L,  a line search procedure is employed, as is done  in QUIC and LIBLINEAR,   for the convergence  to follow from the framework by \cite{Tseng2009}. In particular, the Armijo rule chooses the step size $\alpha_k$ to be the largest element from $\{\beta^0, \beta^1, \beta^2, ... \}$ satisfying
+\begin{align}
+    \label{equ:line_search}
+    F(x_k + \alpha_k d_k) \leq F(x_k) + \alpha_k \sigma \Delta_k,
+\end{align} 
+where $0 < \beta < 1, 0 < \sigma < 1$, and $\Delta_k := \nabla f_k^T d_k + \lambda \|x_k + d_k\|_1 - \lambda \|x_k\|_1$. In all the experiments we chose $\beta = 0.5, \sigma = 0.001$ for LHAC-L.
+
+
+
+% subsection data_sets_and_experimental_settings (end)
+
+
+
+\subsection{Sparse Inverse Covariance Selection} % (fold)
+\label{sub:sparse_inverse_covariance_matrix_estimation}
+
+
+\begin{figure}[!t]
+    \centering
+    \subfigure[$S: 1255 \times 1255 $]
+    {
+       \includegraphics[width=0.4\columnwidth]{resources/fig-Leukemia}
+       \label{fig:Leukemia}
+    }
+    ~
+    \subfigure[ $S: 1869 \times 1869$ ]
+    {
+       \includegraphics[width=0.4\columnwidth]{resources/fig-hereditarybc}
+       \label{fig:hereditarybc}
+    } \\
+    \subfigure[ $S:  692 \times 692$ ]
+    {
+       \includegraphics[width=0.4\columnwidth]{resources/fig-ER_692}
+       \label{fig:Leukemia}
+    }
+    ~
+    \subfigure[ $S: 834 \times 834$ ]
+    {
+       \includegraphics[width=0.4\columnwidth]{resources/fig-Arabidopsis}
+       \label{fig:hereditarybc}
+    }
+    \caption{ Convergence plots on SICS (the y-axes on log scale). }
+    \label{fig:sics}    
+\end{figure}
+
+\begin{figure}[!t]
+    \centering
+    \subfigure[The number of coordinate descent steps on subproblems increases as iterates move towards optimality]
+    {
+       \includegraphics[width=0.4\columnwidth]{resources/fig-SICS-cd-iter}
+       \label{fig:sics-cd-iter}
+    }
+    \quad
+    \subfigure[ Both axes are in log scale. Change of objective w.r.t. the number of coordinate descent steps.   ]
+    {
+       \includegraphics[width=0.4\columnwidth]{resources/fig-SICS-obj-cd}
+       \label{fig:sics-cd-obj}
+    } 
+    \caption{ RCD step count of LHAC on different SICS data sets. }
+    \label{fig:sics-cd}   
+\end{figure}
+
+The sparse inverse covariance selection problem is defined by
+\begin{align}
+    \label{equ:sics_obj}
+    \min_{X \succ 0} \quad F(X) = -\log \det X + \tr(SX) + \lambda ||X||_1,
+\end{align}
+where the input $S \in \Rmbb^{p \times p}$ is the sample covariance matrix and the optimization is over a symmetric matrix  $X \in \Rmbb^{p \times p}$ that is required to be positive definite.
+
+For SICS we report results on four real world data sets, denoted as \emph{ER\_692}, \emph{Arabidopsis}, \emph{Leukemia} and \emph{hereditarybc}, which are preprocessed from breast cancer data and gene expression networks. We refer to \cite{Li2010} for detailed information about those data sets.
+
+
+We set the regularization parameter $\lambda = 0.5$ for all experiments as suggested in \cite{Li2010}. 
+The plots presented in Figure \ref{fig:sics} show that LHAC and LHAC-L is almost twice as fast as QUIC,  in the two largest data sets Leukemia and hereditarybc (see Figure \ref{fig:Leukemia} and \ref{fig:hereditarybc}). In the other two smaller data sets the results are less clear-cut, but all of the methods solve the problems very fast and the performance of LHAC is comparable to that of QUIC. The performances of LHAC and LHAC-L are fairly similar in all experiments. Again we should note that with the sufficient decrease condition proposed in Algorithm \ref{alg:Backtrack_SD} we are able to establish the global convergence rate, which has not been shown  in the case of Armijo line search.
+
+\subsection{Sparse Logistic Regression} % (fold)
+\label{sub:sparse_logistic_regression}
+\begin{figure}[!t]
+    \centering
+        \subfigure[ a9a ($p = 123, N = 32561$)]
+    {
+       \includegraphics[width=0.4\columnwidth]{resources/fig-a9a}
+       \label{fig:a9a}
+    }
+    ~
+    \subfigure[ slices ($p = 385, N = 53500$)]
+    {
+       \includegraphics[width=0.4\columnwidth]{resources/fig-slice}
+       \label{fig:slices}
+    } \\    
+    \subfigure[ gisette ($p = 5000, N = 6000$)]
+    {
+       \includegraphics[width=0.4\columnwidth]{resources/fig-gisette_scale}
+       \label{fig:gisette}
+    }
+    ~
+    \subfigure[epsilon ($p = 2000, N = 100000$)]
+    {
+       \includegraphics[width=0.4\columnwidth]{resources/fig-epsilon_normalized}
+       \label{fig:connect}
+    }
+    \caption{ Convergence plots on SLR (the y-axes on log scale). }
+    \label{fig:log_reg2}
+\end{figure}
+
+\begin{figure}[!t]
+    \centering
+    \subfigure[The number of coordinate descent steps on subproblems increases as iterates move towards optimality]
+    {
+       \includegraphics[width=0.4\columnwidth]{resources/fig-slr-cd-iter}
+       \label{fig:slr-cd-iter}
+    }
+    \quad
+    \subfigure[ Both axes are in log scale. Change of objective w.r.t. the number of coordinate descent steps.   ]
+    {
+       \includegraphics[width=0.4\columnwidth]{resources/fig-slr-obj-cd}
+       \label{fig:slr-cd-obj}
+    } 
+    \caption{ RCD step count of  LHAC on different SLR data sets. }
+    \label{fig:slr-cd}   
+\end{figure}
+
+The objective function of sparse logistic regression is given by
+\begin{align*}
+%   \label{equ:logistic_regression}
+    F(w) = \lambda \|w\|_1 + \frac{1}{N} \sum_{n=1}^N \log(1 + \exp(-y_n \cdot w^Tx_n)),
+\end{align*}
+where $L(w) = \frac{1}{N} \sum_{n=1}^N \log(1 + \exp(-y_n \cdot w^Tx_n))$ is the
+average logistic loss function and $ \{ ( x_n, y_n ) \}^N_{n=1} \in ( \Rmbb^p \times \{-1,1\} ) $ is the training set. The number of instances in the training set and the number of features are denoted by $N$ and $p$ respectively. Note that the evaluation of $F$ requires $O(pN)$ flops and  to compute the Hessian requires $O(Np^2)$ flops. Hence, we chose such training sets for our experiment with $N$ and $p$  large enough to test the scalability of the algorithms and yet small enough to be completed on a workstation. 
+
+We report results of SLR on four data sets downloaded from UCI Machine Learning repository \cite{Bache+Lichman:2013}, whose statistics are summarized in Table~\ref{tab:Data_statistics}. In particular, the first data set is the well-known UCI Adult benchmark set \emph{a9a} used for income classification, determining whether a person makes over \$50K/yr or not, based on census data; the second one we use in the experiments is called \emph{epsilon}, an artificial data set for PASCAL large scale learning challenge in 2008; 
+the third one, \emph{slices}, contains features extracted from CT images and is often used for predicting the relative location of CT slices on the human body; and finally we consider \emph{gisette}, a handwritten digit recognition problem from NIPS 2003 feature selection challenge, with the feature set of size 5000 constructed in order to discriminate between two confusable handwritten digits: the four and the nine. 
+
+\begin{table}[h!]
+\begin{center}
+\begin{tabular}{|l|r|r|r|p{5cm}|}
+    \hline
+              \textbf{Data set}    & \#features $p$ & \#instances $N$ & \#non-zeros & Description \\
+    \hline
+        \textbf{a9a} &  $123$ & $32561$ & $451592$   & `census Income' dataset. \\
+    \hline        
+        \textbf{epsilon} &  $2000$ & $100000$ & $200000000$   &  PASCAL challenge 2008. \\
+    \hline    
+        \textbf{gisette} &  $5000$ & $6000$ & $29729997$  & handwritten digit recognition. \\
+    \hline        
+        \textbf{slices} &  $385$ & $53500$ & $20597500$   &  CT slices location prediction.\\   
+    \hline
+\end{tabular}
+\end{center}
+\caption{ Data statistics in sparse logistic regression experiments. }
+\label{tab:Data_statistics}
+\end{table}
+
+
+The results are shown in Figure~\ref{fig:log_reg2}. In most cases LHAC and LHAC-L outperform LIBLINEAR. 
+On data set \emph{slice}, LIBLINEAR experiences difficulty in convergence which results in LHAC being faster by an order of magnitude.  
+On the largest data set \emph{epsilon}, LHAC and LHAC-L is faster than LIBLINEAR by about one third and reaches the same precision. Finally we note that the memory usage of LIBLINEAR is more than doubled compared to that of LHAC and LHAC-L, as we observed in all the experiments and is particularly notable on  the largest data set \emph{epsilon}.
+
+
+
+\section{Conclusion} In this paper we presented analysis of global convergence rate of inexact proximal quasi-Newton framework, and showed that randomized coordinate descent can be used effectively to find inexact quasi-Newton directions, which guarantee sublinear convergence rate of the algorithm, in expectation. This is the first global convergence rate result for an algorithm that uses coordinate descent to inexactly optimize subproblems at each iteration. Our framework does not rely or exploit the accuracy of second order information, and hence we do not obtain fast local convergence rates. We also do not assume strong convexity of our objective function, hence a sublinear conference rate is  the best global rate we can hope to obtain. In \cite{Jiangetal2012} an accelerated scheme related to our framework is studied and an optimal sublinear convergence rate is shown, but  the assumptions on the Hessian approximations are a lot stronger in  \cite{Jiangetal2012} than in our paper, hence the accelerated method is not as widely applicable. The framework studied by us in this paper covers several existing efficient algorithms for large scale sparse optimization. However, to provide convergence rates we had to depart from some standard techniques, such as line-search, replacing it instead by a prox-parameter updating mechanism with a trust-region-like sufficient decrease condition for acceptance of iterates. We also use randomized coordinate descent instead of a cyclic one. We demonstrated  that this modified framework is,  nevertheless, very effective in practice and is competitive with state-of-the-art specialized methods.
+%\clearpage
+
+\bibliographystyle{siam}
+% \bibliography{../All,../New_bib}
+\bibliography{All,New_bib}
+
+\end{document}
