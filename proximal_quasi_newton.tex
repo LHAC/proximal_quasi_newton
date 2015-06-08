@@ -455,66 +455,6 @@ We now follow the theory proposed in  \cite{Schmidtetal} to analyze Algorithm \r
 In other words, we consider the version of Algorithm \ref{alg:ISTA-SD} (and \ref{alg:Backtrack_SD}) where we compute 
 $x^{k+1}  := p_{H_k, \phi_k}(x^k)$.
 
-As in the exact case, we need to  establish  bound  \eqref{eq:sumboundK} to obtain global sublinear rate of convergence. We first present a lemma below, which establishes an upper bound on the step size, similar to \eqref{equ:bound_delta_x}, but in the case where the step is not required to be the exact minimizer of the quadratic function $Q(\cdot)$. In fact, the bound holds when the step can be arbitrarily far from the optimal point with the error characterized by $\phi$ defined in \eqref{lem:BT2.3-assump-g}.
-
-
-\begin{lemma}
-Consider some vector $v\in \br^n$,  a scalar $\phi>0$ and a matrix $H\succeq \sigma I$. Let $p_\phi(v)\equiv p_{H, \phi}(v)$ be defined as in \eqref{eq:pvphi}. Then
-    \begin{align}
-    \label{equ:bound_delta_x_inexact}
-        || v - p_\phi(v) ||^2 \leq  \frac{8}{\sigma} ( Q(H, v, v) - Q(H, p_\phi(v), v) + \phi ).
-    \end{align}
-    
-\end{lemma}
-
-\begin{proof}
-    We use \eqref{equ:bound_delta_x} with $H=H_k$ and  the definition of $\sigma$ to  obtain the upper bounds on the distances between $v$ and $p(v)$ (the exact minimizer of $Q(H,u,v)$) and between $p_\phi(v)$ and $p(v)$, respectively, by
-    \begin{align*}
-        ||v - p(v)||^2 &\leq \frac{2}{\sigma} ( Q(H, v, v) - Q(H, p(v), v) ), \\
-        ||p_\phi(v) - p(v)||^2 &\leq \frac{2}{\sigma} ( Q(H, p_\phi(v), v) - Q(H, p(v), v) ).
-    \end{align*}
-    Taking square root on both sides of the above inequalities, we have
-    \begin{align*}
-        ||v - p(v)|| &\leq \sqrt{ \frac{2}{\sigma} ( Q(H, v, v) - Q(H, p(v), v) ) },\\
-        ||p_\phi(v) - p(v)|| &\leq \sqrt{ \frac{2}{\sigma} ( Q(H, p_\phi(v), v) - Q(H, p(v), v) ) }.
-    \end{align*}
-    Then,
-    \begin{align*}
-        || v - p_\phi(v) || 
-        &\leq ||v - p(v)|| + ||p_\phi(v) - p(v)|| \\
-        &\leq \sqrt{ \frac{2}{\sigma} ( Q(H, v, v) - Q(H, p(v), v) ) } + \sqrt{ \frac{2}{\sigma} ( Q(H, p_\phi(v), v) - Q(H, p(v), v) ) }   \\
-        &\leq 2\sqrt{ \frac{2}{\sigma} ( Q(H, v, v) - Q(H, p(v), v) ) }   \\
-        &= 2\sqrt{ \frac{2}{\sigma} ( Q(H, v, v) - Q(H, p_\phi(v), v) + Q(H, p_\phi(v), v) - Q(H, p(v), v) ) }   \\
-        &\leq 2\sqrt{ \frac{2}{\sigma} ( Q(H, v, v) - Q(H, p_\phi(v), v) + \phi ) }, 
-    \end{align*}
-    where the third and the last inequalities follow from \eqref{lem:BT2.3-assump-g} the definition of $p_\phi(v)$. Hence, \eqref{equ:bound_delta_x_inexact} follows by taking square on both sides of the above inequality.
-\end{proof}
-
-
-%  Since we do not optimize subproblems accurately we need  to impose the following additional condition 
-% \begin{align}
-%     \label{equ:bound_delta_x_inexact}
-%     \| p_\phi(x^k)-x^k \|_{H_k}^2 \leq 2 \theta (Q(H_k, x^{k}, x^k) - Q(H_k, x^{k+1}, x^k)), \ {\rm with\ some\ } \theta >1,  \forall k\ 
-% \end{align}
-% This condition is a relaxation of  \eqref{equ:bound_delta_x}, thus it holds automatically with $\theta=1$ in the case of exact subproblem minimization. 
-% %Note that (\ref{equ:bound_delta_x_inexact}) will eventually be satisfied with the exact solution $\Delta x_k^*$ because, from Lemma \ref{lem:decrease_bound}, $\| \Delta x_k^* \|_{H_k}^2 \leq 2 (Q_k(0) - Q_k(\Delta x_k^*)) \leq 2 \theta (Q_k(0) - Q_k(\Delta x_k^*))$. 
-% In the inexact case this assumption is easy to enforce and to check because all necessary quantities are available during the subproblem optimization (whether using coordinate descent or another approach). 
-% This assumption is standard in optimization theory with inexact steps (for instance in trust-region methods) and is imposed to  achieve some minimal level of  the model improvement. 
-
- Applying \eqref{equ:bound_delta_x_inexact} instead of \eqref{equ:bound_delta_x} within the derivation of \eqref{eq:x2_bound_exact} and replacing $v$ and $p_\phi(v)$ in \eqref{equ:bound_delta_x_inexact} with $x^i, x^{i+1}$, respectively, 
-we have 
-
-\begin{align}\label{sub:bounding_the_function_values}
-    &\sum_{i=0}^{k-1}M_{i+1}\|x^{i+1}-x^i\|^2  \\
-    \nonumber&\leq M^\prime \sum_{i=0}^{k-1}\|x^{i+1}-x^i\|^2\leq \frac{ 8M^\prime}{\sigma} \sum_{i=0}^{k-1} (Q(H_i, x^{i}, x^i) - Q(H_i, x^{i+1}, x^i) + \phi_i)\\
-    \nonumber& \leq \frac{8M^\prime }{\sigma \rho}  \sum_{i=0}^{k-1}( F(x^i) - F(x^{i+1})) + \frac{ 8M^\prime}{\sigma} \sum_{i=0}^{k-1} \phi_i = \frac{8M^\prime}{\sigma \rho} (F(x^0)-F(x^*)) + \frac{ 8M^\prime}{\sigma} \sum_{i=0}^{k-1} \phi_i.
-\end{align}
-
-% \begin{equation}
-%     \sum_{i=0}^{k-1}\|x^{i+1}-x^i\|_{H_i-H_{i+1}}^2 \leq \frac{2\theta K_H }{\rho\sigma} (F(x^0)-F(x^*))
-% \end{equation}
-Hence bound   \eqref{eq:sumboundK} holds with appropriately chosen $K$ if the errors  $\phi_i$'s are summable. 
-
 
 We can now state the general convergence rate result for the inexact version of Algorithm \ref{alg:ISTA-SD}.
 
@@ -574,9 +514,8 @@ Assume that for all  iterates $\{x^k\}$ of inexact Algorithm \ref{alg:ISTA-SD} a
         \frac{1}{2} \|x^0-x^*\|_{H_0}^2 
         + \frac{(1-\rho)(F(x^0)-F(x^*))}{\rho} 
         + \sum_{i=0}^{k-1}\phi_i 
-        + \delta\sum_{i=0}^{k-1} \sqrt{2M\phi_i}. \\
+        + \delta\sum_{i=0}^{k-1} \sqrt{2M\phi_i}.
     \end{align}
-
     Hence,
     \begin{align*}
         F(x^k) - F(x^*) &\leq \frac{1}{k}( \sum_{i=0}^{k-1} F(x^{i+1}) - \sum_{i=0}^{k-1} F(x^*) )\\        
