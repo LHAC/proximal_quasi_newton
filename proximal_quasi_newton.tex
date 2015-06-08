@@ -520,9 +520,9 @@ We can now state the general convergence rate result for the inexact version of 
 
 \begin{assumption}\leavevmode % let list start right below
 \label{as:inexact_conv_rate}
-\assume
-\label{assub:objective}
-Functions $f,g$ are convex, and $f$ is smooth.
+% \assume
+% \label{assub:objective}
+% Functions $f,g$ are convex, and $f$ is smooth.
 \assume
 \label{assub:optimal_exist}
 An optimal solution of \eqref{prob:P} exists, which we denote as $x^*$.
@@ -535,12 +535,12 @@ There exists a positive constant $M$ such that for all $i = 0, ..., k-1$: $0 \pr
 \end{assumption}
 
 \begin{theorem}\label{th:inexact_conv_rate}
-Assume that for all  iterates $\{x^k\}$ of inexact Algorithm \ref{alg:ISTA-SD} \eqref{equ:bound_delta_x_inexact} holds for some $\phi_k>0$, then
+Suppose that Assumptions~\ref{as:inexact_conv_rate} hold. 
+Assume that for all  iterates $\{x^k\}$ of inexact Algorithm \ref{alg:ISTA-SD} are generated with some $\phi_k>0$ (cf. \eqref{lem:BT2.3-assump-g}), then
 \begin{align}
     \label{eq:bound_F_F*}
     F(x^k) - F(x^*) \leq \frac{1}{k} \left( \frac{1}{2}  \|x^0-x^*\|_{H_0}^2 + \frac{(1-\rho)(F(x^0)-F(x^*))}{\rho} + \sum_{i=0}^{k-1}\phi_i + \delta\sum_{i=0}^{k-1} \sqrt{2M\phi_i} \right),
 \end{align}
-where $x^*$ is an optimal solution of \eqref{prob:P}, $\|x - x^*\| \leq \delta $ for all $f(x) \leq f(x^0)$  and $M$ is the bound of the largest eigenvalues of $H_k$.
 \end{theorem}
 
 
