@@ -455,9 +455,7 @@ We now follow the theory proposed in  \cite{Schmidtetal} to analyze Algorithm \r
 In other words, we consider the version of Algorithm \ref{alg:ISTA-SD} (and \ref{alg:Backtrack_SD}) where we compute 
 $x^{k+1}  := p_{H_k, \phi_k}(x^k)$.
 
-
-We can now state the general convergence rate result for the inexact version of Algorithm \ref{alg:ISTA-SD}.
-
+Here are the assumptions made in our analysis.
 \begin{assumption}\leavevmode % let list start right below
 \label{as:inexact_conv_rate}
 % \assume
@@ -466,17 +464,30 @@ We can now state the general convergence rate result for the inexact version of 
 \assume
 \label{assub:optimal_exist}
 An optimal solution of \eqref{prob:P} exists, which we denote as $x^*$.
+% \assume
+% \label{assub:bounded_level_set}
+% The level set $\{x \in \Rmbb^n: F(x) \leq c\}$ is bounded.
 \assume
 \label{assub:bound_level_set}
-There exists a positive constant $\delta$ such that for all $i = 0, ..., k-1$: $\|x^i - x^*\| \leq \delta$. 
+There exists a positive constant $\delta$ such that for all  iterates $\{x^k\}$ of inexact Algorithm \ref{alg:ISTA-SD}:
+\begin{align*}
+     \|x^k - x^*\| \leq \delta
+\end{align*} 
 \assume 
 \label{assub:bound_h}
-There exists a positive constant $M$ such that for all $i = 0, ..., k-1$: $0 \prec H_i \prec MI$ 
+There exists a positive constant $M$ such that for all  iterates $\{x^k\}$ of inexact Algorithm \ref{alg:ISTA-SD}: 
+\begin{align*}
+     0 \prec H_k \prec MI
+\end{align*} 
 \end{assumption}
+We note that while it is possible to remove Assumption~\ref{assub:bound_level_set} by directly establishing a uniform bound on $\|x^k - x^*\|$ (rf. \cite{OML,Schmidtetal}), here we instead make it an explicit assumption, mainly for simplicity of the presentation. This allows us to provide a much shorter and more concise proof than that given in \cite{OML}. 
+Note also that all iterates $\{x^k\}$ fall into the level set $\{x \in \Rmbb^n: F(x) \leq F(x^0)\}$, due to the sufficient decrease condition \eqref{eq:dec_cond} that demands a monotonic decrease on the objective values. Assumption~\ref{assub:bound_level_set} thus follows straightforwardly from the fact that the level set is bounded, which often holds true in real-world problems.
+
+We can now state the general convergence rate result for the inexact version of Algorithm \ref{alg:ISTA-SD}.
 
 \begin{theorem}\label{th:inexact_conv_rate}
 Suppose that Assumptions~\ref{as:inexact_conv_rate} hold. 
-Assume that for all  iterates $\{x^k\}$ of inexact Algorithm \ref{alg:ISTA-SD} are generated with some $\phi_k>0$ (cf. \eqref{lem:BT2.3-assump-g}), then
+Assume that all iterates $\{x^k\}$ of inexact Algorithm \ref{alg:ISTA-SD} are generated with some $\phi_k>0$ (cf. \eqref{lem:BT2.3-assump-g}), then
 \begin{align}
     \label{eq:bound_F_F*}
     F(x^k) - F(x^*) \leq \frac{1}{k} \left( \frac{1}{2}  \|x^0-x^*\|_{H_0}^2 + \frac{(1-\rho)(F(x^0)-F(x^*))}{\rho} + \sum_{i=0}^{k-1}\phi_i + \delta\sum_{i=0}^{k-1} \sqrt{2M\phi_i} \right),
