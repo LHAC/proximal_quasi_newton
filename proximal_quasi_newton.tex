@@ -515,18 +515,6 @@ we have
 % \end{equation}
 Hence bound   \eqref{eq:sumboundK} holds with appropriately chosen $K$ if the errors  $\phi_i$'s are summable. 
 
-Before presenting the  main result, we state  the following auxiliary  lemma from \cite{Schmidtetal}. 
-\begin{lemma}
-    \label{lem:bach}
-    Assume that the nonnegative sequence $\{u_k\}$ satisfies the following recursion for all $k \geq 1$
-    \begin{align*}
-        u_k^2 \leq S_k + \sum_{i=1}^k \nu_i u_i,
-    \end{align*}
-    with $\{ S_k \}$ an increasing sequence, $S_0 \geq u_0^2$ and $\nu_i \geq 0$ for all $i$. Then, for all $k \geq 1$, then
-    \begin{align*}
-        u_k \leq \frac{1}{2} \sum_{i=1}^k \nu_i + \left( S_k + \left( \frac{1}{2} \sum_{i=1}^k \nu_i \right)^2 \right)^{1/2}.
-    \end{align*}
-\end{lemma}
 
 We can now state the general convergence rate result for the inexact version of Algorithm \ref{alg:ISTA-SD}.
 
