@@ -529,86 +529,61 @@ Before presenting the  main result, we state  the following auxiliary  lemma fro
 \end{lemma}
 
 We can now state the general convergence rate result for the inexact version of Algorithm \ref{alg:ISTA-SD}.
+
 \begin{theorem}\label{th:inexact_conv_rate}
 Assume that for all  iterates $\{x^k\}$ of inexact Algorithm \ref{alg:ISTA-SD} \eqref{equ:bound_delta_x_inexact} holds for some $\phi_k>0$, then
 \begin{align}
     \label{eq:bound_F_F*}
-    F(x^k) - F(x^*) \leq \frac{1}{k} \left( \frac{\sigma (B_k + C)}{2} + (2A_k + \sqrt{C} + \sqrt{B_k}) A_k \right),
+    F(x^k) - F(x^*) \leq \frac{1}{k} \left( C + B_k + A_k \right),
 \end{align}
 with
 \begin{align*}
-    A_k = \sum_{i=0}^{k-1} \sqrt{2M\phi_i}, ~~C = \frac{1}{\sigma}  \|x^0-x^*\|_{H_0}^2 + \frac{2(M_{\sigma}  +1 - \rho)}{\rho \sigma} (F(x^0)-F(x^*)), ~~B_k =  \frac{2(M_{\sigma}+1)}{\sigma} \sum_{i=0}^{k-1}\phi_i,
+    A_k = \delta\sum_{i=0}^{k-1} \sqrt{2M\phi_i}, ~~
+    C = \frac{1}{2}  \|x^0-x^*\|_{H_0}^2 + \frac{(1-\rho)(F(x^0)-F(x^*))}{\rho}, ~~
+    B_k = \sum_{i=0}^{k-1}\phi_i,
 \end{align*}
-where $x^*$ is an optimal solution of \eqref{prob:P}, $M_{\sigma}=4M^\prime/\sigma$ and $M$ and $\sigma$ are bounds of the smallest and largest eigenvalues of $H_k$.
+where $x^*$ is an optimal solution of \eqref{prob:P}, $\|x - x^*\| \leq \delta $ for all $x \in \Rmbb^n$  and $M$ is the bound of the largest eigenvalues of $H_k$.
 \end{theorem}
 
 
 \begin{proof}
     As is done in  \cite{Beck2009} and \cite{Schmidtetal},  we apply Lemma \ref{lem:subp_inexact}, sequentially, with $u=x^*$ and $p_{\phi}(v)=x^i$ for $i=1, \ldots, k+1$. Adding up resulting inequalities, we obtain  
     \begin{align}
-        &\sum_{i=0}^{k-1} F(x^*) - \sum_{i=0}^{k-1} F(x^{i+1}) \\
-        \nonumber &\geq \frac{1}{2} \sum_{i=0}^{k-1} \left( \|x^{i+1}-x^*\|_{H_{i}}^2 - \|x^i-x^*\|_{H_{i}}^2 \right)- \sum_{i=0}^{k-1} \epsilon_i- \sum_{i=0}^{k-1}\phi_i- \sum_{i=0}^{k-1} \langle \eta_i,x^* - x^{i+1} \rangle \\
+        &\sum_{i=0}^{k-1} F(x^{i+1}) - \sum_{i=0}^{k-1} F(x^*) \\
+        \nonumber &\leq 
+        \frac{1}{2} \sum_{i=0}^{k-1} \left(\|x^i-x^*\|_{H_{i}}^2 
+        - \|x^{i+1}-x^*\|_{H_{i}}^2 \right) 
+        + \sum_{i=0}^{k-1} \epsilon_i 
+        + \sum_{i=0}^{k-1}\phi_i 
+        + \sum_{i=0}^{k-1} \langle \eta_i,x^* - x^{i+1} \rangle \\
         \label{equ:bound_F_diff}
-        &= \frac{1}{2} \left( \|x^k-x^*\|_{H_k}^2-\|x^0-x^*\|_{H_0}^2 - \sum_{i=0}^{k-1}M_{i+1}\|x^{i+1}-x^i\|^2 \right) -\sum_{i=0}^{k-1}\epsilon_i - \sum_{i=0}^{k-1}\phi_i- \sum_{i=0}^{k-1}\langle \eta_i,x^* - x^{i+1} \rangle\\
-        \nonumber &\geq \frac{1}{2} \left( - \|x^0-x^*\|_{H_0}^2 - \sum_{i=0}^{k-1}M_{i+1}\|x^{i+1}-x^i\|^2 \right) -\frac{(1-\rho)(F(x^0)-F(x^*))}{\rho} - \sum_{i=0}^{k-1}\phi_i- \sum_{i=0}^{k-1} \|\eta_i\| \cdot \|x^* - x^{i+1}\|.
+        &= 
+        \frac{1}{2} \left( \|x^0-x^*\|_{H_0}^2 
+        + \sum_{i=0}^{k-1}\|x^{i+1}
+        - x^*\|_{H_{i+1}-H_i}^2 
+        - \|x^k-x^*\|_{H_k}^2 \right) 
+        + \sum_{i=0}^{k-1}\epsilon_i 
+        + \sum_{i=0}^{k-1}\phi_i
+        + \sum_{i=0}^{k-1}\langle \eta_i,x^* - x^{i+1} \rangle\\
+        \nonumber &\mbox{from the assumptions that $H_{i+1} \preceq H_i $ and that $\|x^i - x^*\| \leq \delta, \forall i $} \\
+        \nonumber &\leq 
+        \frac{1}{2} \|x^0-x^*\|_{H_0}^2 
+        + \sum_{i=0}^{k-1}\epsilon_i 
+        + \sum_{i=0}^{k-1}\phi_i 
+        + \delta\sum_{i=0}^{k-1} \|\eta_i\| \\
+        \nonumber &\mbox{note that $\|\eta_i\|\leq \sqrt{2M\phi_i}$, and use the already established bound $\sum_{i=0}^{k-1}\epsilon_i \leq \frac{(1-\rho)(F(x^0)-F(x^*))}{\rho}$}\\
+        \nonumber &\leq 
+        \frac{1}{2} \|x^0-x^*\|_{H_0}^2 
+        + \frac{(1-\rho)(F(x^0)-F(x^*))}{\rho} 
+        + \sum_{i=0}^{k-1}\phi_i 
+        + \delta\sum_{i=0}^{k-1} \sqrt{2M\phi_i} = C + B_k + A_k. \\
+        \nonumber &\mbox{where the last equality follows from the definitions of $C, B_k$ and $A_k$}.
     \end{align}
 
-    Here we used the already established bound $\sum_{i=0}^{k-1}\epsilon_i \leq \frac{(1-\rho)(F(x^0)-F(x^*))}{\rho}$. We can now apply the bound \eqref{sub:bounding_the_function_values}
-    with $M_{\sigma}=4M^\prime/\sigma$ and obtain
-    \begin{align*}
-        &\sum_{i=0}^{k-1} F(x^{i+1}) - \sum_{i=0}^{k-1} F(x^*) \\
-        &\leq \frac{1}{2} \|x^0-x^*\|_{H_0}^2 + \frac{M_{\sigma}  + 1 - \rho}{\rho} (F(x^0)-F(x^*)) + (M_{\sigma} + 1) \sum_{i=0}^{k-1}\phi_i + \sum_{i=0}^{k-1} \|\eta_i\| \cdot \|x^* - x^{i+1}\|. 
-    %   &\leq \frac{m B_k + C}{2} + (2A_k + \sqrt{\frac{C}{m}} + \sqrt{B_k}) A_k
-    \end{align*}
-    Note that $\|\eta_i\|\leq \sqrt{2M\phi_i}$. 
-    
-    We now need to establish a global bound on $\| x^k - x^* \|$. This bound, while it still holds,  is not needed in the case when all subproblems are solved accurately. 
-
-    % \subsection{Bound $\| x^k - x^* \|$} % (fold)
-    % \label{sub:bound2}
-
-    Following  \cite{Schmidtetal} we use Lemma \ref{lem:bach} to bound $\|x^k-x^*\|^2 $. First, observe in the inequality \eqref{equ:bound_F_diff} that its left-hand side is always less than zero since $F(x^*) - F(x^{i+1}) \leq 0$ holds in every iteration. Setting the left-hand side to zero and moving $|| x^k - x^* ||^2_{H_k}$ to the left, we obtain 
-    \begin{align*}
-        &\|x^k-x^*\|_{H_k}^2  \\
-        &\leq  \|x^0-x^*\|_{H_0}^2 + \sum_{i=0}^{k-1}M_{i+1}\|x^{i+1}-x^i\|^2  + 2\sum_{i=0}^{k-1}\epsilon_i + 2\sum_{i=0}^{k-1}\phi_i + 2\sum_{i=0}^{k-1} \sqrt{2M\phi_i} \cdot \|x^* - x^{i+1}\| \\
-        &\leq \|x^0-x^*\|_{H_0}^2 
-        + \frac{2M_{\sigma} }{\rho} (F(x^0)-F(x^*))  + 2M_{\sigma} \sum_{i=0}^{k-1} \phi_i
-        + 2\sum_{i=0}^{k-1}\epsilon_i + 2\sum_{i=0}^{k-1}\phi_i + 2\sum_{i=0}^{k-1} \sqrt{2M\phi_i} \cdot \|x^* - x^{i+1}\|,
-    \end{align*}
-    hence,
-    \begin{align*}
-        &\|x^k-x^*\|^2  \leq \frac{1}{\sigma} \|x^k-x^*\|_{H_k}^2  \\
-        &\leq \frac{1}{\sigma} \left( \|x^0-x^*\|_{H_0}^2 
-        + \frac{2M_{\sigma} }{\rho} (F(x^0)-F(x^*)) + 2M_{\sigma} \sum_{i=0}^{k-1} \phi_i + 2\sum_{i=0}^{k-1}\epsilon_i + 2\sum_{i=0}^{k-1}\phi_i + 2\sum_{i=0}^{k-1} \sqrt{2M\phi_i} \cdot \|x^* - x^{i+1}\| \right).
-    \end{align*}
-    Now using Lemma \ref{lem:bach} with $S_k = \frac{1}{\sigma} \left ( \|x^0-x^*\|_{H_0}^2 + \frac{2M_{\sigma} }{\rho} (F(x^0)-F(x^*)) + 2M_{\sigma} \sum_{i=0}^{k-1} \phi_i + 2\sum_{i=0}^{k-1}(\epsilon_i + \phi_i) \right)$,  $\nu_i = 2\sqrt{2M\phi_i}$) and $\epsilon_i = \frac{1-\rho}{\rho} (F(x^i) - F(x^{i+1}))$ we obtain
-    \begin{align*}
-        & \|x^k-x^*\| \leq \sum_{i=0}^{k-1} \sqrt{2M\phi_i}  \\
-        & 
-        + \sqrt{\frac{1}{\sigma} ( \|x^0-x^*\|_{H_0}^2 + \frac{2(M_{\sigma}  +1 - \rho)}{\rho} (F(x^0)-F(x^*)) + 2M_{\sigma} \sum_{i=0}^{k-1} \phi_i + 2\sum_{i=0}^{k-1} \phi_i ) + (\sum_{i=0}^{k-1} \sqrt{2M\phi_i})^2}.
-    \end{align*}
-    Denoting $A_k = \sum_{i=0}^{k-1} \sqrt{2M\phi_i},  C = \frac{1}{\sigma}  \|x^0-x^*\|_{H_0}^2 + \frac{2(M_{\sigma}  +1 - \rho)}{\rho \sigma} (F(x^0)-F(x^*))$ and $B_k =  \frac{2(M_{\sigma}+1)}{\sigma} \sum_{i=0}^{k-1}\phi_i$, we obtain
-    \begin{align*}
-        \|x^k-x^*\| \leq A_k + \left( C + B_k + A_k^2 \right)^{1/2}.
-    \end{align*}
-    Since $A_i$ and $B_i$ are increasing sequences, we have, for $i < k$
-    \begin{align*}
-        \|x^i-x^*\| &\leq A_i + \left( \frac{1}{\sigma} ( \|x^0-x^*\|_{H_0}^2 + \frac{2(M_{\sigma}  +1 - \rho)}{\rho} (F(x^0)-F(x^*)) + B_i + A_i^2 \right)^{1/2} \\
-        &\leq A_k + \left( \frac{1}{\sigma} ( \|x^0-x^*\|_{H_0}^2 + \frac{2(M_{\sigma}  +1 - \rho)}{\rho} (F(x^0)-F(x^*)) + B_k + A_k^2 \right)^{1/2} \\
-        &\leq A_k + \sqrt{C} + \sqrt{B_k} + A_k.
-    \end{align*}
-
-    Using the bound on $\|x^i-x^*\|$ above we can now derive the main complexity bound using
-         \begin{align*}
-        &\sum_{i=0}^{k-1} F(x^{i+1}) - \sum_{i=0}^{k-1} F(x^*) \\
-        &\leq \frac{1}{2} \|x^0-x^*\|_{H_0}^2 + \frac{M_{\sigma}  + 1 - \rho}{\rho} (F(x^0)-F(x^*)) + (M_{\sigma} + 1) \sum_{i=0}^{k-1}\phi_i + \sum_{i=0}^{k-1} \|\eta_i\| \cdot \|x^* - x^{i+1}\| \\
-        % &\leq \frac{1}{2} \|x^0-x^*\|_{H_0}^2 + \frac{M_{\sigma}  + 1 - \rho}{\rho} (F(x^0)-F(x^*)) + \sum_{i=0}^{k-1}\phi_i + \sum_{i=0}^{k-1} \|\eta_i\| \cdot \|x^* - x^{i+1}\|. \\
-        &\leq \frac{\sigma (B_k + C)}{2} + (2A_k + \sqrt{C} + \sqrt{B_k}) A_k.
-    \end{align*}
     Hence,
     \begin{align*}
-        F(x^k) - F(x^*) &\leq \frac{1}{k}( \sum_{i=0}^{k-1} F(x^{i+1}) - \sum_{i=0}^{k-1} F(x^*) )\\
-        &\leq \frac{1}{k} \left( \frac{\sigma (B_k + C)}{2} + (2A_k + \sqrt{C} + \sqrt{B_k}) A_k \right).
+        F(x^k) - F(x^*) &\leq \frac{1}{k}( \sum_{i=0}^{k-1} F(x^{i+1}) - \sum_{i=0}^{k-1} F(x^*) )\\        
+        &\leq \frac{1}{k} \left( C + B_k + A_k \right).
     \end{align*}
 \end{proof}
 
