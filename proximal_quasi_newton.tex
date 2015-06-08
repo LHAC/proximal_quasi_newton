@@ -568,6 +568,7 @@ where $x^*$ is an optimal solution of \eqref{prob:P}, $\|x - x^*\| \leq \delta $
     \end{align*}
 \end{proof}
 
+
 As in  \cite{Schmidtetal}  it follows that the inexact version of Algorithm \ref{alg:ISTA-SD} converges  to the optimal value if $(\sum_{i=0}^{k-1} \sqrt{\phi_i})/k \to 0$ and it has sublinear convergence rate if $\sum_{i=0}^{\infty} \sqrt{\phi_i}$ is  bounded.
 To ensure such a  bound, it is sufficient to require that  $\phi_i\leq \alpha^i$, for some $\alpha\in (0,1)$ for all $i$. We are hence interested in practical approaches to subproblem optimization which can be terminated upon reducing the gap in the function value of the subproblem to $\alpha^i$, where $0<\alpha<1$ is a fixed number and  $i=1, 2, \ldots$ is the  index of the corresponding iteration of  Algorithm \ref{alg:ISTA-SD}. 
 The question now is: what method and what stopping criterion should we use for subproblem optimization, so that sufficient accuracy is achieved and no excessive computations are performed, in other word, how can we guarantee the bound on $\phi_i$,  while maintaining efficiency of the subproblem optimization? It is possible to consider terminating
