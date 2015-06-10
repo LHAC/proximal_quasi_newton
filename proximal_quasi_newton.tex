@@ -402,7 +402,35 @@ In this case, the value of  $\mu_k$ is chosen so that the conditions of Lemma \r
 $ Q(\mu_k,p(x^k),x^k)$. It is well known that as long as $\mu_k\leq 1/L(f)$ (recall that $L(f)$ is the Lipschitz constant of the gradient) then  condition \eqref{eq:dec_cond}
  holds with $\rho=1$.  Relaxing condition \eqref{eq:dec_cond} by using $\rho<1$ allows us to accept larger values of $\mu_k$, which in turn implies larger steps taken by the algorithm.   This basic idea is the cornerstone of step size selection in most nonlinear optimization algorithms. Instead of insisting on achieving "full" predicted reduction of the objective function (even when possible), a fraction of this reduction is usually sufficient. In our experiments small values of $\rho$ provided much better performance than values close to $1$. 
 
-We now derive the complexity bound for  the exact version of Algorithm \ref{alg:ISTA-SD}. 
+We now derive the complexity bound for  the exact version of Algorithm \ref{alg:ISTA-SD}. Here are the assumptions made in our analysis.
+\begin{assumption}\leavevmode % let list start right below
+\label{as:inexact_conv_rate}
+	% \assume
+	% \label{assub:objective}
+	% Functions $f,g$ are convex, and $f$ is smooth.
+	\assume
+	\label{assub:optimal_exist}
+	An optimal solution of \eqref{prob:P} exists, which we denote as $x^*$.
+	% \assume
+	% \label{assub:bounded_level_set}
+	% The level set $\{x \in \Rmbb^n: F(x) \leq c\}$ is bounded.
+	\assume
+	\label{assub:bound_level_set}
+	There exists a positive constant $\delta$ such that for all  iterates $\{x^k\}$ of inexact Algorithm \ref{alg:ISTA-SD}:
+	\begin{align*}
+	     \|x^k - x^*\| \leq \delta
+	\end{align*} 
+	\assume 
+	\label{assub:bound_h}
+	There exists a positive constant $M$ such that for all  iterates $\{x^k\}$ of inexact Algorithm \ref{alg:ISTA-SD}: 
+	\begin{align*}
+	     0 \prec H_k \prec MI
+	\end{align*} 
+\end{assumption}
+We note that while it is possible to remove Assumption~\ref{assub:bound_level_set} by directly establishing a uniform bound on $\|x^k - x^*\|$ (rf. \cite{OML,Schmidtetal}), here we instead make it an explicit assumption, mainly for simplicity of the presentation. This allows us to provide a much shorter and more concise proof than the one given in \cite{OML}. 
+Note also that all iterates $\{x^k\}$ fall into the level set $\{x \in \Rmbb^n: F(x) \leq F(x^0)\}$, due to the sufficient decrease condition \eqref{eq:dec_cond} that demands a monotonic decrease on the objective values. Assumption~\ref{assub:bound_level_set} thus follows straightforwardly from the fact that the level set is bounded, which often holds true in real-world problems.
+
+ 
 
 \begin{theorem}\label{the:ISTA-SD}
 In Algorithm \ref{alg:ISTA-SD}, suppose that at iteration $k$,  $H_k$, is chosen so that the sufficient decrease condition \eqref{eq:dec_cond} holds.
@@ -461,34 +489,6 @@ Note that $\rho$, $M^\prime $ and $\sigma$ are parameters that can be controlled
 We now follow the theory proposed in  \cite{Schmidtetal} to analyze Algorithm \ref{alg:ISTA-SD}  in the case when the computation of $p_H( v)$ is performed inexactly. 
 In other words, we consider the version of Algorithm \ref{alg:ISTA-SD} (and \ref{alg:Backtrack_SD}) where we compute 
 $x^{k+1}  := p_{H_k, \phi_k}(x^k)$.
-
-Here are the assumptions made in our analysis.
-\begin{assumption}\leavevmode % let list start right below
-\label{as:inexact_conv_rate}
-% \assume
-% \label{assub:objective}
-% Functions $f,g$ are convex, and $f$ is smooth.
-\assume
-\label{assub:optimal_exist}
-An optimal solution of \eqref{prob:P} exists, which we denote as $x^*$.
-% \assume
-% \label{assub:bounded_level_set}
-% The level set $\{x \in \Rmbb^n: F(x) \leq c\}$ is bounded.
-\assume
-\label{assub:bound_level_set}
-There exists a positive constant $\delta$ such that for all  iterates $\{x^k\}$ of inexact Algorithm \ref{alg:ISTA-SD}:
-\begin{align*}
-     \|x^k - x^*\| \leq \delta
-\end{align*} 
-\assume 
-\label{assub:bound_h}
-There exists a positive constant $M$ such that for all  iterates $\{x^k\}$ of inexact Algorithm \ref{alg:ISTA-SD}: 
-\begin{align*}
-     0 \prec H_k \prec MI
-\end{align*} 
-\end{assumption}
-We note that while it is possible to remove Assumption~\ref{assub:bound_level_set} by directly establishing a uniform bound on $\|x^k - x^*\|$ (rf. \cite{OML,Schmidtetal}), here we instead make it an explicit assumption, mainly for simplicity of the presentation. This allows us to provide a much shorter and more concise proof than that given in \cite{OML}. 
-Note also that all iterates $\{x^k\}$ fall into the level set $\{x \in \Rmbb^n: F(x) \leq F(x^0)\}$, due to the sufficient decrease condition \eqref{eq:dec_cond} that demands a monotonic decrease on the objective values. Assumption~\ref{assub:bound_level_set} thus follows straightforwardly from the fact that the level set is bounded, which often holds true in real-world problems.
 
 We can now state the general convergence rate result for the inexact version of Algorithm \ref{alg:ISTA-SD}.
 
@@ -642,11 +642,8 @@ Using this bound we now present the auxiliary result that derives the bounds on 
 Assume that $\phi_i$ are nonnegative bounded independent random variables whose value lies in an interval $[0, \Phi]$. Assume also that $E[\phi_i] \leq \bar R \bar \alpha^i$ for all $i$, and some constants  $0 < \bar \alpha < 1$ and $\bar R > 0$.  Then the following inequalities hold 
 \begin{align}
     \label{equ:squre_root_E_bound}
-    E[\sum_{i=1}^{k} \sqrt{\phi_i}] &\leq \frac{ \sqrt{\bar{R} \bar\alpha}}{ 1 - \sqrt{\bar\alpha}} \\
-    \label{equ:single_sum}
-    E[(\sum_{i=1}^{k} \sqrt{\phi_i})^2] &\leq \frac{2\bar{R} \bar\alpha}{ (1 - \sqrt{\bar\alpha})^2} \\
-    \label{equ:double_sum}
-    E[\sqrt{\sum_{i=1}^{k}\phi_i}\sum_{i=1}^{k} \sqrt{\phi_i}] &\leq \frac{\bar{R} \sqrt{\bar\alpha} }{ \sqrt{1 - \bar\alpha} (1 - \sqrt{\bar\alpha})}.
+    E[\sum_{i=1}^{k} \sqrt{\phi_i}] \leq \frac{ \sqrt{\bar{R} \bar\alpha}}{ 1 - \sqrt{\bar\alpha}}, \quad
+    E[\sum_{i=1}^{k} \phi_i] \leq \frac{ \bar{R}}{ 1 - \bar\alpha}
 \end{align} 
 \end{lemma}
 \begin{proof}
@@ -664,75 +661,6 @@ Assume that $\phi_i$ are nonnegative bounded independent random variables whose 
     \begin{align*}
         E[\sum_{i=1}^{k} \sqrt{\phi_i}]
         = \sum_{i=1}^k E[\sqrt{\phi_i}] \leq \sum_{i=1}^k \sqrt{E[\phi_i]} \leq \sum_{i=1}^k \sqrt{\bar{R}}\bar\alpha^{i/2} \leq \frac{\sqrt{\bar{R}\bar\alpha}}{1 - \sqrt{\bar\alpha}}.
-    \end{align*}
-    Similarly, we establish \eqref{equ:single_sum}. Observe:
-    \begin{align*}
-        E[(\sum_{i=1}^{k} \sqrt{\phi_i})^2]&=E[\sum_{i,j=1, i \neq j}^k\sqrt{\phi_i \phi_j} +\sum_{i=1}^k \phi_i] \\
-        &= \sum_{i,j=1, i \neq j}^k E[\sqrt{\phi_i \phi_j}] +\sum_{i=1}^k E[\phi_i] \\
-        &= \sum_{i,j=1, i \neq j}^k E[\sqrt{\phi_i}] E[\sqrt{\phi_j}] +\sum_{i=1}^k E[\phi_i]\\
-        &\leq \sum_{i,j=1, i \neq j}^k \sqrt{E[\phi_i]} \sqrt{E[\phi_j]} +\sum_{i=1}^k E[\phi_i] \\
-        &\leq \sum_{j=1}^k \sqrt{\bar{R}} \bar\alpha^{j/2} \sum_{i=1}^k \sqrt{\bar{R}} \bar\alpha^{i/2} +\sum_{i=1}^k \bar{R}\bar\alpha^i \\
-        &\leq  (\sqrt{\bar{R} \bar\alpha} \frac{1 - \sqrt{\bar\alpha^k}}{1 - \sqrt{\bar\alpha}})^2 + \bar{R} \bar\alpha \frac{1 - \bar\alpha^k}{1 - \bar\alpha}\\
-        &\leq  \frac{\bar{R} \bar\alpha}{(1 - \sqrt{\bar\alpha})^2} +  \frac{\bar{R} \bar\alpha}{1 - \bar\alpha} \leq \frac{2 \bar{R} \bar\alpha}{ (1 - \sqrt{\bar\alpha})^2}.
-    \end{align*}
-    
-    To bound $E[\sqrt{\sum_{i=1}^{k}\phi_i}\sum_{i=1}^{k} \sqrt{\phi_i}]$, and hence establish \eqref{equ:double_sum}, we again use Jensen inequality - $E(C)^2\leq E(C^2)$ for any random variable $C$. Specifically,
-    \begin{align}
-        \label{equ:E_bound_double_sum1}
-        (E[\sqrt{\sum_{i=1}^{k}\phi_i}\sum_{i=1}^{k} \sqrt{\phi_i}]) ^2 
-        \leq E[ \sum_{l=1}^{k}\phi_l (\sum_{i=1}^{k} \sqrt{\phi_i})^2] 
-        \leq  E[\sum_{l=1}^{k}\phi_l \sum_{i=1}^{k}\sum_{j=1}^{k} \sqrt{\phi_j} \sqrt{\phi_i}].
-    \end{align}
-    We now consider  three cases, and derive a  bound for each, respectively. 
-    \begin{itemize}
-    \item[(i)] For any fixed $l$, consider the case when $i \neq j \neq l$,
-    \begin{align*}
-        &E[\phi_l \sum_{i \neq j \neq l; i,j = 1}^k \sqrt{\phi_j} \sqrt{\phi_i}] \\
-        &\leq E[\phi_l] \sum_{i \neq j \neq l; i,j = 1}^k \sqrt{E[\phi_j]} \sqrt{E[\phi_i]}] 
-        \leq \bar\alpha^l \bar{R}^2 \sum_{i \neq j \neq l; i,j = 1}^k \bar\alpha^{i/2 + j/2} \\
-        &\leq \bar\alpha^l \bar{R}^2 \sum_{i,j = 1}^k \bar\alpha^{i/2 + j/2} 
-        \leq \bar\alpha^l \bar{R}^2 (\frac{\sqrt{\bar\alpha} (1 - \bar\alpha^{k/2})} {1 - \sqrt{\bar\alpha}})^2 
-        \leq \bar\alpha^l \frac{\bar\alpha \bar{R}^2}{(1 - \sqrt{\bar\alpha})^2}.
-    \end{align*}
-    \item[(ii)] Next, we consider  $i \neq j = l$ or $j \neq i = l$, in which case we recall that $\phi$ is bounded and lies in an interval $[0, \Phi]$, hence $E[\phi_i^{3/2}]\leq \Phi^{1/2}E[\phi_i]$, and it follows that
-    \begin{align*}
-        &E[2 \sum_{i = 1}^{l-1} \phi_l^{3/2} \sqrt{\phi_i} + 2 \sum_{i=l+1}^k \phi_l^{3/2} \sqrt{\phi_i}] \\
-        &= 2 E[\phi_l^{3/2}] E[ \sum_{i = 1}^{l-1}  \sqrt{\phi_i} + \sum_{i=l+1}^k \sqrt{\phi_i}] \\
-        &\leq 2 \Phi^{1/2} E[\phi_l] (\sum_{i = 1}^{l-1}  \sqrt{E[\phi_i]} + \sum_{i=l+1}^k \sqrt{E[\phi_i]}) \\
-        &\leq 2 \Phi^{1/2} \bar\alpha^l \bar{R}\sqrt{\bar{R}} (\sum_{i = 1}^{l-1}  \bar\alpha^{i/2} + \sum_{i=l+1}^k \bar\alpha^{i/2}) \\
-        &\leq 2 \Phi^{1/2} \bar\alpha^l \bar{R}\sqrt{\bar{R}} \frac{\sqrt{\bar\alpha}(1-\bar\alpha^{k/2})}{1-\sqrt{\bar\alpha}}
-        \leq  \bar\alpha^l \frac{2\bar{R} \sqrt{\bar\alpha \Phi \bar{R}}}{1-\sqrt{\bar\alpha}}.
-    \end{align*}
-    
-    \item[(iii)] Finally, we consider the case when $i = j = l$. Again, we note $E[\phi_i^2]\leq \Phi E[\phi_i]$ from the fact that $\phi$ is bounded from above by $\Phi$. Then,
-    % \begin{align*}
-    %   E[\phi_l \sum_{i=1}^k \phi_i] 
-    %   &= E[\phi_l \sum_{i=1}^{l-1} \phi_i + \phi_l^2 + \phi_l \sum_{i = l+1}^k \phi_i] \\
-    %   &= E[\phi_l] \sum_{i=1}^{l-1} E[\phi_i] + E[\phi_l^2] + E[\phi_l] \sum_{i = l+1}^k E[\phi_i] \\
-    %   &\leq \bar\alpha^l \bar{R} ( \bar{R}\sum_{i=1}^{l-1} \bar\alpha^i + \Phi + \bar{R}\sum_{i = l+1}^k \bar\alpha^i) \\
-    %   &\leq \bar\alpha^l \bar{R} ( \bar{R}\frac{\bar\alpha(1-\bar\alpha^k)}{1-\bar\alpha} + \Phi)
-    %   \leq \bar\alpha^l \bar{R}( \frac{\bar{R}\bar\alpha}{1-\bar\alpha} + \Phi)
-    % \end{align*}
-    \begin{align*}
-           E[\phi_l^2]\leq \Phi E[\phi_l] \leq \Phi \bar{R} \bar\alpha^l.
-    \end{align*}            
-    \end{itemize} 
-    
-    Hence, accounting for  all three cases in one sum, we have
-    \begin{align}
-        \nonumber&E[\sum_{l=1}^{k}\phi_l \sum_{i=1}^{k}\sum_{j=1}^{k} \sqrt{\phi_j} \sqrt{\phi_i}] = \sum_{l=1}^k E[\phi_l \sum_{i=1}^{k}\sum_{j=1}^{k} \sqrt{\phi_j} \sqrt{\phi_i}] \\
-        \nonumber&\leq \bar{R}\sum_{l=1}^k \bar\alpha^l \left( \Phi + \frac{2 \sqrt{\bar\alpha \Phi \bar{R}}}{1-\sqrt{\bar\alpha}} + \frac{\bar\alpha \bar{R}}{(1 - \sqrt{\bar\alpha})^2}  \right) \\
-        \label{equ:E_bound_double_sum2}
-        &\leq  \frac{\bar{R}\bar\alpha}{1-\bar\alpha} \left( \Phi + \frac{2 \sqrt{\bar\alpha \Phi \bar{R}}}{1-\sqrt{\bar\alpha}} + \frac{\bar\alpha \bar{R}}{(1 - \sqrt{\bar\alpha})^2}  \right).
-    \end{align}
-    From (\ref{equ:E_bound_double_sum1}) and (\ref{equ:E_bound_double_sum2}) it follows that
-    \begin{align*}
-        E[\sqrt{\sum_{i=1}^{k}\phi_i}\sum_{i=1}^{k} \sqrt{\phi_i}]
-        &\leq \sqrt{ E[\sum_{l=1}^{k}\phi_l \sum_{i=1}^{k}\sum_{j=1}^{k} \sqrt{\phi_j} \sqrt{\phi_i}]} \\
-        &\leq \sqrt{ \frac{\bar{R}\bar\alpha}{1-\bar\alpha} \left( \Phi + \frac{2 \sqrt{\bar\alpha \Phi \bar{R}}}{1-\sqrt{\bar\alpha}} + \frac{\bar\alpha \bar{R}}{(1 - \sqrt{\bar\alpha})^2}  \right)  } \nonumber \\
-        &\mbox{since $\Phi \leq \bar{R}$} \nonumber \\
-        &\leq \sqrt{ \frac{\bar{R}^2\bar\alpha}{1-\bar\alpha} \left( 1 + \frac{2 \sqrt{\bar\alpha}}{1-\sqrt{\bar\alpha}} + \frac{\bar\alpha}{(1 - \sqrt{\bar\alpha})^2}  \right)}. \nonumber \\
-        & = \frac{\bar{R} \sqrt{\bar\alpha} }{ \sqrt{1 - \bar\alpha} (1 - \sqrt{\bar\alpha})} \nonumber.
     \end{align*}
 This completes the proof by establishing inequality (\ref{equ:double_sum}). 
 \end{proof}
