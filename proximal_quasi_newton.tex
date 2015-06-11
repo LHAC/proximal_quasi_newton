@@ -518,46 +518,52 @@ Suppose that Assumptions~\ref{as:exact_conv_rate} and \ref{as:inexact_conv_rate}
 Assume that all iterates $\{x^k\}$ of inexact Algorithm \ref{alg:ISTA-SD} are generated with some $\phi_k>0$ (cf. \eqref{lem:BT2.3-assump-g}), then
 \begin{align}
     \label{eq:bound_F_F*}
-    F(x^k) - F(x^*) \leq \frac{1}{k} \left( \frac{1}{2}  \|x^0-x^*\|_{H_0}^2 + \frac{(1-\rho)(F(x^0)-F(x^*))}{\rho} + \sum_{i=0}^{k-1}\phi_i + \delta\sum_{i=0}^{k-1} \sqrt{2M\phi_i} \right),
+    F(x^k) - F(x^*) \leq 
+    \frac{1}{k_m} \left( \frac{1}{2} \|x^0-x^*\|_{\frac{H_0}{M_0}}^2 
+    + \frac{(1-\rho)(F(x^0)-F(x^*))}{\rho\sigma} 
+    + \sum_{i=0}^{k-1}\frac{\phi_i}{M_i}
+    + \delta\sum_{i=0}^{k-1} \sqrt{\frac{2\phi_i}{M_i}} \right),
 \end{align}
 \end{theorem}
 
 
 \begin{proof}
-    As is done in  \cite{Beck2009} and \cite{Schmidtetal},  we apply Lemma \ref{lem:subp_inexact}, sequentially, with $u=x^*$ and $p_{\phi}(v)=x^i$ for $i=0, \ldots, k-1$. Adding up resulting inequalities, we obtain  
+    As is done in Theorem~\ref{the:ISTA-SD},  we apply Lemma \ref{lem:subp_inexact}, sequentially, with $u=x^*$, $p_{\phi}(v)=x^i$ and nonzero subproblem minimization residual $\phi_i$ for $i=0, \ldots, k-1$. Adding up resulting inequalities, we obtain  
     \begin{align}
-        &\sum_{i=0}^{k-1} F(x^{i+1}) - \sum_{i=0}^{k-1} F(x^*) \\
-        \nonumber &\leq 
-        \frac{1}{2} \sum_{i=0}^{k-1} \left(\|x^i-x^*\|_{H_{i}}^2 
-        - \|x^{i+1}-x^*\|_{H_{i}}^2 \right) 
-        + \sum_{i=0}^{k-1} \epsilon_i 
-        + \sum_{i=0}^{k-1}\phi_i 
-        + \sum_{i=0}^{k-1} \langle \eta_i,x^* - x^{i+1} \rangle \\
+        &\sum_{i=0}^{k-1} \frac{F(x^{i+1}) - F(x^*)}{M_i}\leq 
+        \frac{1}{2} \sum_{i=0}^{k-1} \left(\|x^i-x^*\|_{H_i/M_i}^2 
+        - \|x^{i+1}-x^*\|_{H_i/M_i}^2 \right) 
+        + \sum_{i=0}^{k-1} \frac{\epsilon_i}{M_i} 
+        + \sum_{i=0}^{k-1} \frac{\phi_i}{M_i} 
+        + \sum_{i=0}^{k-1} \frac{\langle \eta_i,x^* - x^{i+1} \rangle}{M_i}  \\
         \label{equ:bound_F_diff}
         &= 
-        \frac{1}{2} \left( \|x^0-x^*\|_{H_0}^2 
-        + \sum_{i=0}^{k-1}\|x^{i+1} - x^*\|_{H_{i+1}-H_i}^2 
-        - \|x^k-x^*\|_{H_k}^2 \right) 
-        + \sum_{i=0}^{k-1}\epsilon_i 
-        + \sum_{i=0}^{k-1}\phi_i
-        + \sum_{i=0}^{k-1}\langle \eta_i,x^* - x^{i+1} \rangle\\
+        \frac{1}{2} \left( \|x^0-x^*\|_{\frac{H_0}{M_0}}^2 
+        + \sum_{i=0}^{k-1}\|x^{i+1} - x^*\|_{\frac{H_{i+1}}{M_{i+1}}- \frac{H_i}{M_i}}^2 
+        - \|x^k-x^*\|_{\frac{H_k}{M_k}}^2 \right) 
+        + \sum_{i=0}^{k-1} \frac{\epsilon_i}{M_i} 
+        + \sum_{i=0}^{k-1} \frac{\phi_i}{M_i} 
+        + \sum_{i=0}^{k-1} \frac{\langle \eta_i,x^* - x^{i+1} \rangle}{M_i}  \\
         \nonumber &\mbox{from the assumptions that $H_{i+1} \preceq H_i $ and that $\|x^i - x^*\| \leq \delta, \forall i $} \\
         \nonumber &\leq 
-        \frac{1}{2} \|x^0-x^*\|_{H_0}^2 
-        + \sum_{i=0}^{k-1}\epsilon_i 
-        + \sum_{i=0}^{k-1}\phi_i 
-        + \delta\sum_{i=0}^{k-1} \|\eta_i\| \\
-        \nonumber &\mbox{note that $\|\eta_i\|\leq \sqrt{2M\phi_i}$, and use the already established bound $\sum_{i=0}^{k-1}\epsilon_i \leq \frac{(1-\rho)(F(x^0)-F(x^*))}{\rho}$}\\
+        \frac{1}{2} \|x^0-x^*\|_{\frac{H_0}{M_0}}^2 
+        + \sum_{i=0}^{k-1} \frac{\epsilon_i}{M_i} 
+        + \sum_{i=0}^{k-1} \frac{\phi_i}{M_i} 
+        + \delta\sum_{i=0}^{k-1} \frac{\|\eta_i\|}{M_i} \\
+        \nonumber &\mbox{note that $\|\eta_i\|\leq \sqrt{2M_i\phi_i}$, and use the already established bound $\sum_{i=0}^{k-1}\epsilon_i \leq \frac{(1-\rho)(F(x^0)-F(x^*))}{\rho}$}\\
         \nonumber &\leq 
-        \frac{1}{2} \|x^0-x^*\|_{H_0}^2 
-        + \frac{(1-\rho)(F(x^0)-F(x^*))}{\rho} 
-        + \sum_{i=0}^{k-1}\phi_i 
-        + \delta\sum_{i=0}^{k-1} \sqrt{2M\phi_i}.
+        \frac{1}{2} \|x^0-x^*\|_{\frac{H_0}{M_0}}^2 
+        + \frac{(1-\rho)(F(x^0)-F(x^*))}{\rho\sigma} 
+        + \sum_{i=0}^{k-1}\frac{\phi_i}{M_i}
+        + \delta\sum_{i=0}^{k-1} \sqrt{\frac{2\phi_i}{M_i}}.
     \end{align}
     Hence,
     \begin{align*}
-        F(x^k) - F(x^*) &\leq \frac{1}{k}( \sum_{i=0}^{k-1} F(x^{i+1}) - \sum_{i=0}^{k-1} F(x^*) )\\        
-        &\leq \frac{1}{k} \left( \frac{1}{2}  \|x^0-x^*\|_{H_0}^2 + \frac{(1-\rho)(F(x^0)-F(x^*))}{\rho} + \sum_{i=0}^{k-1}\phi_i + \delta\sum_{i=0}^{k-1} \sqrt{2M\phi_i} \right).
+        F(x^k) - F(x^*) &\leq \frac{1}{k_m}\sum_{i=0}^{k-1} \frac{F(x^{i+1}) - F(x^*)}{M_i}\\        
+        &\leq \frac{1}{k_m} \left( \frac{1}{2} \|x^0-x^*\|_{\frac{H_0}{M_0}}^2 
+        + \frac{(1-\rho)(F(x^0)-F(x^*))}{\rho\sigma} 
+        + \sum_{i=0}^{k-1}\frac{\phi_i}{M_i}
+        + \delta\sum_{i=0}^{k-1} \sqrt{\frac{2\phi_i}{M_i}} \right).
     \end{align*}
 \end{proof}
 
