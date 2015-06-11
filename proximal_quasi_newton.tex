@@ -486,42 +486,6 @@ where $k_m = \sum_{i=0}^{k-1} \frac{1}{M_i}$. Thus, the sequence $\{F(x^k)\}$ pr
     \end{align*}
 \end{proof}
 
-The proof of this result is included as a special case in the proof of the convergence rate of the inexact method, which is presented below. 
-Here we will discuss the existence of the uniform bound on $\sum_{i=0}^{k-1}M_{i+1}\| x^i-x^{i+1}\|^2$.
-First, from the assumption $M I \succeq H_k\succeq \sigma I$ for all $k$, we have  
-\bea\label{eq:bound_Kh}
-\|H_k-H_{k+1}\|=M_{k+1}\leq M^\prime\leq M, \quad \forall k,
-\eea
-where $M^\prime$ is the bound on the norm change of the Hessian approximations. 
- We know that 
-  $\mu_k$, computed in Algorithm \ref{alg:Backtrack_SD}, is bounded from below by $\beta/L(f)$ for any positive definite $G_k$, hence as long as $G_k$ are bounded, then
- \eqref{eq:bound_Kh}  is satisfied by our algorithm.  Moreover, the changes in the Hessian estimates from one iteration to the next ideally are  expected to decrease (as they would, if full memory BFGS method is used). While we do not assume that $M_k\to 0$, using  $M_{i+1}$ on the right hand side of \eqref{the:ISTA-nonsmooth-conclude} explicitly, instead of the upper bound $M$, allows us to demonstrate the fact that diminishing change in Hessian approximations will reduce the constants in the bound \eqref{the:ISTA-nonsmooth-conclude}. For that same reason, in what follows we will use $M^\prime$ instead of $M$ as an upper bound on $M_{i+1}$.
-  
- Recall now our assumption that  $H_k\succeq \sigma I$ for some $\sigma>0$ for all $k$. This assumption is also easy to enforce, by simply enforcing an upper bound on $\bar \mu_k$ in Algorithm~\ref{alg:ISTA-SD}.
-
-We note the following simple result from \cite{Saundersetal}.
-\begin{align}
-    \label{equ:bound_delta_x}
-    \| p(x^k)-x^k \|_{H_k}^2 \leq 2 (Q(H_k,  x^{k}, x^k) - Q(H_k,  x^{k+1}, x^k)).
-\end{align}
-Using  \eqref{eq:bound_Kh},  $H_k\succeq \sigma I$  and \eqref{equ:bound_delta_x} we have 
-\begin{eqnarray}\label{eq:x2_bound_exact}
-    &\sum_{i=0}^{k-1}M_{i+1}\|x^{i+1}-x^i\|^2  \leq \frac{ M^\prime }{\sigma} \sum_{i=0}^{k-1}\|x^{i+1}-x^i\|_{H_i}^2\leq \frac{ 2M^\prime }{\sigma} \sum_{i=0}^{k-1} (Q(H_i, x^{i}, x^i) - Q(H_i, x^{i+1}, x^i))\nonumber \\
-    & \leq \frac{2M^\prime  }{\sigma \rho}  \sum_{i=0}^{k-1}( F(x^i) - F(x^{i+1})) \leq \frac{2M^\prime  }{\sigma \rho} (F(x^0)-F(x^*)).
-\end{eqnarray}
-Hence we have established  bound \eqref{eq:sumboundK} and a sublinear convergence rate of  Algorithm \ref{alg:ISTA-SD}.
-\begin{corollary}\label{the:ISTA-SD-cor}
-In Algorithm \ref{alg:ISTA-SD}, suppose that at each iteration $k$,  $H_k$, is chosen so that the sufficient decrease condition \eqref{eq:dec_cond} holds and $MI\succeq H_k\succeq \sigma I$ for some $M, \sigma>0$.
-Then the iterates $\{x^k\}$ in Algorithm \ref{alg:ISTA-SD} satisfy
-\begin{align}\label{the:ISTA-final-bound} 
-F(x^k)-F(x^*)\leq \frac {C}{k}\, \quad\forall k, \end{align}
-where $x^*$ is an optimal solution of \eqref{prob:P} and 
-\[
-C=\frac{\|x^0-x^*\|_{H_0}^2}{2}+\left (\frac{(1-\rho)}{2\rho}+\frac{M^\prime }{\sigma \rho} \right )(F(x^0)-F(x^*)).
-\]
-\end{corollary}
-
-Note that $\rho$, $M^\prime $ and $\sigma$ are parameters that can be controlled (i.e.,   reduced  or increased) at a possible expense of making shorter steps or obtaining less accurate Hessian approximations. In particular, it is possible to set $\rho=1$ and $M^\prime =0$ by reverting the simple proximal gradient algorithm with $\mu_k=1/{L(f)}$, thus recovering to the standard proximal gradient complexity bound. 
 \section{Analysis of inexact proximal Quasi-Newton method} % (fold)
 \label{sec:conv_inexact}
 
