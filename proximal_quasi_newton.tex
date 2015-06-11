@@ -395,7 +395,7 @@ is satisfied, then
     &\leq Q(H_k, x^{k+1}, x^k)  - (1-\rho) \left( Q(H_k, x^{k+1}, x^k)- F(x^k) \right) \\
     &\leq Q(H_k,  x^{k+1}, x^k)  - \frac{1-\rho}{\rho} (F(x^{k+1})- F(x^k))
 \end{align*}
-and  Lemma \ref{lem:subp_inexact} holds at each iteration $k$ of Algorithm \ref{alg:ISTA-SD} with  $\epsilon=-\frac{1-\rho}{\rho}(F(x^{k+1})- F(x^k))$. 
+and  Lemma \ref{lem:subp_inexact} holds at each iteration $k$ of Algorithm \ref{alg:ISTA-SD} with  $\epsilon_k=-\frac{1-\rho}{\rho}(F(x^{k+1})- F(x^k))$. 
 
  ISTA  \cite{Beck2009} is a particular case of Algorithm \ref{alg:ISTA-SD} with $G_k=0$, for all $k$, and $\rho=1$. 
 In this case, the value of  $\mu_k$ is chosen so that the conditions of Lemma \ref{lem:subp_inexact} hold with $\epsilon=0$. In other words, the reduction achieved in the objective function $F(x)$ is at least the amount of reduction achieved in the model 
@@ -404,7 +404,7 @@ $ Q(\mu_k,p(x^k),x^k)$. It is well known that as long as $\mu_k\leq 1/L(f)$ (rec
 
 We now derive the complexity bound for  the exact version of Algorithm \ref{alg:ISTA-SD}. Here are the assumptions made in our analysis.
 \begin{assumption}\leavevmode % let list start right below
-\label{as:inexact_conv_rate}
+\label{as:exact_conv_rate}
 	% \assume
 	% \label{assub:objective}
 	% Functions $f,g$ are convex, and $f$ is smooth.
@@ -414,38 +414,77 @@ We now derive the complexity bound for  the exact version of Algorithm \ref{alg:
 	% \assume
 	% \label{assub:bounded_level_set}
 	% The level set $\{x \in \Rmbb^n: F(x) \leq c\}$ is bounded.
-	\assume
-	\label{assub:bound_level_set}
-	There exists a positive constant $\delta$ such that for all  iterates $\{x^k\}$ of inexact Algorithm \ref{alg:ISTA-SD}:
-	\begin{align*}
-	     \|x^k - x^*\| \leq \delta
-	\end{align*} 
+	% \assume
+	% \label{assub:bound_level_set}
+	% There exists a positive constant $\delta$ such that for all iterates $\{x^k\}$ of Algorithm \ref{alg:ISTA-SD}:
+	% \begin{align*}
+	%      \|x^k - x^*\| \leq \delta
+	% \end{align*} 
 	\assume 
 	\label{assub:bound_h}
-	There exists a positive constant $M$ such that for all  iterates $\{x^k\}$ of inexact Algorithm \ref{alg:ISTA-SD}: 
+	There exists positive constants $M_k$ and $\sigma$ such that at the $k$-th iteration of Algorithm \ref{alg:ISTA-SD}: 
 	\begin{align*}
-	     0 \prec H_k \prec MI
+	     \sigma I \prec H_k \prec M_kI
 	\end{align*} 
 \end{assumption}
-We note that while it is possible to remove Assumption~\ref{assub:bound_level_set} by directly establishing a uniform bound on $\|x^k - x^*\|$ (rf. \cite{OML,Schmidtetal}), here we instead make it an explicit assumption, mainly for simplicity of the presentation. This allows us to provide a much shorter and more concise proof than the one given in \cite{OML}. 
-Note also that all iterates $\{x^k\}$ fall into the level set $\{x \in \Rmbb^n: F(x) \leq F(x^0)\}$, due to the sufficient decrease condition \eqref{eq:dec_cond} that demands a monotonic decrease on the objective values. Assumption~\ref{assub:bound_level_set} thus follows straightforwardly from the fact that the level set is bounded, which often holds true in real-world problems.
+
 
  
 
 \begin{theorem}\label{the:ISTA-SD}
-In Algorithm \ref{alg:ISTA-SD}, suppose that at iteration $k$,  $H_k$, is chosen so that the sufficient decrease condition \eqref{eq:dec_cond} holds.
+Let Assumptions \ref{as:exact_conv_rate} hold. In Algorithm \ref{alg:ISTA-SD}, suppose that at iteration $k$,  $H_k$, is chosen so that the sufficient decrease condition \eqref{eq:dec_cond} holds.
 Then the iterates $\{x^k\}$ in Algorithm \ref{alg:ISTA-SD} satisfy
-\begin{align}\label{the:ISTA-nonsmooth-conclude} 
-F(x^k)-F(x^*)\leq \frac{\|x^0-x^*\|_{H_0}^2}{2k}+\frac{(1-\rho)(F(x^0)-F(x^*))}{2k\rho}+\frac{\sum_{i=0}^{k-1}M_{i+1}\|x^i-x^{i+1}\|^2}{2k}, \quad\forall k, \end{align}
-where $x^*$ is an optimal solution of \eqref{prob:P} and $M_{i+1}=\|H_{i+1}-H_i\|$. Thus, the sequence $\{F(x^k)\}$ produced by Algorithm \ref{alg:ISTA-SD} converges to $F(x^*)$ if  
+\begin{align}
+    \label{the:ISTA-nonsmooth-conclude} 
+    F(x^k) - F(x^*) \leq \frac{1}{2k_m}  \left( \|x^0-x^*\|_{H_0/M_0}^2 + \sum_{i=0}^{k-1}\|x^{i+1} - x^*\|_{H_{i+1}/M_{i+1}-H_i/M_i}^2 + \frac{2(1-\rho)(F(x^0)-F(x^*))}{\rho\sigma}\right).
+\end{align}
+where $k_m = \sum_{i=0}^{k-1} \frac{1}{M_i}$. Thus, the sequence $\{F(x^k)\}$ produced by Algorithm \ref{alg:ISTA-SD} converges to $F(x^*)$ if  
 \[
-\frac{\sum_{i=0}^{k-1}M_{i+1}\| x^i-x^{i+1}\|^2}{k}\to 0\ {\rm as\ } k\to 0.
+\frac{\sum_{i=0}^{k-1}\|x^{i+1} - x^*\|_{H_{i+1}-H_i}^2}{k_m} \to 0\ {\rm as\ } k_m\to \infty.
 \]
-Moreover,  the number of iterations needed to obtain an $\cal{\epsilon}$-optimal solution is at most $O(\frac{1}{\cal{\epsilon}})$, if 
-\begin{equation}\label{eq:sumboundK}
-\sum_{i=0}^{k-1}M_{i+1}\| x^i-x^{i+1}\|^2\leq K, \ {\rm  for\  some\ } K>0\   \forall k. 
-\end{equation}
 \end{theorem}
+
+
+\begin{proof}
+    As is done in  \cite{Beck2009} and \cite{Schmidtetal},  we apply Lemma \ref{lem:subp_inexact}, sequentially, with $\phi = 0$, $u=x^*$ and $p_{\phi}(v)=x^i$ for $i=0, \ldots, k-1$. 
+    \begin{align}
+    	\label{equ:bound_Fi_diff}
+        F(x^{i+1}) - F(x^*)
+        &\leq 
+        \frac{1}{2} \left(\|x^i-x^*\|_{H_{i}}^2 
+        - \|x^{i+1}-x^*\|_{H_{i}}^2 \right) 
+        + \epsilon_i 
+    \end{align}
+    Dividing both sides of \eqref{equ:bound_Fi_diff} by $M_i$ and adding up resulting inequalities, we obtain  
+    \begin{align*}
+        &\sum_{i=0}^{k-1} \frac{F(x^{i+1}) - F(x^*)}{M_i}
+        \leq 
+        \frac{1}{2} \sum_{i=0}^{k-1} \left(\|x^i-x^*\|_{H_i/M_i}^2 
+        - \|x^{i+1}-x^*\|_{H_i/M_i}^2 \right) 
+        + \sum_{i=0}^{k-1} \frac{\epsilon_i}{M_i}  \\
+        &\leq 
+        \frac{1}{2} \sum_{i=0}^{k-1} \left(\|x^i-x^*\|_{H_i/M_i}^2 
+        - \|x^{i+1}-x^*\|_{H_i/M_i}^2 \right) 
+        + \sum_{i=0}^{k-1} \frac{\epsilon_i}{\sigma}  \\
+        &= 
+        \frac{1}{2} \left( \|x^0-x^*\|_{H_0/M_0}^2 
+        + \sum_{i=0}^{k-1}\|x^{i+1} - x^*\|_{H_{i+1}/M_{i+1}-H_i/M_i}^2 
+        - \|x^k-x^*\|_{H_k/M_k}^2 \right) 
+        + \frac{1}{\sigma}\sum_{i=0}^{k-1}\epsilon_i \\
+        &\mbox{use the already established bound $\sum_{i=0}^{k-1}\epsilon_i \leq \frac{(1-\rho)(F(x^0)-F(x^*))}{\rho}$}\\
+        &\leq 
+        \frac{1}{2} \left( \|x^0-x^*\|_{H_0/M_0}^2 
+        + \sum_{i=0}^{k-1}\|x^{i+1} - x^*\|_{H_{i+1}/M_{i+1}-H_i/M_i}^2 \right) 
+        + \frac{(1-\rho)(F(x^0)-F(x^*))}{\rho\sigma} .
+    \end{align*}
+    Letting $k_m = \sum_{i=0}^{k-1} \frac{1}{M_i}$, we have
+    \begin{align*}
+        &F(x^k) - F(x^*) \leq \frac{1}{k_m}( \sum_{i=0}^{k-1} \frac{F(x^{i+1}) - F(x^*)}{M_i} )\\        
+        &\leq \frac{1}{2k_m}  \left( \|x^0-x^*\|_{H_0/M_0}^2 
+        + \sum_{i=0}^{k-1}\|x^{i+1} - x^*\|_{H_{i+1}/M_{i+1}-H_i/M_i}^2 
+        + \frac{2(1-\rho)(F(x^0)-F(x^*))}{\rho\sigma}\right) .
+    \end{align*}
+\end{proof}
 
 The proof of this result is included as a special case in the proof of the convergence rate of the inexact method, which is presented below. 
 Here we will discuss the existence of the uniform bound on $\sum_{i=0}^{k-1}M_{i+1}\| x^i-x^{i+1}\|^2$.
@@ -490,10 +529,28 @@ We now follow the theory proposed in  \cite{Schmidtetal} to analyze Algorithm \r
 In other words, we consider the version of Algorithm \ref{alg:ISTA-SD} (and \ref{alg:Backtrack_SD}) where we compute 
 $x^{k+1}  := p_{H_k, \phi_k}(x^k)$.
 
+\begin{assumption}\leavevmode % let list start right below
+\label{as:inexact_conv_rate}
+	% \assume
+	% \label{assub:objective}
+	% Functions $f,g$ are convex, and $f$ is smooth.
+	% \assume
+	% \label{assub:bounded_level_set}
+	% The level set $\{x \in \Rmbb^n: F(x) \leq c\}$ is bounded.
+	\assume
+	\label{assub:bound_level_set}
+	There exists a positive constant $\delta$ such that for all iterates $\{x^k\}$ of Algorithm \ref{alg:ISTA-SD}:
+	\begin{align*}
+	     \|x^k - x^*\| \leq \delta
+	\end{align*} 
+\end{assumption}
+We note that while it is possible to remove Assumption~\ref{assub:bound_level_set} by directly establishing a uniform bound on $\|x^k - x^*\|$ (rf. \cite{OML,Schmidtetal}), here we instead make it an explicit assumption, mainly for simplicity of the presentation. This allows us to provide a much shorter and more concise proof than the one given in \cite{OML}. 
+Note also that all iterates $\{x^k\}$ fall into the level set $\{x \in \Rmbb^n: F(x) \leq F(x^0)\}$, due to the sufficient decrease condition \eqref{eq:dec_cond} that demands a monotonic decrease on the objective values. Assumption~\ref{assub:bound_level_set} thus follows straightforwardly from the fact that the level set is bounded, which often holds true in real-world problems.
+
 We can now state the general convergence rate result for the inexact version of Algorithm \ref{alg:ISTA-SD}.
 
 \begin{theorem}\label{th:inexact_conv_rate}
-Suppose that Assumptions~\ref{as:inexact_conv_rate} hold. 
+Suppose that Assumptions~\ref{as:exact_conv_rate} and \ref{as:inexact_conv_rate} hold. 
 Assume that all iterates $\{x^k\}$ of inexact Algorithm \ref{alg:ISTA-SD} are generated with some $\phi_k>0$ (cf. \eqref{lem:BT2.3-assump-g}), then
 \begin{align}
     \label{eq:bound_F_F*}
@@ -515,8 +572,7 @@ Assume that all iterates $\{x^k\}$ of inexact Algorithm \ref{alg:ISTA-SD} are ge
         \label{equ:bound_F_diff}
         &= 
         \frac{1}{2} \left( \|x^0-x^*\|_{H_0}^2 
-        + \sum_{i=0}^{k-1}\|x^{i+1}
-        - x^*\|_{H_{i+1}-H_i}^2 
+        + \sum_{i=0}^{k-1}\|x^{i+1} - x^*\|_{H_{i+1}-H_i}^2 
         - \|x^k-x^*\|_{H_k}^2 \right) 
         + \sum_{i=0}^{k-1}\epsilon_i 
         + \sum_{i=0}^{k-1}\phi_i
