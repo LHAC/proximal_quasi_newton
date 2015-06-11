@@ -424,7 +424,7 @@ We now derive the complexity bound for  the exact version of Algorithm \ref{alg:
 	\label{assub:bound_h}
 	There exists positive constants $M_k$ and $\sigma$ such that at the $k$-th iteration of Algorithm \ref{alg:ISTA-SD}: 
 	\begin{align*}
-	     \sigma I \prec H_k \prec M_kI
+	     \sigma I \preceq H_k \preceq M_kI \preceq MI
 	\end{align*} 
 \end{assumption}
 
@@ -440,7 +440,7 @@ Then the iterates $\{x^k\}$ in Algorithm \ref{alg:ISTA-SD} satisfy
 \end{align}
 where $k_m = \sum_{i=0}^{k-1} \frac{1}{M_i}$. Thus, the sequence $\{F(x^k)\}$ produced by Algorithm \ref{alg:ISTA-SD} converges to $F(x^*)$ if  
 \[
-\frac{\sum_{i=0}^{k-1}\|x^{i+1} - x^*\|_{H_{i+1}-H_i}^2}{k_m} \to 0\ {\rm as\ } k_m\to \infty.
+\frac{\sum_{i=0}^{k-1}\|x^{i+1} - x^*\|_{H_{i+1}/M_{i+1}-H_i/M_i}^2}{k_m} \to 0\ {\rm as\ } k\to \infty.
 \]
 \end{theorem}
 
