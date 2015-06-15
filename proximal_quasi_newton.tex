@@ -505,7 +505,7 @@ $x^{k+1}  := p_{H_k, \phi_k}(x^k)$.
 	\label{assub:bound_level_set}
 	There exists a positive constant $\delta$ such that for all iterates $\{x^k\}$ of Algorithm \ref{alg:ISTA-SD}:
 	\begin{align*}
-	     \|x^k - x^*\| \leq \delta
+	     \max_{x^* \in X^*}~\|x^k - x^*\| \leq \delta
 	\end{align*} 
 \end{assumption}
 We note that while it is possible to remove Assumption~\ref{assub:bound_level_set} by directly establishing a uniform bound on $\|x^k - x^*\|$ (rf. \cite{OML,Schmidtetal}), here we instead make it an explicit assumption, mainly for simplicity of the presentation. This allows us to provide a much shorter and more concise proof than the one given in \cite{OML}. 
