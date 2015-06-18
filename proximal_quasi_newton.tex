@@ -549,19 +549,19 @@ Then the iterates $\{x^k\}$ in Algorithm \ref{alg:ISTA-SD} satisfy
 
 Finally, combining the lower bound on $F(x^{k+1})-F(x^k)$ together with the upper bound on $\Delta F_k^2$  we can conclude that
 \[
-F(x^{k+1})-F(x^k)=\Delta_{k+1}-\Delta F_k\geq  \frac{\rho\sigma_k}{2M_k^2 (D_{\Xcal_0}+\frac{2L_g}{\sigma_k})^2}\Delta F_k^2,
+F(x^{k+1})-F(x^k)=\Delta F_{k+1}-\Delta F_k\geq  \frac{\rho\sigma_k}{2M_k^2 (D_{\Xcal_0}+\frac{2L_g}{\sigma_k})^2}\Delta F_k^2,
 \]
-which establishes \eqref{eq:mainbnd} with $c_k= \frac{\rho\sigma_k^3}{2M_k^2 (D\sigma^k+2L_g)^2}$. 
+which establishes \eqref{eq:mainbnd} with $c_k= \frac{\rho\sigma_k^3}{2M_k^2 (D_{\Xcal_0}\sigma_k+2L_g)^2}$. 
 
-Dividing by $\Delta_{k+1}\Delta F_k\leq \Delta_{k}^2$ we have
+Dividing by $\Delta F_{k+1}\Delta F_k\leq \Delta F_{k}^2$ we have
 \[
-\frac{1}{\Delta_{k}}-\frac{1}{\Delta_{k+1}}\geq c_k.
+\frac{1}{\Delta F_{k}}-\frac{1}{\Delta F_{k+1}}\geq c_k.
 \]
 
-Let us note that for all $k$ $c_k\geq  \frac{\rho\sigma^3}{2M^2 (DM+2L_g)^2}$. 
+Let us note that $\forall k, c_k\geq  \frac{\rho\sigma^3}{2M^2 (DM+2L_g)^2}$. 
 Summing the above expression for  $i=0, \ldots, k-1$ we have
 \[
-\frac{1}{\Delta_{k}}\geq \sum_{i=0}^{k-1}c_i+\frac{1}{\Delta_{0}} \geq \sum_{i=0}^{k-1}c_i
+\frac{1}{\Delta F_{k}}\geq \sum_{i=0}^{k-1}c_i+\frac{1}{\Delta F_{0}} \geq \sum_{i=0}^{k-1}c_i
 \]
 which finally implies
 \[
