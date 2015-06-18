@@ -403,33 +403,163 @@ $ Q(\mu_k,p(x^k),x^k)$. It is well known that as long as $\mu_k\leq 1/L(f)$ (rec
  holds with $\rho=1$.  Relaxing condition \eqref{eq:dec_cond} by using $\rho<1$ allows us to accept larger values of $\mu_k$, which in turn implies larger steps taken by the algorithm.   This basic idea is the cornerstone of step size selection in most nonlinear optimization algorithms. Instead of insisting on achieving "full" predicted reduction of the objective function (even when possible), a fraction of this reduction is usually sufficient. In our experiments small values of $\rho$ provided much better performance than values close to $1$. 
 
 We now derive the complexity bound for  the exact version of Algorithm \ref{alg:ISTA-SD}. Here are the assumptions made in our analysis.
-\begin{assumption}\leavevmode % let list start right below
+
+
+\begin{assumption}$\\$ % let list start right below
 \label{as:exact_conv_rate}
-	% \assume
-	% \label{assub:objective}
-	% Functions $f,g$ are convex, and $f$ is smooth.
 	\assume
 	\label{assub:optimal_exist}
-	Denote $X^*$ as the set of optimal solutions of \eqref{prob:P} and $x^*$ as any element of that set.
+	The set of optimal solutions of \eqref{prob:P}, $X^*$, is nonempty and $x^*$ is any element of that set. $\\$
 	% \assume
 	% \label{assub:bounded_level_set}
 	% The level set $\{x \in \Rmbb^n: F(x) \leq c\}$ is bounded.
+	\assume
+	\label{assub:level_set}
+	The effective domain of $F$ is defined as $\dom(F) := \{ x \in \Rmbb^n: F(x) < \infty\}$, and the level set of $F$ at point $x \in \dom(F)$ is defined by 
+	\begin{align*}
+	    \Xcal_F(x) := \{y \in \dom(F): F(y) \leq F(x)\}
+	\end{align*}
+	Without loss of generality, we restrict our discussions below to the level set $\Xcal_0 := \Xcal_F(x^0)$ given by some $x^0 \in \dom(F)$, e.g., the initial iterate of the Algorithm \ref{alg:ISTA-SD}.
+	$\\$
+	\assume 
+	\label{assub:gLipsch} 
+	$g$ is convex and Lipschitz continuous with constant $L_g$ for all $x, y \in \Xcal_0$:
+	\begin{align*}
+	    g(x)-g(y)\leq L_g\|x-y\|, 
+	\end{align*}
 	% \assume
-	% \label{assub:bound_level_set}
-	% There exists a positive constant $\delta$ such that for all iterates $\{x^k\}$ of Algorithm \ref{alg:ISTA-SD}:
+	% \label{assub:g_bounded_grad}
+	% There exist a positive constant $\Gamma_g$ such that 
+	% the subgradient of $g$ is uniformly bounded,
 	% \begin{align*}
-	%      \|x^k - x^*\| \leq \delta
-	% \end{align*} 
+	%     \sup_{x \in \Lcal_F^0}\sup_{\gamma_g(x) \in \partial g(x)} \|\gamma_g(x)\| \leq \Gamma_g
+	% \end{align*}
 	\assume 
 	\label{assub:bound_h}
-	There exists positive constants $M_k$ and $\sigma$ such that at the $k$-th iteration of Algorithm \ref{alg:ISTA-SD}: 
+	There exists positive constants $M_k$ and $\sigma$ such that at the $k$-th iteration of Algorithm \ref{alg:ISTA-SD}:
+	\begin{align}
+	     \sigma I \preceq \sigma_k I \preceq H_k \preceq M_k I \preceq MI
+	\end{align} 
+	\assume
+	\label{assub:bound_level_set}
+	There exists a positive constant $D_{\Xcal_0}$ such that for all iterates $\{x^k\}$ of Algorithm \ref{alg:ISTA-SD}:
 	\begin{align*}
-	     \sigma I \preceq H_k \preceq M_kI \preceq MI
+	     \sup_{x^* \in X^*}~\|x^k - x^*\| \leq D_{\Xcal_0}
 	\end{align*} 
 \end{assumption}
+Note that while it is possible to remove Assumption~\ref{assub:bound_level_set} by directly establishing a uniform bound on $\|x^k - x^*\|$ (rf. \cite{OML,Schmidtetal}), here for simplicity of the presentation we make it an explicit assumption. This allows us to provide a much shorter and more concise proof than the one given in \cite{OML}. 
+Note also that all iterates $\{x^k\}$ fall into the level set $\Xcal_0$, due to the sufficient decrease condition \eqref{eq:dec_cond} that demands a monotonic decrease on the objective values. Assumption~\ref{assub:bound_level_set} thus follows straightforwardly from the fact that the level set is bounded, which often holds true in real-world problems.
 
 
+\begin{lemma}\label{lem:bound_Q_Qstar}
+Let $x^{k+1}:=\arg\min_{u\in\br^n} Q(H_k, u,x_k)$. There exists such vector $\gamma_g^{k+1} \in \partial g(x^{k+1})$ that the following bounds on the step size hold: 
+\begin{align}
+    \label{equ:bound_step_size}
+    \|\nabla f(x^k) + \gamma_g^{k+1}\| / M_k 
+    \leq 
+    \|x^{k+1} - x^k\| 
+    \leq 
+    \|\nabla f(x^k) + \gamma_g^{k+1}\| / \sigma_k.
+\end{align}
+\begin{proof}
+     From the first-order optimality conditions, the following equality holds with $\gamma_g^{k+1}$ being one of the subgradient of $g(\cdot)$ at $x^{k+1}$: 
+    \begin{align*}
+        % \label{equ:bound_step_size_1st_optima}
+        H_k(x^{k+1} - x^k) + \nabla f(x^k) + \gamma_g^{k+1} = 0,
+    \end{align*}
+    Hence,
+    \begin{align*}
+        &\|x^{k+1} - x^k\|
+        = \| H_k^{-1}(\nabla f(x^k) + \gamma_g^{k+1}) \|
+        \leq \| H_k^{-1} \| \|\nabla f(x^k) + \gamma_g^{k+1}\|
+        \leq \|\nabla f(x^k) + \gamma_g^{k+1}\| / \sigma_k, \\
+        &\|\nabla f(x^k) + \gamma_g^{k+1}\| 
+        = \|H_k(x^{k+1} - x^k)\|
+        \leq \|H_k\| \|x^{k+1} - x^k\|
+        \leq M_k\|x^{k+1} - x^k\|.
+    \end{align*}
+    from which \eqref{equ:bound_step_size} follows.
+\end{proof}
+\end{lemma}
+
+
+ We will denote $F(x^k)-F^*$ by $\Delta_k$.  Our goal is to bound $\Delta_k$ from above  in terms of $1/k$ which we will achieve by deriving a lower bound  on $\frac{1}{\Delta_k}$ in terms of $k$. 
  
+ Let us first show that 
+ \begin{equation}\label{eq:mainbnd}
+ F(x^{k+1})-F(x^k)\geq c_k \Delta_k^2,
+ \end{equation}
+  for some constant $c_k$. 
+ 
+ First we will show that 
+ \begin{equation}\label{eq:lowerbnd}
+ \Delta_k\leq (D+\frac{2L_g}{\sigma_k}) \|\nabla f(x^k)+\gamma_g^{k+1}\|.
+ \end{equation}
+ This follows simply from convexity and the assumptions above.
+ \begin{align*}
+     \Delta_k
+     &=F(x^k)-F(x^*)=f(x^k)-f(x^*)+g(x^k)-g(x^*) \\
+     &=f(x^k)-f(x^*)+g(x^k)-g(x^{k+1})+g(x^{k+1})-g(x^*) \\
+     &\leq \langle \nabla f(x^k), x^k-x^* \rangle
+     +\langle \gamma_g^{k+1}, x^{k+1}-x^* \rangle 
+     +g(x^k)-g(x^{k+1}) \\
+     &= \langle \nabla f(x^k), x^k-x^* \rangle
+     +\langle \gamma_g^{k+1}, x^k-x^* \rangle 
+     +\langle \gamma_g^{k+1}, x^{k+1}-x^k \rangle 
+     +g(x^k)-g(x^{k+1})\\
+     &\leq \|\nabla f(x^k)+\gamma_g^{k+1}\|\|x^k-x^*\| 
+     + (L_g + ||\gamma_g^{k+1}||) \|x^k-x^{k+1}\| \\
+     &\leq \|\nabla f(x^k)+\gamma_g^{k+1}\|\|x^k-x^*\| 
+     + 2L_g \|x^k-x^{k+1}\|. 
+ \end{align*}
+  Substituting the bounds on  $\| x^{k+1} - x^k\|$ and   $\| x^{k} - x^*\|$
+ in the above bound on $\Delta_k$ we get
+ the desired bound \eqref{eq:lowerbnd}.  
+ 
+   Now we will show that 
+ \begin{equation}\label{eq:upperbnd}
+ F(x^{k+1})-F(x^k)\geq {\rho\sigma_k}{2M_k^2}\|\nabla f(x^k)+\gamma_g^{k+1}\|^2.
+ \end{equation}
+ Indeed $F(x^{k})-F(x^{k+1})\geq \rho (Q(H_k, x^{k}, x^k)-Q(H_k,x^{k+1}k, x^k))$, hence we need to establish a bound on the reduction in $Q$.   
+    
+ Using the optimality condition for $Q$ at $x^{k+1}$ and convexity of $g$ we have
+        \begin{align}
+        Q(H_k,x^k,x^k) - Q(H_k,x^{k+1}, x^k)
+        &= g(x^k) - g(x^{k+1}) -  \nabla f(x^k)^T( x^{k+1}-x^k)  - \frac{1}{2}\|x^{k+1}-x^k\|^2_{H_k} \nonumber \\
+        \nonumber&\geq ( \gamma_g^{k+1})^T( x^{k}-x^{k+1} ) + \|x^{k+1}-x^k\|_{H_K}^2 +  (\gamma_g^{k+1})^T( x^{k+1}-x^k ) - \frac{1}{2}\|x^{k+1}-x^k\|^2_{H_k} \\
+        \nonumber&= \frac{1}{2}\|x^{k+1}-x^k\|^2_{H_k} \geq \frac{\sigma_k}{2}\|x^{k+1}-x^k\|^2\geq \frac{\sigma_k}{2M_k^2}   \| \nabla f(x^k) + \gamma_g^{k+1}\| ^2,  \end{align}
+   Hence, the bound \eqref{eq:upperbnd} holds.
+
+
+
+Finally, combining the lower bound on $F(x^{k+1})-F(x^k)$ together with the upper bound on $\Delta_k^2$  we can conclude that
+\[
+F(x^{k+1})-F(x^k)=\Delta_{k+1}-\Delta_k\geq  \frac{\rho\sigma_k}{2M_k^2 (D+\frac{2L_g}{\sigma_k})^2}\Delta_k^2,
+\]
+which establishes \eqref{eq:mainbnd} with $c_k= \frac{\rho\sigma_k^3}{2M_k^2 (D\sigma^k+2L_g)^2}$. 
+
+Dividing by $\Delta_{k+1}\Delta_k\leq \Delta_{k}^2$ we have
+\[
+\frac{1}{\Delta_{k}}-\frac{1}{\Delta_{k+1}}\geq c_k.
+\]
+
+Let us note that for all $k$ $c_k\geq  \frac{\rho\sigma^3}{2M^2 (DM+2L_g)^2}$. 
+Summing the above expression for  $i=0, \ldots, k-1$ we have
+\[
+\frac{1}{\Delta_{k}}\geq \sum_{i=0}^{k-1}c_i+\frac{1}{\Delta_{0}} \geq \sum_{i=0}^{k-1}c_i
+\]
+which finally implies
+\[
+\Delta_k=F(x^k)-F^*\leq \frac{1}{\sum_{i=0}^{k=1} c_i} \leq  \frac{2M^2 (DM+2L_g)^2}{\rho\sigma^3}\frac{1}{k}
+\]
+
+Let us note that if $H_k=LI$ for all $k$, as in standard proximal gradient method, where $L$ is the Lipschitz constant of $\nabla f(x)$, then
+the bound becomes
+\[
+F(x^k)-F^*\leq   \frac{ 2(DL+2L_g)^2}{\rho L}\frac{1}{k}\approx \frac{ 2D^2L}{k},
+\]
+if $L_g\ll DL$. This is a bound similar to $\frac{2\|x^0-x^*\|^2L}{k}$ established for proximal gradient method, assuming that $D$ is comparable to
+$\|x^0-x^*\|$. 
 
 \begin{theorem}\label{the:ISTA-SD}
 Let Assumptions \ref{as:exact_conv_rate} hold. In Algorithm \ref{alg:ISTA-SD}, suppose that at iteration $k$,  $H_k$, is chosen so that the sufficient decrease condition \eqref{eq:dec_cond} holds.
@@ -493,23 +623,16 @@ We now follow the theory proposed in  \cite{Schmidtetal} to analyze Algorithm \r
 In other words, we consider the version of Algorithm \ref{alg:ISTA-SD} (and \ref{alg:Backtrack_SD}) where we compute 
 $x^{k+1}  := p_{H_k, \phi_k}(x^k)$.
 
-\begin{assumption}\leavevmode % let list start right below
-\label{as:inexact_conv_rate}
-	% \assume
-	% \label{assub:objective}
-	% Functions $f,g$ are convex, and $f$ is smooth.
-	% \assume
-	% \label{assub:bounded_level_set}
-	% The level set $\{x \in \Rmbb^n: F(x) \leq c\}$ is bounded.
-	\assume
-	\label{assub:bound_level_set}
-	There exists a positive constant $\delta$ such that for all iterates $\{x^k\}$ of Algorithm \ref{alg:ISTA-SD}:
-	\begin{align*}
-	     \max_{x^* \in X^*}~\|x^k - x^*\| \leq \delta
-	\end{align*} 
-\end{assumption}
-We note that while it is possible to remove Assumption~\ref{assub:bound_level_set} by directly establishing a uniform bound on $\|x^k - x^*\|$ (rf. \cite{OML,Schmidtetal}), here we instead make it an explicit assumption, mainly for simplicity of the presentation. This allows us to provide a much shorter and more concise proof than the one given in \cite{OML}. 
-Note also that all iterates $\{x^k\}$ fall into the level set $\{x \in \Rmbb^n: F(x) \leq F(x^0)\}$, due to the sufficient decrease condition \eqref{eq:dec_cond} that demands a monotonic decrease on the objective values. Assumption~\ref{assub:bound_level_set} thus follows straightforwardly from the fact that the level set is bounded, which often holds true in real-world problems.
+% \begin{assumption}$\\$ % let list start right below
+% \label{as:inexact_conv_rate}
+% 	\assume
+% 	\label{assub:bound_level_set}
+% 	There exists a positive constant $\delta$ such that for all iterates $\{x^k\}$ of Algorithm \ref{alg:ISTA-SD}:
+% 	\begin{align*}
+% 	     \max_{x^* \in X^*}~\|x^k - x^*\| \leq \delta
+% 	\end{align*} 
+% \end{assumption}
+
 
 We can now state the general convergence rate result for the inexact version of Algorithm \ref{alg:ISTA-SD}.
 
