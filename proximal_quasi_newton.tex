@@ -462,7 +462,7 @@ Let $x^{k+1}:=\arg\min_{u\in\br^n} Q(H_k, u,x_k)$. There exists such vector $\ga
     \|\nabla f(x^k) + \gamma_g^{k+1}\| / \sigma_k.
 \end{align}
 \begin{proof}
-     From the first-order optimality conditions, the following equality holds with $\gamma_g^{k+1}$ being one of the subgradient of $g(\cdot)$ at $x^{k+1}$: 
+     From the first-order optimality conditions, the following equality holds with $\gamma_g^{k+1}$ being some subgradient of $g(\cdot)$ at $x^{k+1}$: 
     \begin{align*}
         % \label{equ:bound_step_size_1st_optima}
         H_k(x^{k+1} - x^k) + \nabla f(x^k) + \gamma_g^{k+1} = 0,
@@ -483,37 +483,52 @@ Let $x^{k+1}:=\arg\min_{u\in\br^n} Q(H_k, u,x_k)$. There exists such vector $\ga
 \end{lemma}
 
 
- We will denote $F(x^k)-F^*$ by $\Delta_k$.  Our goal is to bound $\Delta_k$ from above  in terms of $1/k$ which we will achieve by deriving a lower bound  on $\frac{1}{\Delta_k}$ in terms of $k$. 
+\begin{theorem}\label{the:ISTA-SD}
+Let Assumptions \ref{as:exact_conv_rate} hold. In Algorithm \ref{alg:ISTA-SD}, suppose that at iteration $k$,  $H_k$, is chosen so that the sufficient decrease condition \eqref{eq:dec_cond} holds.
+Then the iterates $\{x^k\}$ in Algorithm \ref{alg:ISTA-SD} satisfy
+\begin{align}
+    \label{the:ISTA-nonsmooth-conclude} 
+    F(x^k)-F^* \leq  \frac{2M^2 (D_{\Xcal_0} M+2L_g)^2}{\rho\sigma^3}\frac{1}{k}.
+\end{align}
+\end{theorem}
+\begin{proof}
+ We will denote $F(x^k)-F^*$ by $\Delta F_k$.  Our goal is to bound $\Delta F_k$ from above  in terms of $1/k$ which we will achieve by deriving a lower bound  on $\frac{1}{\Delta_k}$ in terms of $k$. 
  
  Let us first show that 
  \begin{equation}\label{eq:mainbnd}
- F(x^{k+1})-F(x^k)\geq c_k \Delta_k^2,
+ F(x^{k+1})-F(x^k)\geq c_k \Delta F_k^2,
  \end{equation}
   for some constant $c_k$. 
  
  First we will show that 
  \begin{equation}\label{eq:lowerbnd}
- \Delta_k\leq (D+\frac{2L_g}{\sigma_k}) \|\nabla f(x^k)+\gamma_g^{k+1}\|.
+ \Delta F_k\leq (D_{\Xcal_0}+\frac{2L_g}{\sigma_k}) \|\nabla f(x^k)+\gamma_g^{k+1}\|.
  \end{equation}
  This follows simply from convexity and the assumptions above.
- \begin{align*}
-     \Delta_k
+ \begin{align}
+     \Delta F_k
+     \nonumber
      &=F(x^k)-F(x^*)=f(x^k)-f(x^*)+g(x^k)-g(x^*) \\
+     \nonumber
      &=f(x^k)-f(x^*)+g(x^k)-g(x^{k+1})+g(x^{k+1})-g(x^*) \\
+     \nonumber
      &\leq \langle \nabla f(x^k), x^k-x^* \rangle
      +\langle \gamma_g^{k+1}, x^{k+1}-x^* \rangle 
      +g(x^k)-g(x^{k+1}) \\
+     \nonumber
      &= \langle \nabla f(x^k), x^k-x^* \rangle
      +\langle \gamma_g^{k+1}, x^k-x^* \rangle 
      +\langle \gamma_g^{k+1}, x^{k+1}-x^k \rangle 
      +g(x^k)-g(x^{k+1})\\
+     \nonumber
      &\leq \|\nabla f(x^k)+\gamma_g^{k+1}\|\|x^k-x^*\| 
      + (L_g + ||\gamma_g^{k+1}||) \|x^k-x^{k+1}\| \\
+     \label{equ:bound_delta_F_k}
      &\leq \|\nabla f(x^k)+\gamma_g^{k+1}\|\|x^k-x^*\| 
      + 2L_g \|x^k-x^{k+1}\|. 
- \end{align*}
-  Substituting the bounds on  $\| x^{k+1} - x^k\|$ and   $\| x^{k} - x^*\|$
- in the above bound on $\Delta_k$ we get
+ \end{align}
+  Substituting the bounds on  $\| x^{k+1} - x^k\|$ (cf. \eqref{equ:bound_step_size}) and   $\| x^{k} - x^*\|$ (cf. Assumptions~\ref{assub:bound_level_set})
+ in \eqref{equ:bound_delta_F_k} we get
  the desired bound \eqref{eq:lowerbnd}.  
  
    Now we will show that 
@@ -524,7 +539,7 @@ Let $x^{k+1}:=\arg\min_{u\in\br^n} Q(H_k, u,x_k)$. There exists such vector $\ga
     
  Using the optimality condition for $Q$ at $x^{k+1}$ and convexity of $g$ we have
         \begin{align}
-        Q(H_k,x^k,x^k) - Q(H_k,x^{k+1}, x^k)
+        &Q(H_k,x^k,x^k) - Q(H_k,x^{k+1}, x^k) \\
         &= g(x^k) - g(x^{k+1}) -  \nabla f(x^k)^T( x^{k+1}-x^k)  - \frac{1}{2}\|x^{k+1}-x^k\|^2_{H_k} \nonumber \\
         \nonumber&\geq ( \gamma_g^{k+1})^T( x^{k}-x^{k+1} ) + \|x^{k+1}-x^k\|_{H_K}^2 +  (\gamma_g^{k+1})^T( x^{k+1}-x^k ) - \frac{1}{2}\|x^{k+1}-x^k\|^2_{H_k} \\
         \nonumber&= \frac{1}{2}\|x^{k+1}-x^k\|^2_{H_k} \geq \frac{\sigma_k}{2}\|x^{k+1}-x^k\|^2\geq \frac{\sigma_k}{2M_k^2}   \| \nabla f(x^k) + \gamma_g^{k+1}\| ^2,  \end{align}
@@ -532,13 +547,13 @@ Let $x^{k+1}:=\arg\min_{u\in\br^n} Q(H_k, u,x_k)$. There exists such vector $\ga
 
 
 
-Finally, combining the lower bound on $F(x^{k+1})-F(x^k)$ together with the upper bound on $\Delta_k^2$  we can conclude that
+Finally, combining the lower bound on $F(x^{k+1})-F(x^k)$ together with the upper bound on $\Delta F_k^2$  we can conclude that
 \[
-F(x^{k+1})-F(x^k)=\Delta_{k+1}-\Delta_k\geq  \frac{\rho\sigma_k}{2M_k^2 (D+\frac{2L_g}{\sigma_k})^2}\Delta_k^2,
+F(x^{k+1})-F(x^k)=\Delta_{k+1}-\Delta F_k\geq  \frac{\rho\sigma_k}{2M_k^2 (D_{\Xcal_0}+\frac{2L_g}{\sigma_k})^2}\Delta F_k^2,
 \]
 which establishes \eqref{eq:mainbnd} with $c_k= \frac{\rho\sigma_k^3}{2M_k^2 (D\sigma^k+2L_g)^2}$. 
 
-Dividing by $\Delta_{k+1}\Delta_k\leq \Delta_{k}^2$ we have
+Dividing by $\Delta_{k+1}\Delta F_k\leq \Delta_{k}^2$ we have
 \[
 \frac{1}{\Delta_{k}}-\frac{1}{\Delta_{k+1}}\geq c_k.
 \]
@@ -550,15 +565,16 @@ Summing the above expression for  $i=0, \ldots, k-1$ we have
 \]
 which finally implies
 \[
-\Delta_k=F(x^k)-F^*\leq \frac{1}{\sum_{i=0}^{k=1} c_i} \leq  \frac{2M^2 (DM+2L_g)^2}{\rho\sigma^3}\frac{1}{k}
+\Delta F_k=F(x^k)-F^*\leq \frac{1}{\sum_{i=0}^{k=1} c_i} \leq  \frac{2M^2 (D_{\Xcal_0}M+2L_g)^2}{\rho\sigma^3}\frac{1}{k}
 \]
+\end{proof}
 
 Let us note that if $H_k=LI$ for all $k$, as in standard proximal gradient method, where $L$ is the Lipschitz constant of $\nabla f(x)$, then
 the bound becomes
 \[
-F(x^k)-F^*\leq   \frac{ 2(DL+2L_g)^2}{\rho L}\frac{1}{k}\approx \frac{ 2D^2L}{k},
+F(x^k)-F^*\leq   \frac{ 2(D_{\Xcal_0}L+2L_g)^2}{\rho L}\frac{1}{k}\approx \frac{ 2D_{\Xcal_0}^2L}{k},
 \]
-if $L_g\ll DL$. This is a bound similar to $\frac{2\|x^0-x^*\|^2L}{k}$ established for proximal gradient method, assuming that $D$ is comparable to
+if $L_g\ll D_{\Xcal_0}L$. This is a bound similar to $\frac{2\|x^0-x^*\|^2L}{k}$ established for proximal gradient method, assuming that $D_{\Xcal_0}$ is comparable to
 $\|x^0-x^*\|$. 
 
 \begin{theorem}\label{the:ISTA-SD}
