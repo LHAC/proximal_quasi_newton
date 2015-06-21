@@ -658,7 +658,7 @@ And there exists such vector $\gamma_{g, \phi}^{k+1} \in \partial g_{\phi_k}(x^{
 		\geq   
 		\frac{1}{M_k}\|  \nabla f(x^k) + \gamma_{g, \phi}^{k+1} \|- \frac{\sqrt{2M_k\phi_k}}{M_k}.
 	\end{align*}
-	With \eqref{equ:_g_phi_subgradient} and \eqref{equ:_bound_Q_Qstar_1st_optima}, we derive \eqref{equ:bound_Qk_Qk1_inexact} as follows,
+	Using \eqref{equ:_g_phi_subgradient} and \eqref{equ:_bound_Q_Qstar_1st_optima}, we derive \eqref{equ:bound_Qk_Qk1_inexact} as follows,
 	\begin{align*}
 	        &Q(H_k,x^k,x^k) - Q(H_k,x^{k+1}, x^k) \\
 	        % \nonumber
@@ -682,103 +682,90 @@ And there exists such vector $\gamma_{g, \phi}^{k+1} \in \partial g_{\phi_k}(x^{
 	\end{align*}
 \end{proof}
 
-\begin{theorem}
+\begin{lemma}
 	Suppose that Assumptions~\ref{as:exact_conv_rate} holds. 
-	Assume that all iterates $\{x^k\}$ of inexact Algorithm \ref{alg:ISTA-SD} are generated with some $\phi_k>0$ (cf. \eqref{lem:BT2.3-assump-g}), then
-\end{theorem}
+	Consider $k$th iteration of the inexact Algorithm \ref{alg:ISTA-SD} with errors $\phi_k>0$ (cf. \eqref{lem:BT2.3-assump-g}). Let $\Delta F_k := F(x^k) - F(x^*)$. Then for some fixed large positive constant $\theta > 0$ either one of the two cases, i.e., \eqref{equ:bound_F_inexact_case1} and \eqref{equ:bound_F_inexact_case2}, must hold,
+	\begin{align}
+		\label{equ:bound_F_inexact_case1}
+	    &\Delta F_k \leq b_k\sqrt{\phi_k}, \\
+	    \label{equ:bound_F_inexact_case2}
+	    &\frac{1}{\Delta F_{k+1}}-\frac{1}{\Delta F_{k}}\geq c_k.
+	\end{align}
+	where $t_k, b_k$ and $c_k$ are given below,
+	\begin{align*}
+	    t_k=\frac{\sigma_k}{2}(\frac{\theta-1}{\theta M_k})^2 - \frac{1+\theta}{\theta^2\sigma_k}- \frac{1}{2\theta^2M_k}, ~b_k = (\theta D_{\Xcal_0}+  \frac{2(1+\theta)L_g}{\sigma_k})\sqrt{2M_k}, ~c_k=\frac{\rho t_k\sigma_k^2\theta^2}{(D_{\Xcal_0}\theta\sigma_k + 2L_g(1+\theta))^2}.
+	\end{align*}
+\end{lemma}
 \begin{proof}	                
 	We will consider two cases that are possible at each iteration $k$ for some fixed constant $\theta>1$ which we will specify later. 
 	\begin{itemize}
 	\item{Case 1} 
 	\begin{equation}\label{eq:case1}
-	\|  \nabla f(x^k) + \gamma_{g, \phi}^{k+1} \| < \theta\sqrt{2M_k\phi_k}
+		\|  \nabla f(x^k) + \gamma_{g, \phi}^{k+1} \| < \theta\sqrt{2M_k\phi_k}
 	\end{equation}
-
 
 	\item{Case 2}
 	\begin{equation}\label{eq:case2}
-	\| \nabla f(x^k) + \gamma_{g, \phi}^{k+1} \| \geq \theta \sqrt{2M_k\phi_k}
+		\| \nabla f(x^k) + \gamma_{g, \phi}^{k+1} \| \geq \theta \sqrt{2M_k\phi_k}
 	\end{equation}
 
 	\end{itemize}
 
-	Let us consider  Case 1, then from \eqref{eq:bndx1}  and \eqref{eq:case1} it simply follows that
+	Let us consider Case 1, then from \eqref{equ:bound_step_size_inexact}  and \eqref{eq:case1} it simply follows that
 	\begin{equation}\label{eq:bndcase1} 
-	\| x^{k+1} - x^k\|\leq \frac{(1+\theta)\sqrt{2M_k\phi_k}}{\sigma_k}
+		\| x^{k+1} - x^k\|\leq \frac{(1+\theta)\sqrt{2M_k\phi_k}}{\sigma_k}
 	\end{equation}
 
-	From convexity and our assumptions \eqref{eq:bnddelta} holds, as in the exact case.
-	  Substituting the bound on  $\| x^{k+1} - x^k\|$ from \eqref{eq:bndcase1} using \eqref{eq:case2} together with the bound on $\|x^{k} - x^*\|$
-	  from  Assumption \ref{ass:convex} in \eqref{eq:bnddelta} we get  
-	 \[
-	  \Delta_k\leq D \|\nabla f(x^k)+\gamma_{g, \phi}^{k+1}\| +  \frac{2(1+\theta)L_g\sqrt{2M_k\phi_k}}{\sigma_k}\leq (2D+  \frac{2(1+\theta)L_g}{\sigma_k})\sqrt{2M_k\phi_k}.
-	  \]
+	Apply \eqref{equ:bound_F_u_w} with $u = x^k, w = x^*$ and $v = x^{k+1}$ and we obtain,
+	\begin{align}
+	\label{equ:_bound_F_xk_xk1}
+	    \Delta F_k = F(x^k) - F(x^*)
+	    \leq \|\nabla f(x^k)+\gamma_g^{k+1}\|\|x^k-x^*\| + 2L_g \|x^k-x^{k+1}\|. 
+	\end{align}
+
+	Using \eqref{eq:case1}, \eqref{equ:_bound_F_xk_xk1}, the bound on  $\| x^{k+1} - x^k\|$ from \eqref{eq:bndcase1} together with the bound on $\|x^{k} - x^*\|$ from Assumptions~\ref{assub:bound_level_set} we get
+	\[
+		\Delta F_k\leq D_{\Xcal_0} \|\nabla f(x^k)+\gamma_{g, \phi}^{k+1}\| +  \frac{2(1+\theta)L_g\sqrt{2M_k\phi_k}}{\sigma_k}
+		\leq (\theta D_{\Xcal_0}+  \frac{2(1+\theta)L_g}{\sigma_k})\sqrt{2M_k\phi_k}.
+	\]
 	  
-	We now consider Case 2, where \eqref{eq:case2} implies
+	We now consider Case 2, where \eqref{eq:case2} along with \eqref{equ:bound_step_size_inexact} implies
 	\begin{equation}\label{eq:bndcase2} 
-	\frac{\theta-1}{\theta M_k}\| \nabla f(x^k) + \gamma_{g, \phi}^{k+1} \| \leq \| x^{k+1} - x^k\|\leq \frac{1+\theta}{\theta\sigma_k}\| \nabla f(x^k) + \gamma_{g, \phi}^{k+1} \|
+		\frac{\theta-1}{\theta M_k}\| \nabla f(x^k) + \gamma_{g, \phi}^{k+1} \| \leq \| x^{k+1} - x^k\|\leq \frac{1+\theta}{\theta\sigma_k}\| \nabla f(x^k) + \gamma_{g, \phi}^{k+1} \|
 	\end{equation}
 
-	 Substituting the upper bound on  $\| x^{k+1} - x^k\|$ from \eqref{eq:bndcase2} and  the bound on $\|x^{k} - x^*\|$
-	  from  Assumption \ref{ass:convex} in \eqref{eq:bnddelta} we now get  
-	 \begin{equation}\label{eq:upperbndinexact}
-	  \Delta_k\leq 
-	 (D + 2L_g\frac{3}{2\sigma_k})\|\nabla f(x^k)+\gamma_{g, \phi}^{k+1}\|
-	  \end{equation}
+	Substituting into \eqref{equ:_bound_F_xk_xk1} the upper bound on  $\| x^{k+1} - x^k\|$ from \eqref{eq:bndcase2} and the bound on $\|x^{k} - x^*\|$ from Assumptions~\ref{assub:bound_level_set} we now get  
+	\begin{equation}\label{eq:upperbndinexact}
+		\Delta F_k\leq 
+		(D_{\Xcal_0} + \frac{2L_g(1+\theta)}{\theta\sigma_k})\|\nabla f(x^k)+\gamma_{g, \phi}^{k+1}\|
+	\end{equation}
 
 	 
-	 We will  show that in this case again we have 
-	 \begin{equation}\label{eq:mainbnd}
-	 F(x^{k+1})-F(x^k)\geq c_k \Delta_k^2
-	 \end{equation}
-	  for some constant $c_k$.  
+	We will  show that in this case again we have 
+	\begin{equation}\label{eq:mainbnd}
+		F(x^{k+1})-F(x^k)\geq c_k \Delta F_k^2
+	\end{equation} for some constant $c_k$.  
 	Towards that goal  we will establish a lower bound on $F(x^{k+1})-F(x^k)$ in terms of $\|\nabla f(x^k)+\gamma_{g, \phi}^{k+1}\|^2$ as before.
-	% \begin{equation}\label{eq:upperbnd}
-	% F(x^{k+1})-F(x^k)\geq {\rho\sigma_k}{2M_k^2}\|\nabla f(x^k)+\gamma_{g, \phi}^{k+1}\|^2.
-	% \end{equation}
-	 We still have $F(x^{k})-F(x^{k+1})\geq \rho (Q(H_k, x^{k}, x^k)-Q(H_k,x^{k+1}, x^k))$. 
-	  
-	%  Using Lemma 5 in the old version of the paper we have   
-	%   \begin{align}
-	%        &Q(H_k,x^k,x^k) - Q(H_k,x^{k+1}, x^k)\geq \frac{\sigma_k}{8}(\|x^{k+1}-x^k\|^2-\phi).  \nonumber 
-	%        \end{align}
-	%        
-	%        Substituting bound on $\|x^{k+1}-x^k\|^2$ from \eqref{eq:bndcase2} and on $\phi$ from \eqref{eq:case2} we have 
-	%\begin{eqnarray}
-	%        Q(H_k,x^k,x^k) - Q(H_k,x^{k+1}, x^k)&\geq& \frac{\sigma_k}{16M_k}  \| \nabla f(x^k) + \gamma_g^{k+1} \|^2 
-	%        - \frac{\sigma_k}{64M_k}  \| \nabla f(x^k) + \gamma_g^{k+1} \|^2 \nonumber \\
-	%        &\geq& \frac{3\sigma_k}{64M_k}  \| \nabla f(x^k) + \gamma_g^{k+1} \|^2 
-	%      .  \label{eq:lowerbndinexact}
-	%        \end{eqnarray}
-
-	 Using the inexact optimality condition for $Q$ at $x^{k+1}$ and convexity of $g$ we have
-	        \begin{align}
-	        &Q(H_k,x^k,x^k) - Q(H_k,x^{k+1}, x^k)
-	        = g(x^k) - g(x^{k+1}) -  \nabla f(x^k)^T( x^{k+1}-x^k)  - \frac{1}{2}\|x^{k+1}-x^k\|^2_{H_k} \nonumber \\
-	        \nonumber&\geq ( \gamma_{g, \phi}^{k+1})^T( x^{k}-x^{k+1} ) + \|x^{k+1}-x^k\|_{H_K}^2 +  (\gamma_{g, \phi}^{k+1})^T( x^{k+1}-x^k )+ \eta_k^T( x^{k+1}-x^k ) - \frac{1}{2}\|x^{k+1}-x^k\|^2_{H_k} \\
-	          \label{eq:lowerbndinexact}
-	&= \frac{1}{2}\|x^{k+1}-x^k\|^2_{H_k} + \eta_k^T( x^{k+1}-x^k )\geq \frac{\sigma_k}{2}\|x^{k+1}-x^k\|^2-
-	        \|\eta_k\|\|x^{k+1}-x^k\|  \\
-	        \nonumber &\geq \frac{\sigma_k}{2}\|x^{k+1}-x^k\|^2-\sqrt{2M_k\phi_k}\|x^{k+1}-x^k\|.
-	         \end{align}
-	      We now use the bounds \eqref{eq:case2} and \eqref{eq:bndcase2} and obtain
-	      
-	       \begin{align}
-	        &Q(H_k,x^k,x^k) - Q(H_k,x^{k+1}, x^k)\geq
-	         \frac{\sigma_k}{2}(\frac{\theta-1}{\theta M_k})^2\| \nabla f(x^k) + \gamma_{g, \phi}^{k+1} \|^2- \frac{1+\theta}{\theta^2\sigma_k}\| \nabla f(x^k) + \gamma_{g, \phi}^{k+1} \|^2 \nonumber
-	         \end{align}
-	      By picking a sufficiently big $\theta$ in the above expression we will ensure that 
-	 \[
-	F(x^{k+1})-F(x^k)\geq \rho t_k \| \nabla f(x^k) + \gamma_{g, \phi}^{k+1} \|^2,
-	\]   
-	for $t_k=???$. 
-	Finally, combining the lower bound \eqref{eq:lowerbndinexact} on $F(x^{k+1})-F(x^k)$ together with the upper bound \eqref {eq:upperbndinexact}
+	We still have $F(x^{k})-F(x^{k+1})\geq \rho (Q(H_k, x^{k}, x^k)-Q(H_k,x^{k+1}, x^k))$. 
+	We now use the bounds \eqref{equ:bound_Qk_Qk1_inexact}, \eqref{eq:case2} and \eqref{eq:bndcase2} and obtain
+	\begin{align*}
+		&Q(H_k,x^k,x^k) - Q(H_k,x^{k+1}, x^k) \\
+		&\geq \frac{\sigma_k}{2}(\frac{\theta-1}{\theta M_k})^2 \| \nabla f(x^k) + \gamma_{g, \phi}^{k+1} \|^2
+		- \frac{1+\theta}{\theta^2\sigma_k}\| \nabla f(x^k) + \gamma_{g, \phi}^{k+1} \|^2 
+		- \frac{1}{2\theta^2M_k}\| \nabla f(x^k) + \gamma_{g, \phi}^{k+1} \|^2
+	\end{align*}
+	By picking a sufficiently big $\theta$ in the above expression we will ensure that 
+	\begin{align}
+	\label{eq:lowerbndinexact}
+	    F(x^k) - F(x^{k+1})\geq \rho t_k \| \nabla f(x^k) + \gamma_{g, \phi}^{k+1} \|^2,
+	\end{align}
+	for $t_k=\frac{\sigma_k}{2}(\frac{\theta-1}{\theta M_k})^2 - \frac{1+\theta}{\theta^2\sigma_k}- \frac{1}{2\theta^2M_k}$. 
+	Finally, combining the lower bound \eqref{eq:lowerbndinexact} on $F(x^{k+1})-F(x^k)$ together with the upper bound \eqref{eq:upperbndinexact}
 	on $\Delta_k^2$  we can conclude that
-	\[
-	F(x^{k+1})-F(x^k)=\Delta_{k+1}-\Delta_k\geq c_k\Delta_k^2
-	\]
-	with $c_k=??$. 
-
+	\begin{align*}
+		F(x^{k+1})-F(x^k)=\Delta F_{k+1}-\Delta F_k\geq c_k\Delta_k^2,\quad
+	    \mbox{with, }c_k=\frac{\rho t_k\sigma_k^2\theta^2}{(D_{\Xcal_0}\theta\sigma_k + 2L_g(1+\theta))^2}.
+	\end{align*}
 	In conclusion what we obtain is that at each iteration we either have 
 	 \[
 	\frac{1}{\Delta_{k+1}}-\frac{1}{\Delta_{k}}\geq c_k
