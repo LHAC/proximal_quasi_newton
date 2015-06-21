@@ -622,47 +622,45 @@ $\|x^0-x^*\|$.
 Let $x^{k+1} \in \dom(F)$ be any point such that $Q(H_k, x^{k+1},x^k)-\min_{y\in\br^n} Q(H_k, y,x^k)\leq \phi_k$ holds with any positive number $\phi_k > 0$. There exists such vector $\gamma_g^{k+1} \in \partial g(x^{k+1})$ that the following bounds on the step size hold: 
 \begin{align}
     \label{equ:bound_step_size_inexact}
-    \frac{1}{M_k}\|  \nabla f(x^k) + \gamma_g^{k+1} \|- \frac{\sqrt{2M_k\phi_k}}{M_k} 
+    \frac{1}{M_k}\|  \nabla f(x^k) + \gamma_{g, \phi}^{k+1} \|- \frac{\sqrt{2M_k\phi_k}}{M_k} 
     \leq 
     \|x^{k+1} - x^k\| 
     \leq 
-    \frac{1}{\sigma_k}\|  \nabla f(x^k) + \gamma_g^{k+1} \| + \frac{\sqrt{2M_k\phi_k}}{\sigma_k}.
+    \frac{1}{\sigma_k}\|  \nabla f(x^k) + \gamma_{g, \phi}^{k+1} \| + \frac{\sqrt{2M_k\phi_k}}{\sigma_k}.
 \end{align}
 \end{lemma}
 \begin{proof}
-	Let $\gamma_{g, \phi_k}^{k+1}=\gamma_{g, \phi_k}(x^{k+1})$ be the $\phi_k$-subgradient of $g(\cdot)$ at $x^{k+1}$. By definition of $\phi$-subdifferential, 
+	Let $\gamma_{g, \phi}^{k+1}=\gamma_{g, \phi}(x^{k+1})$ be the $\phi_k$-subgradient of $g(\cdot)$ at $x^{k+1}$. By definition of $\phi$-subdifferential, $\gamma_{g, \phi}^{k+1}$ satisfies both the following inequality,
 	\begin{align}
         \label{equ:_g_phi_subgradient}
         g(x^k) - g(x^{k+1}) 
         \geq 
-        \langle \gamma_{g, \phi_k}^{k+1}, x^k-x^{k+1} \rangle - \phi_k
+        \langle \gamma_{g, \phi}^{k+1}, x^k-x^{k+1} \rangle - \phi_k
     \end{align}
-
-
-	which satisfies the following approximate first-order optimality conditions 
+	and the following approximate first-order optimality conditions 
     \begin{align}
         \label{equ:bound_Q_Qstar_1st_optima}
-        H_k(x^{k+1}-x^k) + \nabla f(x^k) + \gamma_g^{k+1}+\eta_k= 0,
+        H_k(x^{k+1}-x^k) + \nabla f(x^k) + \gamma_{g, \phi}^{k+1}+\eta_k= 0,
     \end{align}
     with $\frac{1}{2}\|\eta\|^2_{H_k^{-1}}\leq \phi_k$, which implies $\|\eta\| \leq \sqrt{2M_k\phi_k}$
    Hence we obtain
     \begin{align*}
        \| x^{k+1} - x^k\|
-        \leq  \frac{1}{\sigma_k}\|  \nabla f(x^k) + \gamma_g^{k+1} \| + \frac{1}{\sigma_k}\|\eta_k\|
+        \leq  \frac{1}{\sigma_k}\|  \nabla f(x^k) + \gamma_{g, \phi}^{k+1} \| + \frac{1}{\sigma_k}\|\eta_k\|
         \leq  
-        \frac{1}{\sigma_k}\|  \nabla f(x^k) + \gamma_g^{k+1} \| + \frac{\sqrt{2M_k\phi_k}}{\sigma_k}
+        \frac{1}{\sigma_k}\|  \nabla f(x^k) + \gamma_{g, \phi}^{k+1} \| + \frac{\sqrt{2M_k\phi_k}}{\sigma_k}
 	\end{align*}
 	and
 	\begin{align*}
        	\| x^{k+1} - x^k\|
-        \geq   \frac{1}{M_k}\|  \nabla f(x^k) + \gamma_g^{k+1} \|-   \frac{1}{M_k}\|\eta_k\|
+        \geq   \frac{1}{M_k}\|  \nabla f(x^k) + \gamma_{g, \phi}^{k+1} \|-   \frac{1}{M_k}\|\eta_k\|
          \geq   
-         \frac{1}{M_k}\|  \nabla f(x^k) + \gamma_g^{k+1} \|- \frac{\sqrt{2M_k\phi_k}}{M_k}.
+         \frac{1}{M_k}\|  \nabla f(x^k) + \gamma_{g, \phi}^{k+1} \|- \frac{\sqrt{2M_k\phi_k}}{M_k}.
 	\end{align*}
 	\begin{align}
 	        &Q(H_k,x^k,x^k) - Q(H_k,x^{k+1}, x^k)
 	        = g(x^k) - g(x^{k+1}) -  \nabla f(x^k)^T( x^{k+1}-x^k)  - \frac{1}{2}\|x^{k+1}-x^k\|^2_{H_k} \nonumber \\
-	        \nonumber&\geq ( \gamma_g^{k+1})^T( x^{k}-x^{k+1} ) + \|x^{k+1}-x^k\|_{H_K}^2 +  (\gamma_g^{k+1})^T( x^{k+1}-x^k )+ \eta_k^T( x^{k+1}-x^k ) - \frac{1}{2}\|x^{k+1}-x^k\|^2_{H_k} \\
+	        \nonumber&\geq ( \gamma_{g, \phi}^{k+1})^T( x^{k}-x^{k+1} ) + \|x^{k+1}-x^k\|_{H_K}^2 +  (\gamma_{g, \phi}^{k+1})^T( x^{k+1}-x^k )+ \eta_k^T( x^{k+1}-x^k ) - \frac{1}{2}\|x^{k+1}-x^k\|^2_{H_k} \\
 	          \label{eq:lowerbndinexact}
 	&= \frac{1}{2}\|x^{k+1}-x^k\|^2_{H_k} + \eta_k^T( x^{k+1}-x^k )\geq \frac{\sigma_k}{2}\|x^{k+1}-x^k\|^2-
 	        \|\eta_k\|\|x^{k+1}-x^k\|  \\
@@ -679,13 +677,13 @@ Let $x^{k+1} \in \dom(F)$ be any point such that $Q(H_k, x^{k+1},x^k)-\min_{y\in
 	\begin{itemize}
 	\item{Case 1} 
 	\begin{equation}\label{eq:case1}
-	\|  \nabla f(x^k) + \gamma_g^{k+1} \| < \theta\sqrt{2M_k\phi_k}
+	\|  \nabla f(x^k) + \gamma_{g, \phi}^{k+1} \| < \theta\sqrt{2M_k\phi_k}
 	\end{equation}
 
 
 	\item{Case 2}
 	\begin{equation}\label{eq:case2}
-	\| \nabla f(x^k) + \gamma_g^{k+1} \| \geq \theta \sqrt{2M_k\phi_k}
+	\| \nabla f(x^k) + \gamma_{g, \phi}^{k+1} \| \geq \theta \sqrt{2M_k\phi_k}
 	\end{equation}
 
 	\end{itemize}
@@ -699,19 +697,19 @@ Let $x^{k+1} \in \dom(F)$ be any point such that $Q(H_k, x^{k+1},x^k)-\min_{y\in
 	  Substituting the bound on  $\| x^{k+1} - x^k\|$ from \eqref{eq:bndcase1} using \eqref{eq:case2} together with the bound on $\|x^{k} - x^*\|$
 	  from  Assumption \ref{ass:convex} in \eqref{eq:bnddelta} we get  
 	 \[
-	  \Delta_k\leq D \|\nabla f(x^k)+\gamma_g^{k+1}\| +  \frac{2(1+\theta)L_g\sqrt{2M_k\phi_k}}{\sigma_k}\leq (2D+  \frac{2(1+\theta)L_g}{\sigma_k})\sqrt{2M_k\phi_k}.
+	  \Delta_k\leq D \|\nabla f(x^k)+\gamma_{g, \phi}^{k+1}\| +  \frac{2(1+\theta)L_g\sqrt{2M_k\phi_k}}{\sigma_k}\leq (2D+  \frac{2(1+\theta)L_g}{\sigma_k})\sqrt{2M_k\phi_k}.
 	  \]
 	  
 	We now consider Case 2, where \eqref{eq:case2} implies
 	\begin{equation}\label{eq:bndcase2} 
-	\frac{\theta-1}{\theta M_k}\| \nabla f(x^k) + \gamma_g^{k+1} \| \leq \| x^{k+1} - x^k\|\leq \frac{1+\theta}{\theta\sigma_k}\| \nabla f(x^k) + \gamma_g^{k+1} \|
+	\frac{\theta-1}{\theta M_k}\| \nabla f(x^k) + \gamma_{g, \phi}^{k+1} \| \leq \| x^{k+1} - x^k\|\leq \frac{1+\theta}{\theta\sigma_k}\| \nabla f(x^k) + \gamma_{g, \phi}^{k+1} \|
 	\end{equation}
 
 	 Substituting the upper bound on  $\| x^{k+1} - x^k\|$ from \eqref{eq:bndcase2} and  the bound on $\|x^{k} - x^*\|$
 	  from  Assumption \ref{ass:convex} in \eqref{eq:bnddelta} we now get  
 	 \begin{equation}\label{eq:upperbndinexact}
 	  \Delta_k\leq 
-	 (D + 2L_g\frac{3}{2\sigma_k})\|\nabla f(x^k)+\gamma_g^{k+1}\|
+	 (D + 2L_g\frac{3}{2\sigma_k})\|\nabla f(x^k)+\gamma_{g, \phi}^{k+1}\|
 	  \end{equation}
 
 	 
@@ -720,9 +718,9 @@ Let $x^{k+1} \in \dom(F)$ be any point such that $Q(H_k, x^{k+1},x^k)-\min_{y\in
 	 F(x^{k+1})-F(x^k)\geq c_k \Delta_k^2
 	 \end{equation}
 	  for some constant $c_k$.  
-	Towards that goal  we will establish a lower bound on $F(x^{k+1})-F(x^k)$ in terms of $\|\nabla f(x^k)+\gamma_g^{k+1}\|^2$ as before.
+	Towards that goal  we will establish a lower bound on $F(x^{k+1})-F(x^k)$ in terms of $\|\nabla f(x^k)+\gamma_{g, \phi}^{k+1}\|^2$ as before.
 	% \begin{equation}\label{eq:upperbnd}
-	% F(x^{k+1})-F(x^k)\geq {\rho\sigma_k}{2M_k^2}\|\nabla f(x^k)+\gamma_g^{k+1}\|^2.
+	% F(x^{k+1})-F(x^k)\geq {\rho\sigma_k}{2M_k^2}\|\nabla f(x^k)+\gamma_{g, \phi}^{k+1}\|^2.
 	% \end{equation}
 	 We still have $F(x^{k})-F(x^{k+1})\geq \rho (Q(H_k, x^{k}, x^k)-Q(H_k,x^{k+1}, x^k))$. 
 	  
@@ -743,7 +741,7 @@ Let $x^{k+1} \in \dom(F)$ be any point such that $Q(H_k, x^{k+1},x^k)-\min_{y\in
 	        \begin{align}
 	        &Q(H_k,x^k,x^k) - Q(H_k,x^{k+1}, x^k)
 	        = g(x^k) - g(x^{k+1}) -  \nabla f(x^k)^T( x^{k+1}-x^k)  - \frac{1}{2}\|x^{k+1}-x^k\|^2_{H_k} \nonumber \\
-	        \nonumber&\geq ( \gamma_g^{k+1})^T( x^{k}-x^{k+1} ) + \|x^{k+1}-x^k\|_{H_K}^2 +  (\gamma_g^{k+1})^T( x^{k+1}-x^k )+ \eta_k^T( x^{k+1}-x^k ) - \frac{1}{2}\|x^{k+1}-x^k\|^2_{H_k} \\
+	        \nonumber&\geq ( \gamma_{g, \phi}^{k+1})^T( x^{k}-x^{k+1} ) + \|x^{k+1}-x^k\|_{H_K}^2 +  (\gamma_{g, \phi}^{k+1})^T( x^{k+1}-x^k )+ \eta_k^T( x^{k+1}-x^k ) - \frac{1}{2}\|x^{k+1}-x^k\|^2_{H_k} \\
 	          \label{eq:lowerbndinexact}
 	&= \frac{1}{2}\|x^{k+1}-x^k\|^2_{H_k} + \eta_k^T( x^{k+1}-x^k )\geq \frac{\sigma_k}{2}\|x^{k+1}-x^k\|^2-
 	        \|\eta_k\|\|x^{k+1}-x^k\|  \\
@@ -753,11 +751,11 @@ Let $x^{k+1} \in \dom(F)$ be any point such that $Q(H_k, x^{k+1},x^k)-\min_{y\in
 	      
 	       \begin{align}
 	        &Q(H_k,x^k,x^k) - Q(H_k,x^{k+1}, x^k)\geq
-	         \frac{\sigma_k}{2}(\frac{\theta-1}{\theta M_k})^2\| \nabla f(x^k) + \gamma_g^{k+1} \|^2- \frac{1+\theta}{\theta^2\sigma_k}\| \nabla f(x^k) + \gamma_g^{k+1} \|^2 \nonumber
+	         \frac{\sigma_k}{2}(\frac{\theta-1}{\theta M_k})^2\| \nabla f(x^k) + \gamma_{g, \phi}^{k+1} \|^2- \frac{1+\theta}{\theta^2\sigma_k}\| \nabla f(x^k) + \gamma_{g, \phi}^{k+1} \|^2 \nonumber
 	         \end{align}
 	      By picking a sufficiently big $\theta$ in the above expression we will ensure that 
 	 \[
-	F(x^{k+1})-F(x^k)\geq \rho t_k \| \nabla f(x^k) + \gamma_g^{k+1} \|^2,
+	F(x^{k+1})-F(x^k)\geq \rho t_k \| \nabla f(x^k) + \gamma_{g, \phi}^{k+1} \|^2,
 	\]   
 	for $t_k=???$. 
 	Finally, combining the lower bound \eqref{eq:lowerbndinexact} on $F(x^{k+1})-F(x^k)$ together with the upper bound \eqref {eq:upperbndinexact}
