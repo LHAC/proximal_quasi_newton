@@ -451,7 +451,7 @@ Note that while it is possible to remove Assumption~\ref{assub:bound_level_set} 
 Note also that all iterates $\{x^k\}$ fall into the level set $\Xcal_0$, due to the sufficient decrease condition \eqref{eq:dec_cond} that demands a monotonic decrease on the objective values. Assumption~\ref{assub:bound_level_set} thus follows straightforwardly from the fact that the level set is bounded, which often holds true in real-world problems.
 
 
-\begin{lemma}\label{lem:bound_Q_Qstar}
+\begin{lemma}\label{lem:bound_step_size}
 Let $x^{k+1}:=\arg\min_{u\in\br^n} Q(H_k, u,x_k)$. There exists such vector $\gamma_g^{k+1} \in \partial g(x^{k+1})$ that the following bounds on the step size hold: 
 \begin{align}
     \label{equ:bound_step_size}
@@ -461,6 +461,7 @@ Let $x^{k+1}:=\arg\min_{u\in\br^n} Q(H_k, u,x_k)$. There exists such vector $\ga
     \leq 
     \|\nabla f(x^k) + \gamma_g^{k+1}\| / \sigma_k.
 \end{align}
+\end{lemma}
 \begin{proof}
      From the first-order optimality conditions, the following equality holds with $\gamma_g^{k+1}$ being some subgradient of $g(\cdot)$ at $x^{k+1}$: 
     \begin{align*}
@@ -480,7 +481,47 @@ Let $x^{k+1}:=\arg\min_{u\in\br^n} Q(H_k, u,x_k)$. There exists such vector $\ga
     \end{align*}
     from which \eqref{equ:bound_step_size} follows.
 \end{proof}
+
+\begin{lemma}
+Consider $F(\cdot)$ defined in \eqref{prob:P}. Let Assumptions~\ref{assub:gLipsch} hold. Then for any three points $u, v, w \in \dom(F)$, we have
+\begin{align}
+	\label{equ:bound_F_u_w}
+    F(u) - F(w) 
+    \leq 
+    \|\nabla f(u)+\gamma_g^v\|\|u-w\| + 2L_g \|u-v\|.
+\end{align}
+where $\gamma_g^v \in \partial g(v)$ is any subgradient of $g(\cdot)$ at point $v$.
 \end{lemma}
+\begin{proof}
+	From convexity of $f$ and $g$, it follows that for any two points $u, w$,
+	\begin{align}
+		\label{equ:f_convex_upper}
+	    f(u) - f(w) &\leq \langle \nabla f(u), u-w \rangle, \\
+	    \label{equ:g_convex_upper}
+	    g(u) - g(w) &\leq \langle \gamma_g^u, u-w \rangle.
+	\end{align}
+	Hence,
+	\begin{align}
+	    \nonumber
+	    F(u)-F(w)
+	    &=f(u)-f(w)+g(u)-g(w) \\
+	    \nonumber
+	    &=f(u)-f(w)+g(u)-g(v)+g(v)-g(w) \\
+	    \label{proof:f_g_upper}
+	    &\leq \langle \nabla f(u), u-w \rangle
+	    +\langle \gamma_g^v, v-w \rangle 
+	    +g(u)-g(v) \\
+	    \nonumber
+	    &= \langle \nabla f(u), u-w \rangle
+	    +\langle \gamma_g^v, u-w \rangle 
+	    +\langle \gamma_g^v, v-u \rangle 
+	    +g(u)-g(v)\\
+	    \label{proof:g_upper}
+	    &\leq \|\nabla f(u)+\gamma_g^v\|\|u-w\| 
+	    + (L_g + ||\gamma_g^v||) \|u-v\|. 
+	\end{align}
+	Here in \eqref{proof:f_g_upper} we apply \eqref{equ:f_convex_upper} and \eqref{equ:g_convex_upper} with $u$ replaced by $v$, and in \eqref{proof:g_upper} we apply Assumptions~\ref{assub:gLipsch}. Finally, \eqref{equ:bound_F_u_w} follows from \eqref{proof:g_upper} and the fact that $||\gamma_g^v|| \leq L_g$ (cf. Assumptions~\ref{assub:gLipsch}).
+\end{proof}
 
 
 \begin{theorem}\label{the:ISTA-SD}
@@ -492,81 +533,81 @@ Then the iterates $\{x^k\}$ in Algorithm \ref{alg:ISTA-SD} satisfy
 \end{align}
 \end{theorem}
 \begin{proof}
- We will denote $F(x^k)-F^*$ by $\Delta F_k$.  Our goal is to bound $\Delta F_k$ from above  in terms of $1/k$ which we will achieve by deriving a lower bound  on $\frac{1}{\Delta_k}$ in terms of $k$. 
- 
- Let us first show that 
- \begin{equation}\label{eq:mainbnd}
- F(x^{k+1})-F(x^k)\geq c_k \Delta F_k^2,
- \end{equation}
-  for some constant $c_k$. 
- 
- First we will show that 
- \begin{equation}\label{eq:lowerbnd}
- \Delta F_k\leq (D_{\Xcal_0}+\frac{2L_g}{\sigma_k}) \|\nabla f(x^k)+\gamma_g^{k+1}\|.
- \end{equation}
- This follows simply from convexity and the assumptions above.
- \begin{align}
-     \Delta F_k
-     \nonumber
-     &=F(x^k)-F(x^*)=f(x^k)-f(x^*)+g(x^k)-g(x^*) \\
-     \nonumber
-     &=f(x^k)-f(x^*)+g(x^k)-g(x^{k+1})+g(x^{k+1})-g(x^*) \\
-     \nonumber
-     &\leq \langle \nabla f(x^k), x^k-x^* \rangle
-     +\langle \gamma_g^{k+1}, x^{k+1}-x^* \rangle 
-     +g(x^k)-g(x^{k+1}) \\
-     \nonumber
-     &= \langle \nabla f(x^k), x^k-x^* \rangle
-     +\langle \gamma_g^{k+1}, x^k-x^* \rangle 
-     +\langle \gamma_g^{k+1}, x^{k+1}-x^k \rangle 
-     +g(x^k)-g(x^{k+1})\\
-     \nonumber
-     &\leq \|\nabla f(x^k)+\gamma_g^{k+1}\|\|x^k-x^*\| 
-     + (L_g + ||\gamma_g^{k+1}||) \|x^k-x^{k+1}\| \\
-     \label{equ:bound_delta_F_k}
-     &\leq \|\nabla f(x^k)+\gamma_g^{k+1}\|\|x^k-x^*\| 
-     + 2L_g \|x^k-x^{k+1}\|. 
- \end{align}
-  Substituting the bounds on  $\| x^{k+1} - x^k\|$ (cf. \eqref{equ:bound_step_size}) and   $\| x^{k} - x^*\|$ (cf. Assumptions~\ref{assub:bound_level_set})
- in \eqref{equ:bound_delta_F_k} we get
- the desired bound \eqref{eq:lowerbnd}.  
- 
-   Now we will show that 
- \begin{equation}\label{eq:upperbnd}
- F(x^{k+1})-F(x^k)\geq {\rho\sigma_k}{2M_k^2}\|\nabla f(x^k)+\gamma_g^{k+1}\|^2.
- \end{equation}
- Indeed $F(x^{k})-F(x^{k+1})\geq \rho (Q(H_k, x^{k}, x^k)-Q(H_k,x^{k+1}k, x^k))$, hence we need to establish a bound on the reduction in $Q$.   
-    
- Using the optimality condition for $Q$ at $x^{k+1}$ and convexity of $g$ we have
-        \begin{align}
-        &Q(H_k,x^k,x^k) - Q(H_k,x^{k+1}, x^k) \\
-        &= g(x^k) - g(x^{k+1}) -  \nabla f(x^k)^T( x^{k+1}-x^k)  - \frac{1}{2}\|x^{k+1}-x^k\|^2_{H_k} \nonumber \\
-        \nonumber&\geq ( \gamma_g^{k+1})^T( x^{k}-x^{k+1} ) + \|x^{k+1}-x^k\|_{H_K}^2 +  (\gamma_g^{k+1})^T( x^{k+1}-x^k ) - \frac{1}{2}\|x^{k+1}-x^k\|^2_{H_k} \\
-        \nonumber&= \frac{1}{2}\|x^{k+1}-x^k\|^2_{H_k} \geq \frac{\sigma_k}{2}\|x^{k+1}-x^k\|^2\geq \frac{\sigma_k}{2M_k^2}   \| \nabla f(x^k) + \gamma_g^{k+1}\| ^2,  \end{align}
-   Hence, the bound \eqref{eq:upperbnd} holds.
+	We will denote $F(x^k)-F^*$ by $\Delta F_k$.  Our goal is to bound $\Delta F_k$ from above  in terms of $1/k$ which we will achieve by deriving a lower bound  on $\frac{1}{\Delta_k}$ in terms of $k$. 
+
+	Let us first show that 
+	\begin{equation}\label{eq:mainbnd}
+	F(x^{k+1})-F(x^k)\geq c_k \Delta F_k^2,
+	\end{equation}
+	for some constant $c_k$. 
+
+	First we will show that 
+	\begin{equation}\label{eq:lowerbnd}
+	\Delta F_k\leq (D_{\Xcal_0}+\frac{2L_g}{\sigma_k}) \|\nabla f(x^k)+\gamma_g^{k+1}\|.
+	\end{equation}
+	This follows simply from convexity and the assumptions above.
+	\begin{align}
+	 \Delta F_k
+	 \nonumber
+	 &=F(x^k)-F(x^*)=f(x^k)-f(x^*)+g(x^k)-g(x^*) \\
+	 \nonumber
+	 &=f(x^k)-f(x^*)+g(x^k)-g(x^{k+1})+g(x^{k+1})-g(x^*) \\
+	 \nonumber
+	 &\leq \langle \nabla f(x^k), x^k-x^* \rangle
+	 +\langle \gamma_g^{k+1}, x^{k+1}-x^* \rangle 
+	 +g(x^k)-g(x^{k+1}) \\
+	 \nonumber
+	 &= \langle \nabla f(x^k), x^k-x^* \rangle
+	 +\langle \gamma_g^{k+1}, x^k-x^* \rangle 
+	 +\langle \gamma_g^{k+1}, x^{k+1}-x^k \rangle 
+	 +g(x^k)-g(x^{k+1})\\
+	 \nonumber
+	 &\leq \|\nabla f(x^k)+\gamma_g^{k+1}\|\|x^k-x^*\| 
+	 + (L_g + ||\gamma_g^{k+1}||) \|x^k-x^{k+1}\| \\
+	 \label{equ:bound_delta_F_k}
+	 &\leq \|\nabla f(x^k)+\gamma_g^{k+1}\|\|x^k-x^*\| 
+	 + 2L_g \|x^k-x^{k+1}\|. 
+	\end{align}
+	Substituting the bounds on  $\| x^{k+1} - x^k\|$ (cf. \eqref{equ:bound_step_size}) and   $\| x^{k} - x^*\|$ (cf. Assumptions~\ref{assub:bound_level_set})
+	in \eqref{equ:bound_delta_F_k} we get
+	the desired bound \eqref{eq:lowerbnd}.  
+
+	Now we will show that 
+	\begin{equation}\label{eq:upperbnd}
+	F(x^{k+1})-F(x^k)\geq {\rho\sigma_k}{2M_k^2}\|\nabla f(x^k)+\gamma_g^{k+1}\|^2.
+	\end{equation}
+	Indeed $F(x^{k})-F(x^{k+1})\geq \rho (Q(H_k, x^{k}, x^k)-Q(H_k,x^{k+1}k, x^k))$, hence we need to establish a bound on the reduction in $Q$.   
+
+	Using the optimality condition for $Q$ at $x^{k+1}$ and convexity of $g$ we have
+	    \begin{align}
+	    &Q(H_k,x^k,x^k) - Q(H_k,x^{k+1}, x^k) \\
+	    &= g(x^k) - g(x^{k+1}) -  \nabla f(x^k)^T( x^{k+1}-x^k)  - \frac{1}{2}\|x^{k+1}-x^k\|^2_{H_k} \nonumber \\
+	    \nonumber&\geq ( \gamma_g^{k+1})^T( x^{k}-x^{k+1} ) + \|x^{k+1}-x^k\|_{H_K}^2 +  (\gamma_g^{k+1})^T( x^{k+1}-x^k ) - \frac{1}{2}\|x^{k+1}-x^k\|^2_{H_k} \\
+	    \nonumber&= \frac{1}{2}\|x^{k+1}-x^k\|^2_{H_k} \geq \frac{\sigma_k}{2}\|x^{k+1}-x^k\|^2\geq \frac{\sigma_k}{2M_k^2}   \| \nabla f(x^k) + \gamma_g^{k+1}\| ^2,  \end{align}
+	Hence, the bound \eqref{eq:upperbnd} holds.
 
 
 
-Finally, combining the lower bound on $F(x^{k+1})-F(x^k)$ together with the upper bound on $\Delta F_k^2$  we can conclude that
-\[
-F(x^{k+1})-F(x^k)=\Delta F_{k+1}-\Delta F_k\geq  \frac{\rho\sigma_k}{2M_k^2 (D_{\Xcal_0}+\frac{2L_g}{\sigma_k})^2}\Delta F_k^2,
-\]
-which establishes \eqref{eq:mainbnd} with $c_k= \frac{\rho\sigma_k^3}{2M_k^2 (D_{\Xcal_0}\sigma_k+2L_g)^2}$. 
+	Finally, combining the lower bound on $F(x^{k+1})-F(x^k)$ together with the upper bound on $\Delta F_k^2$  we can conclude that
+	\[
+	F(x^{k+1})-F(x^k)=\Delta F_{k+1}-\Delta F_k\geq  \frac{\rho\sigma_k}{2M_k^2 (D_{\Xcal_0}+\frac{2L_g}{\sigma_k})^2}\Delta F_k^2,
+	\]
+	which establishes \eqref{eq:mainbnd} with $c_k= \frac{\rho\sigma_k^3}{2M_k^2 (D_{\Xcal_0}\sigma_k+2L_g)^2}$. 
 
-Dividing by $\Delta F_{k+1}\Delta F_k\leq \Delta F_{k}^2$ we have
-\[
-\frac{1}{\Delta F_{k}}-\frac{1}{\Delta F_{k+1}}\geq c_k.
-\]
+	Dividing by $\Delta F_{k+1}\Delta F_k\leq \Delta F_{k}^2$ we have
+	\[
+	\frac{1}{\Delta F_{k}}-\frac{1}{\Delta F_{k+1}}\geq c_k.
+	\]
 
-Let us note that $\forall k, c_k\geq  \frac{\rho\sigma^3}{2M^2 (DM+2L_g)^2}$. 
-Summing the above expression for  $i=0, \ldots, k-1$ we have
-\[
-\frac{1}{\Delta F_{k}}\geq \sum_{i=0}^{k-1}c_i+\frac{1}{\Delta F_{0}} \geq \sum_{i=0}^{k-1}c_i
-\]
-which finally implies
-\[
-\Delta F_k=F(x^k)-F^*\leq \frac{1}{\sum_{i=0}^{k=1} c_i} \leq  \frac{2M^2 (D_{\Xcal_0}M+2L_g)^2}{\rho\sigma^3}\frac{1}{k}
-\]
+	Let us note that $\forall k, c_k\geq  \frac{\rho\sigma^3}{2M^2 (DM+2L_g)^2}$. 
+	Summing the above expression for  $i=0, \ldots, k-1$ we have
+	\[
+	\frac{1}{\Delta F_{k}}\geq \sum_{i=0}^{k-1}c_i+\frac{1}{\Delta F_{0}} \geq \sum_{i=0}^{k-1}c_i
+	\]
+	which finally implies
+	\[
+	\Delta F_k=F(x^k)-F^*\leq \frac{1}{\sum_{i=0}^{k=1} c_i} \leq  \frac{2M^2 (D_{\Xcal_0}M+2L_g)^2}{\rho\sigma^3}\frac{1}{k}
+	\]
 \end{proof}
 
 Let us note that if $H_k=LI$ for all $k$, as in standard proximal gradient method, where $L$ is the Lipschitz constant of $\nabla f(x)$, then
@@ -577,59 +618,164 @@ F(x^k)-F^*\leq   \frac{ 2(D_{\Xcal_0}L+2L_g)^2}{\rho L}\frac{1}{k}\approx \frac{
 if $L_g\ll D_{\Xcal_0}L$. This is a bound similar to $\frac{2\|x^0-x^*\|^2L}{k}$ established for proximal gradient method, assuming that $D_{\Xcal_0}$ is comparable to
 $\|x^0-x^*\|$. 
 
-\begin{theorem}\label{the:ISTA-SD}
-Let Assumptions \ref{as:exact_conv_rate} hold. In Algorithm \ref{alg:ISTA-SD}, suppose that at iteration $k$,  $H_k$, is chosen so that the sufficient decrease condition \eqref{eq:dec_cond} holds.
-Then the iterates $\{x^k\}$ in Algorithm \ref{alg:ISTA-SD} satisfy
+\begin{lemma}\label{lem:bound_step_size_inexact}
+Let $x^{k+1} \in \dom(F)$ be any point such that $Q(H_k, x^{k+1},x^k)-\min_{y\in\br^n} Q(H_k, y,x^k)\leq \phi_k$ holds with any positive number $\phi_k > 0$. There exists such vector $\gamma_g^{k+1} \in \partial g(x^{k+1})$ that the following bounds on the step size hold: 
 \begin{align}
-    \label{the:ISTA-nonsmooth-conclude} 
-    F(x^k) - F(x^*) \leq \frac{1}{2k_m}  \left( \|x^0-x^*\|_{H_0/M_0}^2 + \sum_{i=0}^{k-1}\|x^{i+1} - x^*\|_{H_{i+1}/M_{i+1}-H_i/M_i}^2 + \frac{2(1-\rho)(F(x^0)-F(x^*))}{\rho\sigma}\right).
+    \label{equ:bound_step_size_inexact}
+    \frac{1}{M_k}\|  \nabla f(x^k) + \gamma_g^{k+1} \|- \frac{\sqrt{2M_k\phi_k}}{M_k} 
+    \leq 
+    \|x^{k+1} - x^k\| 
+    \leq 
+    \frac{1}{\sigma_k}\|  \nabla f(x^k) + \gamma_g^{k+1} \| + \frac{\sqrt{2M_k\phi_k}}{\sigma_k}.
 \end{align}
-where $k_m = \sum_{i=0}^{k-1} \frac{1}{M_i}$. Thus, the sequence $\{F(x^k)\}$ produced by Algorithm \ref{alg:ISTA-SD} converges to $F(x^*)$ if  
-\[
-\frac{\sum_{i=0}^{k-1}\|x^{i+1} - x^*\|_{H_{i+1}/M_{i+1}-H_i/M_i}^2}{k_m} \to 0\ {\rm as\ } k\to \infty.
-\]
-\end{theorem}
-
-
+\end{lemma}
 \begin{proof}
-    As is done in  \cite{Beck2009} and \cite{Schmidtetal},  we apply Lemma \ref{lem:subp_inexact}, sequentially, with $\phi = 0$, $u=x^*$ and $p_{\phi}(v)=x^i$ for $i=0, \ldots, k-1$. 
-    \begin{align}
-    	\label{equ:bound_Fi_diff}
-        F(x^{i+1}) - F(x^*)
-        &\leq 
-        \frac{1}{2} \left(\|x^i-x^*\|_{H_{i}}^2 
-        - \|x^{i+1}-x^*\|_{H_{i}}^2 \right) 
-        + \epsilon_i 
+	Let $\gamma_{g, \phi_k}^{k+1}=\gamma_{g, \phi_k}(x^{k+1})$ be the $\phi_k$-subgradient of $g(\cdot)$ at $x^{k+1}$. By definition of $\phi$-subdifferential, 
+	\begin{align}
+        \label{equ:_g_phi_subgradient}
+        g(x^k) - g(x^{k+1}) 
+        \geq 
+        \langle \gamma_{g, \phi_k}^{k+1}, x^k-x^{k+1} \rangle - \phi_k
     \end{align}
-    Dividing both sides of \eqref{equ:bound_Fi_diff} by $M_i$ and adding up resulting inequalities, we obtain  
+
+
+	which satisfies the following approximate first-order optimality conditions 
+    \begin{align}
+        \label{equ:bound_Q_Qstar_1st_optima}
+        H_k(x^{k+1}-x^k) + \nabla f(x^k) + \gamma_g^{k+1}+\eta_k= 0,
+    \end{align}
+    with $\frac{1}{2}\|\eta\|^2_{H_k^{-1}}\leq \phi_k$, which implies $\|\eta\| \leq \sqrt{2M_k\phi_k}$
+   Hence we obtain
     \begin{align*}
-        &\sum_{i=0}^{k-1} \frac{F(x^{i+1}) - F(x^*)}{M_i}
-        \leq 
-        \frac{1}{2} \sum_{i=0}^{k-1} \left(\|x^i-x^*\|_{H_i/M_i}^2 
-        - \|x^{i+1}-x^*\|_{H_i/M_i}^2 \right) 
-        + \sum_{i=0}^{k-1} \frac{\epsilon_i}{M_i}  \\
-        &\leq 
-        \frac{1}{2} \sum_{i=0}^{k-1} \left(\|x^i-x^*\|_{H_i/M_i}^2 
-        - \|x^{i+1}-x^*\|_{H_i/M_i}^2 \right) 
-        + \sum_{i=0}^{k-1} \frac{\epsilon_i}{\sigma}  \\
-        &= 
-        \frac{1}{2} \left( \|x^0-x^*\|_{H_0/M_0}^2 
-        + \sum_{i=0}^{k-1}\|x^{i+1} - x^*\|_{H_{i+1}/M_{i+1}-H_i/M_i}^2 
-        - \|x^k-x^*\|_{H_k/M_k}^2 \right) 
-        + \frac{1}{\sigma}\sum_{i=0}^{k-1}\epsilon_i \\
-        &\mbox{use the already established bound $\sum_{i=0}^{k-1}\epsilon_i \leq \frac{(1-\rho)(F(x^0)-F(x^*))}{\rho}$}\\
-        &\leq 
-        \frac{1}{2} \left( \|x^0-x^*\|_{H_0/M_0}^2 
-        + \sum_{i=0}^{k-1}\|x^{i+1} - x^*\|_{H_{i+1}/M_{i+1}-H_i/M_i}^2 \right) 
-        + \frac{(1-\rho)(F(x^0)-F(x^*))}{\rho\sigma} .
-    \end{align*}
-    Letting $k_m = \sum_{i=0}^{k-1} \frac{1}{M_i}$, we have
-    \begin{align*}
-        &F(x^k) - F(x^*) \leq \frac{1}{k_m}( \sum_{i=0}^{k-1} \frac{F(x^{i+1}) - F(x^*)}{M_i} )\\        
-        &\leq \frac{1}{2k_m}  \left( \|x^0-x^*\|_{H_0/M_0}^2 
-        + \sum_{i=0}^{k-1}\|x^{i+1} - x^*\|_{H_{i+1}/M_{i+1}-H_i/M_i}^2 
-        + \frac{2(1-\rho)(F(x^0)-F(x^*))}{\rho\sigma}\right) .
-    \end{align*}
+       \| x^{k+1} - x^k\|
+        \leq  \frac{1}{\sigma_k}\|  \nabla f(x^k) + \gamma_g^{k+1} \| + \frac{1}{\sigma_k}\|\eta_k\|
+        \leq  
+        \frac{1}{\sigma_k}\|  \nabla f(x^k) + \gamma_g^{k+1} \| + \frac{\sqrt{2M_k\phi_k}}{\sigma_k}
+	\end{align*}
+	and
+	\begin{align*}
+       	\| x^{k+1} - x^k\|
+        \geq   \frac{1}{M_k}\|  \nabla f(x^k) + \gamma_g^{k+1} \|-   \frac{1}{M_k}\|\eta_k\|
+         \geq   
+         \frac{1}{M_k}\|  \nabla f(x^k) + \gamma_g^{k+1} \|- \frac{\sqrt{2M_k\phi_k}}{M_k}.
+	\end{align*}
+	\begin{align}
+	        &Q(H_k,x^k,x^k) - Q(H_k,x^{k+1}, x^k)
+	        = g(x^k) - g(x^{k+1}) -  \nabla f(x^k)^T( x^{k+1}-x^k)  - \frac{1}{2}\|x^{k+1}-x^k\|^2_{H_k} \nonumber \\
+	        \nonumber&\geq ( \gamma_g^{k+1})^T( x^{k}-x^{k+1} ) + \|x^{k+1}-x^k\|_{H_K}^2 +  (\gamma_g^{k+1})^T( x^{k+1}-x^k )+ \eta_k^T( x^{k+1}-x^k ) - \frac{1}{2}\|x^{k+1}-x^k\|^2_{H_k} \\
+	          \label{eq:lowerbndinexact}
+	&= \frac{1}{2}\|x^{k+1}-x^k\|^2_{H_k} + \eta_k^T( x^{k+1}-x^k )\geq \frac{\sigma_k}{2}\|x^{k+1}-x^k\|^2-
+	        \|\eta_k\|\|x^{k+1}-x^k\|  \\
+	        \nonumber &\geq \frac{\sigma_k}{2}\|x^{k+1}-x^k\|^2-\sqrt{2M_k\phi_k}\|x^{k+1}-x^k\|.
+	\end{align}
+\end{proof}
+
+\begin{theorem}
+	Suppose that Assumptions~\ref{as:exact_conv_rate} holds. 
+	Assume that all iterates $\{x^k\}$ of inexact Algorithm \ref{alg:ISTA-SD} are generated with some $\phi_k>0$ (cf. \eqref{lem:BT2.3-assump-g}), then
+\end{theorem}
+\begin{proof}	                
+	We will consider two cases that are possible at each iteration $k$ for some fixed constant $\theta>1$ which we will specify later. 
+	\begin{itemize}
+	\item{Case 1} 
+	\begin{equation}\label{eq:case1}
+	\|  \nabla f(x^k) + \gamma_g^{k+1} \| < \theta\sqrt{2M_k\phi_k}
+	\end{equation}
+
+
+	\item{Case 2}
+	\begin{equation}\label{eq:case2}
+	\| \nabla f(x^k) + \gamma_g^{k+1} \| \geq \theta \sqrt{2M_k\phi_k}
+	\end{equation}
+
+	\end{itemize}
+
+	Let us consider  Case 1, then from \eqref{eq:bndx1}  and \eqref{eq:case1} it simply follows that
+	\begin{equation}\label{eq:bndcase1} 
+	\| x^{k+1} - x^k\|\leq \frac{(1+\theta)\sqrt{2M_k\phi_k}}{\sigma_k}
+	\end{equation}
+
+	From convexity and our assumptions \eqref{eq:bnddelta} holds, as in the exact case.
+	  Substituting the bound on  $\| x^{k+1} - x^k\|$ from \eqref{eq:bndcase1} using \eqref{eq:case2} together with the bound on $\|x^{k} - x^*\|$
+	  from  Assumption \ref{ass:convex} in \eqref{eq:bnddelta} we get  
+	 \[
+	  \Delta_k\leq D \|\nabla f(x^k)+\gamma_g^{k+1}\| +  \frac{2(1+\theta)L_g\sqrt{2M_k\phi_k}}{\sigma_k}\leq (2D+  \frac{2(1+\theta)L_g}{\sigma_k})\sqrt{2M_k\phi_k}.
+	  \]
+	  
+	We now consider Case 2, where \eqref{eq:case2} implies
+	\begin{equation}\label{eq:bndcase2} 
+	\frac{\theta-1}{\theta M_k}\| \nabla f(x^k) + \gamma_g^{k+1} \| \leq \| x^{k+1} - x^k\|\leq \frac{1+\theta}{\theta\sigma_k}\| \nabla f(x^k) + \gamma_g^{k+1} \|
+	\end{equation}
+
+	 Substituting the upper bound on  $\| x^{k+1} - x^k\|$ from \eqref{eq:bndcase2} and  the bound on $\|x^{k} - x^*\|$
+	  from  Assumption \ref{ass:convex} in \eqref{eq:bnddelta} we now get  
+	 \begin{equation}\label{eq:upperbndinexact}
+	  \Delta_k\leq 
+	 (D + 2L_g\frac{3}{2\sigma_k})\|\nabla f(x^k)+\gamma_g^{k+1}\|
+	  \end{equation}
+
+	 
+	 We will  show that in this case again we have 
+	 \begin{equation}\label{eq:mainbnd}
+	 F(x^{k+1})-F(x^k)\geq c_k \Delta_k^2
+	 \end{equation}
+	  for some constant $c_k$.  
+	Towards that goal  we will establish a lower bound on $F(x^{k+1})-F(x^k)$ in terms of $\|\nabla f(x^k)+\gamma_g^{k+1}\|^2$ as before.
+	% \begin{equation}\label{eq:upperbnd}
+	% F(x^{k+1})-F(x^k)\geq {\rho\sigma_k}{2M_k^2}\|\nabla f(x^k)+\gamma_g^{k+1}\|^2.
+	% \end{equation}
+	 We still have $F(x^{k})-F(x^{k+1})\geq \rho (Q(H_k, x^{k}, x^k)-Q(H_k,x^{k+1}, x^k))$. 
+	  
+	%  Using Lemma 5 in the old version of the paper we have   
+	%   \begin{align}
+	%        &Q(H_k,x^k,x^k) - Q(H_k,x^{k+1}, x^k)\geq \frac{\sigma_k}{8}(\|x^{k+1}-x^k\|^2-\phi).  \nonumber 
+	%        \end{align}
+	%        
+	%        Substituting bound on $\|x^{k+1}-x^k\|^2$ from \eqref{eq:bndcase2} and on $\phi$ from \eqref{eq:case2} we have 
+	%\begin{eqnarray}
+	%        Q(H_k,x^k,x^k) - Q(H_k,x^{k+1}, x^k)&\geq& \frac{\sigma_k}{16M_k}  \| \nabla f(x^k) + \gamma_g^{k+1} \|^2 
+	%        - \frac{\sigma_k}{64M_k}  \| \nabla f(x^k) + \gamma_g^{k+1} \|^2 \nonumber \\
+	%        &\geq& \frac{3\sigma_k}{64M_k}  \| \nabla f(x^k) + \gamma_g^{k+1} \|^2 
+	%      .  \label{eq:lowerbndinexact}
+	%        \end{eqnarray}
+
+	 Using the inexact optimality condition for $Q$ at $x^{k+1}$ and convexity of $g$ we have
+	        \begin{align}
+	        &Q(H_k,x^k,x^k) - Q(H_k,x^{k+1}, x^k)
+	        = g(x^k) - g(x^{k+1}) -  \nabla f(x^k)^T( x^{k+1}-x^k)  - \frac{1}{2}\|x^{k+1}-x^k\|^2_{H_k} \nonumber \\
+	        \nonumber&\geq ( \gamma_g^{k+1})^T( x^{k}-x^{k+1} ) + \|x^{k+1}-x^k\|_{H_K}^2 +  (\gamma_g^{k+1})^T( x^{k+1}-x^k )+ \eta_k^T( x^{k+1}-x^k ) - \frac{1}{2}\|x^{k+1}-x^k\|^2_{H_k} \\
+	          \label{eq:lowerbndinexact}
+	&= \frac{1}{2}\|x^{k+1}-x^k\|^2_{H_k} + \eta_k^T( x^{k+1}-x^k )\geq \frac{\sigma_k}{2}\|x^{k+1}-x^k\|^2-
+	        \|\eta_k\|\|x^{k+1}-x^k\|  \\
+	        \nonumber &\geq \frac{\sigma_k}{2}\|x^{k+1}-x^k\|^2-\sqrt{2M_k\phi_k}\|x^{k+1}-x^k\|.
+	         \end{align}
+	      We now use the bounds \eqref{eq:case2} and \eqref{eq:bndcase2} and obtain
+	      
+	       \begin{align}
+	        &Q(H_k,x^k,x^k) - Q(H_k,x^{k+1}, x^k)\geq
+	         \frac{\sigma_k}{2}(\frac{\theta-1}{\theta M_k})^2\| \nabla f(x^k) + \gamma_g^{k+1} \|^2- \frac{1+\theta}{\theta^2\sigma_k}\| \nabla f(x^k) + \gamma_g^{k+1} \|^2 \nonumber
+	         \end{align}
+	      By picking a sufficiently big $\theta$ in the above expression we will ensure that 
+	 \[
+	F(x^{k+1})-F(x^k)\geq \rho t_k \| \nabla f(x^k) + \gamma_g^{k+1} \|^2,
+	\]   
+	for $t_k=???$. 
+	Finally, combining the lower bound \eqref{eq:lowerbndinexact} on $F(x^{k+1})-F(x^k)$ together with the upper bound \eqref {eq:upperbndinexact}
+	on $\Delta_k^2$  we can conclude that
+	\[
+	F(x^{k+1})-F(x^k)=\Delta_{k+1}-\Delta_k\geq c_k\Delta_k^2
+	\]
+	with $c_k=??$. 
+
+	In conclusion what we obtain is that at each iteration we either have 
+	 \[
+	\frac{1}{\Delta_{k+1}}-\frac{1}{\Delta_{k}}\geq c_k
+	\]
+	for some constant $c_k$ or
+	 \[
+	\frac{1}{\Delta_{k}}\geq  1/[(2D+  \frac{2(1+\theta)L_g}{\sigma_k})\sqrt{2M_k\phi_k}].
+	\]
+	I am not 100\% certain this gives us desired result but it look promising...	
 \end{proof}
 
 \section{Analysis of inexact proximal Quasi-Newton method} % (fold)
