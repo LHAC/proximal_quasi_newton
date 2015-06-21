@@ -622,7 +622,7 @@ $\|x^0-x^*\|$.
 Let $x^{k+1} \in \dom(F)$ be any point such that $Q(H_k, x^{k+1},x^k)-\min_{y\in\br^n} Q(H_k, y,x^k)\leq \phi_k$ holds with any positive number $\phi_k > 0$. Then the decrease on the function $Q$ can be bounded from below by a quadratic function in terms of the step size, i.e., $\|x^{k+1} - x^k\|$,
 \begin{align}
 	\label{equ:bound_Qk_Qk1_inexact}
-    Q(H_k,x^k,x^k) - Q(H_k,x^{k+1}, x^k) \geq \frac{\sigma_k}{2}\|x^{k+1}-x^k\|^2-\sqrt{2M_k\phi_k}\|x^{k+1}-x^k\| - \phi_k
+    Q(H_k,x^k,x^k) - Q(H_k,x^{k+1}, x^k) \geq \frac{\sigma_k}{2}\|x^{k+1}-x^k\|^2-\sqrt{2M_k\phi_k}\|x^{k+1}-x^k\| - \phi_k.
 \end{align}
 And there exists such vector $\gamma_{g, \phi}^{k+1} \in \partial g_{\phi_k}(x^{k+1})$ that the following bounds on the step size hold: 
 \begin{align}
@@ -635,14 +635,14 @@ And there exists such vector $\gamma_{g, \phi}^{k+1} \in \partial g_{\phi_k}(x^{
 \end{align}
 \end{lemma}
 \begin{proof}
-	Let $\gamma_{g, \phi}^{k+1}=\gamma_{g, \phi}(x^{k+1})$ be the $\phi_k$-subgradient of $g(\cdot)$ at $x^{k+1}$. By definition of $\phi$-subdifferential, $\gamma_{g, \phi}^{k+1}$ satisfies both the following inequality,
+	Let $\gamma_{g, \phi}^{k+1}:=\gamma_{g, \phi}(x^{k+1})$ be the $\phi_k$-subgradient of $g(\cdot)$ at $x^{k+1}$. Then $\gamma_{g, \phi}^{k+1}$ satisfies the following inequality by definition of $\phi$-subdifferential,
 	\begin{align}
         \label{equ:_g_phi_subgradient}
         g(x^k) - g(x^{k+1}) 
         \geq 
         \langle \gamma_{g, \phi}^{k+1}, x^k-x^{k+1} \rangle - \phi_k
     \end{align}
-	and the approximate first-order optimality conditions 
+	and, from Lemma~\ref{lem:inexact_1st_opt_cond}, the approximate first-order optimality conditions
     \begin{align}
         \label{equ:_bound_Q_Qstar_1st_optima}
         H_k(x^{k+1}-x^k) + \nabla f(x^k) + \gamma_{g, \phi}^{k+1}+\eta_k= 0,
