@@ -618,8 +618,52 @@ F(x^k)-F^*\leq   \frac{ 2(D_{\Xcal_0}L+2L_g)^2}{\rho L}\frac{1}{k}\approx \frac{
 if $L_g\ll D_{\Xcal_0}L$. This is a bound similar to $\frac{2\|x^0-x^*\|^2L}{k}$ established for proximal gradient method, assuming that $D_{\Xcal_0}$ is comparable to
 $\|x^0-x^*\|$. 
 
+
+\begin{lemma}
+Consider $F(\cdot)$ defined in \eqref{prob:P}. Let Assumptions~\ref{assub:gLipsch} hold. Then for any three points $u, v, w \in \dom(F)$, we have
+\begin{align}
+	\label{equ:bound_F_u_w_inexact}
+    F(u) - F(w) 
+    \leq 
+    \|\nabla f(u)+\gamma_{g, \phi}^v\|\|u-w\| + 2L_g \|u-v\| + \phi.
+\end{align}
+where $\gamma_{g, \phi}^v \in \partial_{\phi} g(v)$ is any $\phi$-subgradient of $g(\cdot)$ at point $v$.
+\end{lemma}
+\begin{proof}
+	From convexity of $f$ and $g$, it follows that for any two points $u, w$,
+	\begin{align}
+		\label{equ:_f_convex_upper}
+	    f(u) - f(w) &\leq \langle \nabla f(u), u-w \rangle, \\
+	    \label{equ:_g_convex_upper_inexact}
+	    g(u) - g(w) &\leq \langle \gamma_{g, \phi}^u, u-w \rangle + \phi.
+	\end{align}
+	Hence,
+	\begin{align}
+	    \nonumber
+	    F(u)-F(w)
+	    &=f(u)-f(w)+g(u)-g(w) \\
+	    \nonumber
+	    &=f(u)-f(w)+g(u)-g(v)+g(v)-g(w) \\
+	    \label{proof:f_g_upper}
+	    &\leq \langle \nabla f(u), u-w \rangle
+	    +\langle \gamma_{g, \phi}^v, v-w \rangle 
+	    +g(u)-g(v) 
+	    + \phi\\
+	    \nonumber
+	    &= \langle \nabla f(u), u-w \rangle
+	    +\langle \gamma_{g, \phi}^v, u-w \rangle 
+	    +\langle \gamma_{g, \phi}^v, v-u \rangle 
+	    +g(u)-g(v)
+	    + \phi\\
+	    \label{proof:g_upper}
+	    &\leq \|\nabla f(u)+\gamma_{g, \phi}^v\|\|u-w\| 
+	    + (L_g + ||\gamma_{g, \phi}^v||) \|u-v\|+ \phi. 
+	\end{align}
+	Here in \eqref{proof:f_g_upper} we apply \eqref{equ:_f_convex_upper} and \eqref{equ:_g_convex_upper_inexact} with $u$ replaced by $v$, and in \eqref{proof:g_upper} we apply Assumptions~\ref{assub:gLipsch}. Finally, \eqref{equ:bound_F_u_w_inexact} follows from \eqref{proof:g_upper} and the fact that $||\gamma_{g, \phi}^v|| \leq L_g$ (cf. Assumptions~\ref{assub:gLipsch}).
+\end{proof}
+
 \begin{lemma}\label{lem:bound_step_size_inexact}
-Let $x^{k+1} \in \dom(F)$ be any point such that $Q(H_k, x^{k+1},x^k)-\min_{y\in\br^n} Q(H_k, y,x^k)\leq \phi_k$ holds with any positive number $\phi_k > 0$. Then the decrease on the function $Q$ can be bounded from below by a quadratic function in terms of the step size, i.e., $\|x^{k+1} - x^k\|$,
+Let $x^{k+1} \in \dom(F)$ be any point such that the inequality $Q(H_k, x^{k+1},x^k)-\min_{y\in\br^n} Q(H_k, y,x^k)\leq \phi_k$ holds with any positive number $\phi_k > 0$. Then the decrease on the function $Q$ can be bounded from below by a quadratic function in terms of the step size, i.e., $\|x^{k+1} - x^k\|$,
 \begin{align}
 	\label{equ:bound_Qk_Qk1_inexact}
     Q(H_k,x^k,x^k) - Q(H_k,x^{k+1}, x^k) \geq \frac{\sigma_k}{2}\|x^{k+1}-x^k\|^2-\sqrt{2M_k\phi_k}\|x^{k+1}-x^k\| - \phi_k.
@@ -687,7 +731,7 @@ And there exists such vector $\gamma_{g, \phi}^{k+1} \in \partial g_{\phi_k}(x^{
 	Consider $k$th iteration of the inexact Algorithm \ref{alg:ISTA-SD} with errors $\phi_k>0$ (cf. \eqref{lem:BT2.3-assump-g}). Let $\Delta F_k := F(x^k) - F(x^*)$. Then for some fixed large positive constant $\theta > 0$ either one of the two cases, i.e., \eqref{equ:bound_F_inexact_case1} and \eqref{equ:bound_F_inexact_case2}, must hold,
 	\begin{align}
 		\label{equ:bound_F_inexact_case1}
-	    &\Delta F_k \leq b_k\sqrt{\phi_k}, \\
+	    &\Delta F_k \leq b_k\sqrt{\phi_k} + \phi_k, \\
 	    \label{equ:bound_F_inexact_case2}
 	    &\frac{1}{\Delta F_{k+1}}-\frac{1}{\Delta F_{k}}\geq c_k.
 	\end{align}
@@ -716,17 +760,17 @@ And there exists such vector $\gamma_{g, \phi}^{k+1} \in \partial g_{\phi_k}(x^{
 		\| x^{k+1} - x^k\|\leq \frac{(1+\theta)\sqrt{2M_k\phi_k}}{\sigma_k}
 	\end{equation}
 
-	Apply \eqref{equ:bound_F_u_w} with $u = x^k, w = x^*$ and $v = x^{k+1}$ and we obtain,
+	Apply \eqref{equ:bound_F_u_w_inexact} with $u = x^k, w = x^*$ and $v = x^{k+1}$ and we obtain,
 	\begin{align}
 	\label{equ:_bound_F_xk_xk1}
 	    \Delta F_k = F(x^k) - F(x^*)
-	    \leq \|\nabla f(x^k)+\gamma_g^{k+1}\|\|x^k-x^*\| + 2L_g \|x^k-x^{k+1}\|. 
+	    \leq \|\nabla f(x^k)+\gamma_{g, \phi}^{k+1}\|\|x^k-x^*\| + 2L_g \|x^k-x^{k+1}\| + \phi_k. 
 	\end{align}
 
 	Using \eqref{eq:case1}, \eqref{equ:_bound_F_xk_xk1}, the bound on  $\| x^{k+1} - x^k\|$ from \eqref{eq:bndcase1} together with the bound on $\|x^{k} - x^*\|$ from Assumptions~\ref{assub:bound_level_set} we get
 	\[
-		\Delta F_k\leq D_{\Xcal_0} \|\nabla f(x^k)+\gamma_{g, \phi}^{k+1}\| +  \frac{2(1+\theta)L_g\sqrt{2M_k\phi_k}}{\sigma_k}
-		\leq (\theta D_{\Xcal_0}+  \frac{2(1+\theta)L_g}{\sigma_k})\sqrt{2M_k\phi_k}.
+		\Delta F_k\leq D_{\Xcal_0} \|\nabla f(x^k)+\gamma_{g, \phi}^{k+1}\| +  \frac{2(1+\theta)L_g\sqrt{2M_k\phi_k}}{\sigma_k} + \phi_k
+		\leq (\theta D_{\Xcal_0}+  \frac{2(1+\theta)L_g}{\sigma_k})\sqrt{2M_k\phi_k} + \phi_k.
 	\]
 	  
 	We now consider Case 2, where \eqref{eq:case2} along with \eqref{equ:bound_step_size_inexact} implies
@@ -761,20 +805,21 @@ And there exists such vector $\gamma_{g, \phi}^{k+1} \in \partial g_{\phi_k}(x^{
 	\end{align}
 	for $t_k=\frac{\sigma_k}{2}(\frac{\theta-1}{\theta M_k})^2 - \frac{1+\theta}{\theta^2\sigma_k}- \frac{1}{2\theta^2M_k}$. 
 	Finally, combining the lower bound \eqref{eq:lowerbndinexact} on $F(x^{k+1})-F(x^k)$ together with the upper bound \eqref{eq:upperbndinexact}
-	on $\Delta_k^2$  we can conclude that
+	on $\Delta F_k^2$  we can conclude that
 	\begin{align*}
-		F(x^{k+1})-F(x^k)=\Delta F_{k+1}-\Delta F_k\geq c_k\Delta_k^2,\quad
+		F(x^k) - F(x^{k+1})
+		= \Delta F_k - \Delta F_{k+1} \geq c_k\Delta F_k^2,\quad
 	    \mbox{with, }c_k=\frac{\rho t_k\sigma_k^2\theta^2}{(D_{\Xcal_0}\theta\sigma_k + 2L_g(1+\theta))^2}.
 	\end{align*}
-	In conclusion what we obtain is that at each iteration we either have 
-	 \[
-	\frac{1}{\Delta_{k+1}}-\frac{1}{\Delta_{k}}\geq c_k
-	\]
-	for some constant $c_k$ or
-	 \[
-	\frac{1}{\Delta_{k}}\geq  1/[(2D+  \frac{2(1+\theta)L_g}{\sigma_k})\sqrt{2M_k\phi_k}].
-	\]
-	I am not 100\% certain this gives us desired result but it look promising...	
+	% In conclusion what we obtain is that at each iteration we either have 
+	%  \[
+	% \frac{1}{\Delta_{k+1}}-\frac{1}{\Delta_{k}}\geq c_k
+	% \]
+	% for some constant $c_k$ or
+	%  \[
+	% \frac{1}{\Delta_{k}}\geq  1/[(2D+  \frac{2(1+\theta)L_g}{\sigma_k})\sqrt{2M_k\phi_k}].
+	% \]
+	% I am not 100\% certain this gives us desired result but it look promising...	
 \end{proof}
 
 \section{Analysis of inexact proximal Quasi-Newton method} % (fold)
