@@ -451,37 +451,6 @@ Note that while it is possible to remove Assumption~\ref{assub:bound_level_set} 
 Note also that all iterates $\{x^k\}$ fall into the level set $\Xcal_0$, due to the sufficient decrease condition \eqref{eq:dec_cond} that demands a monotonic decrease on the objective values. Assumption~\ref{assub:bound_level_set} thus follows straightforwardly from the fact that the level set is bounded, which often holds true in real-world problems.
 
 
-\begin{lemma}\label{lem:bound_step_size}
-Let $x^{k+1}:=\arg\min_{u\in\br^n} Q(H_k, u,x_k)$. There exists such vector $\gamma_g^{k+1} \in \partial g(x^{k+1})$ that the following bounds on the step size hold: 
-\begin{align}
-    \label{equ:bound_step_size}
-    \|\nabla f(x^k) + \gamma_g^{k+1}\| / M_k 
-    \leq 
-    \|x^{k+1} - x^k\| 
-    \leq 
-    \|\nabla f(x^k) + \gamma_g^{k+1}\| / \sigma_k.
-\end{align}
-\end{lemma}
-\begin{proof}
-     From the first-order optimality conditions, the following equality holds with $\gamma_g^{k+1}$ being some subgradient of $g(\cdot)$ at $x^{k+1}$: 
-    \begin{align*}
-        % \label{equ:bound_step_size_1st_optima}
-        H_k(x^{k+1} - x^k) + \nabla f(x^k) + \gamma_g^{k+1} = 0,
-    \end{align*}
-    Hence,
-    \begin{align*}
-        &\|x^{k+1} - x^k\|
-        = \| H_k^{-1}(\nabla f(x^k) + \gamma_g^{k+1}) \|
-        \leq \| H_k^{-1} \| \|\nabla f(x^k) + \gamma_g^{k+1}\|
-        \leq \|\nabla f(x^k) + \gamma_g^{k+1}\| / \sigma_k, \\
-        &\|\nabla f(x^k) + \gamma_g^{k+1}\| 
-        = \|H_k(x^{k+1} - x^k)\|
-        \leq \|H_k\| \|x^{k+1} - x^k\|
-        \leq M_k\|x^{k+1} - x^k\|.
-    \end{align*}
-    from which \eqref{equ:bound_step_size} follows.
-\end{proof}
-
 \begin{lemma}
 Consider $F(\cdot)$ defined in \eqref{prob:P}. Let Assumptions~\ref{assub:gLipsch} hold. Then for any three points $u, v, w \in \dom(F)$, we have
 \begin{align}
@@ -525,6 +494,25 @@ where $\gamma_{g, \phi}^v \in \partial_{\phi} g(v)$ is any $\phi$-subgradient of
 	Here in \eqref{proof:f_g_upper} we apply \eqref{equ:_f_convex_upper} and \eqref{equ:_g_convex_upper_inexact} with $u$ replaced by $v$, and in \eqref{proof:g_upper} we apply Assumptions~\ref{assub:gLipsch}. Finally, \eqref{equ:bound_F_u_w_inexact} follows from \eqref{proof:g_upper} and the fact that $||\gamma_{g, \phi}^v|| \leq L_g$ (cf. Assumptions~\ref{assub:gLipsch}).
 \end{proof}
 
+\begin{lemma}\label{lem:bound_step_size}
+Let $x^{k+1}:=\arg\min_{u\in\br^n} Q(H_k, u,x_k)$. Then the decrease on the function $Q$ can be bounded from below by a quadratic function in terms of the step size, i.e., $\|x^{k+1} - x^k\|$,
+\begin{align}
+	\label{equ:bound_Qk_Qk1}
+    Q(H_k,x^k,x^k) - Q(H_k,x^{k+1}, x^k) \geq \frac{\sigma_k}{2}\|x^{k+1}-x^k\|^2.
+\end{align}
+And There exists such vector $\gamma_g^{k+1} \in \partial g(x^{k+1})$ that the following bounds on the step size hold: 
+\begin{align}
+    \label{equ:bound_step_size}
+    \frac{1}{M_k}\|  \nabla f(x^k) + \gamma_{g}^{k+1} \|
+    \leq 
+    \|x^{k+1} - x^k\| 
+    \leq 
+    \frac{1}{\sigma_k}\|  \nabla f(x^k) + \gamma_{g}^{k+1} \|.
+\end{align}
+\end{lemma}
+\begin{proof}
+     The proof is a special case of Lemma~\ref{lem:bound_step_size_inexact} when $\phi_k$ is equal to zero.
+\end{proof}
 
 \begin{theorem}\label{the:ISTA-SD}
 Let Assumptions \ref{as:exact_conv_rate} hold. In Algorithm \ref{alg:ISTA-SD}, suppose that at iteration $k$,  $H_k$, is chosen so that the sufficient decrease condition \eqref{eq:dec_cond} holds.
@@ -547,28 +535,11 @@ Then the iterates $\{x^k\}$ in Algorithm \ref{alg:ISTA-SD} satisfy
 	\begin{equation}\label{eq:lowerbnd}
 	\Delta F_k\leq (D_{\Xcal_0}+\frac{2L_g}{\sigma_k}) \|\nabla f(x^k)+\gamma_g^{k+1}\|.
 	\end{equation}
-	This follows simply from convexity and the assumptions above.
+	This follows simply from \eqref{equ:bound_F_u_w_inexact} with $u = x^k, w = x^*, v = x^{k+1}$ and $\phi = 0$,
 	\begin{align}
-	 \Delta F_k
-	 \nonumber
-	 &=F(x^k)-F(x^*)=f(x^k)-f(x^*)+g(x^k)-g(x^*) \\
-	 \nonumber
-	 &=f(x^k)-f(x^*)+g(x^k)-g(x^{k+1})+g(x^{k+1})-g(x^*) \\
-	 \nonumber
-	 &\leq \langle \nabla f(x^k), x^k-x^* \rangle
-	 +\langle \gamma_g^{k+1}, x^{k+1}-x^* \rangle 
-	 +g(x^k)-g(x^{k+1}) \\
-	 \nonumber
-	 &= \langle \nabla f(x^k), x^k-x^* \rangle
-	 +\langle \gamma_g^{k+1}, x^k-x^* \rangle 
-	 +\langle \gamma_g^{k+1}, x^{k+1}-x^k \rangle 
-	 +g(x^k)-g(x^{k+1})\\
-	 \nonumber
-	 &\leq \|\nabla f(x^k)+\gamma_g^{k+1}\|\|x^k-x^*\| 
-	 + (L_g + ||\gamma_g^{k+1}||) \|x^k-x^{k+1}\| \\
-	 \label{equ:bound_delta_F_k}
-	 &\leq \|\nabla f(x^k)+\gamma_g^{k+1}\|\|x^k-x^*\| 
-	 + 2L_g \|x^k-x^{k+1}\|. 
+	\label{equ:bound_delta_F_k}
+	    \Delta F_k = F(x^k) - F(x^*)
+	    \leq \|\nabla f(x^k)+\gamma_{g}^{k+1}\|\|x^k-x^*\| + 2L_g \|x^k-x^{k+1}\|. 
 	\end{align}
 	Substituting the bounds on  $\| x^{k+1} - x^k\|$ (cf. \eqref{equ:bound_step_size}) and   $\| x^{k} - x^*\|$ (cf. Assumptions~\ref{assub:bound_level_set})
 	in \eqref{equ:bound_delta_F_k} we get
@@ -576,16 +547,12 @@ Then the iterates $\{x^k\}$ in Algorithm \ref{alg:ISTA-SD} satisfy
 
 	Now we will show that 
 	\begin{equation}\label{eq:upperbnd}
-	F(x^{k+1})-F(x^k)\geq {\rho\sigma_k}{2M_k^2}\|\nabla f(x^k)+\gamma_g^{k+1}\|^2.
+		F(x^k) - F(x^{k+1})\geq \frac{\rho\sigma_k}{2M_k^2}\|\nabla f(x^k)+\gamma_g^{k+1}\|^2.
 	\end{equation}
-	Indeed $F(x^{k})-F(x^{k+1})\geq \rho (Q(H_k, x^{k}, x^k)-Q(H_k,x^{k+1}k, x^k))$, hence we need to establish a bound on the reduction in $Q$.   
-
-	Using the optimality condition for $Q$ at $x^{k+1}$ and convexity of $g$ we have
-	    \begin{align}
-	    &Q(H_k,x^k,x^k) - Q(H_k,x^{k+1}, x^k) \\
-	    &= g(x^k) - g(x^{k+1}) -  \nabla f(x^k)^T( x^{k+1}-x^k)  - \frac{1}{2}\|x^{k+1}-x^k\|^2_{H_k} \nonumber \\
-	    \nonumber&\geq ( \gamma_g^{k+1})^T( x^{k}-x^{k+1} ) + \|x^{k+1}-x^k\|_{H_K}^2 +  (\gamma_g^{k+1})^T( x^{k+1}-x^k ) - \frac{1}{2}\|x^{k+1}-x^k\|^2_{H_k} \\
-	    \nonumber&= \frac{1}{2}\|x^{k+1}-x^k\|^2_{H_k} \geq \frac{\sigma_k}{2}\|x^{k+1}-x^k\|^2\geq \frac{\sigma_k}{2M_k^2}   \| \nabla f(x^k) + \gamma_g^{k+1}\| ^2,  \end{align}
+	Indeed $F(x^{k})-F(x^{k+1})\geq \rho (Q(H_k, x^{k}, x^k)-Q(H_k,x^{k+1}k, x^k))$. And a bound on the reduction in $Q$ can be established by combining \eqref{equ:bound_Qk_Qk1} and \eqref{equ:bound_step_size},
+    \begin{align*}
+	    &Q(H_k,x^k,x^k) - Q(H_k,x^{k+1}, x^k) \geq \frac{\sigma_k}{2M_k^2}   \| \nabla f(x^k) + \gamma_g^{k+1}\| ^2,  
+    \end{align*}
 	Hence, the bound \eqref{eq:upperbnd} holds.
 
 
@@ -619,6 +586,27 @@ F(x^k)-F^*\leq   \frac{ 2(D_{\Xcal_0}L+2L_g)^2}{\rho L}\frac{1}{k}\approx \frac{
 \]
 if $L_g\ll D_{\Xcal_0}L$. This is a bound similar to $\frac{2\|x^0-x^*\|^2L}{k}$ established for proximal gradient method, assuming that $D_{\Xcal_0}$ is comparable to
 $\|x^0-x^*\|$. 
+
+
+\section{Analysis of inexact proximal Quasi-Newton method} % (fold)
+\label{sec:conv_inexact}
+
+We now follow the theory proposed in  \cite{Schmidtetal} to analyze Algorithm \ref{alg:ISTA-SD}  in the case when the computation of $p_H( v)$ is performed inexactly. 
+In other words, we consider the version of Algorithm \ref{alg:ISTA-SD} (and \ref{alg:Backtrack_SD}) where we compute 
+$x^{k+1}  := p_{H_k, \phi_k}(x^k)$.
+
+% \begin{assumption}$\\$ % let list start right below
+% \label{as:inexact_conv_rate}
+% 	\assume
+% 	\label{assub:bound_level_set}
+% 	There exists a positive constant $\delta$ such that for all iterates $\{x^k\}$ of Algorithm \ref{alg:ISTA-SD}:
+% 	\begin{align*}
+% 	     \max_{x^* \in X^*}~\|x^k - x^*\| \leq \delta
+% 	\end{align*} 
+% \end{assumption}
+
+
+We can now state the general convergence rate result for the inexact version of Algorithm \ref{alg:ISTA-SD}.
 
 \begin{lemma}\label{lem:bound_step_size_inexact}
 Let $x^{k+1} \in \dom(F)$ be any point such that the inequality $Q(H_k, x^{k+1},x^k)-\min_{y\in\br^n} Q(H_k, y,x^k)\leq \phi_k$ holds with any positive number $\phi_k > 0$. Then the decrease on the function $Q$ can be bounded from below by a quadratic function in terms of the step size, i.e., $\|x^{k+1} - x^k\|$,
@@ -685,7 +673,6 @@ And there exists such vector $\gamma_{g, \phi}^{k+1} \in \partial g_{\phi_k}(x^{
 \end{proof}
 
 \begin{lemma}
-	Suppose that Assumptions~\ref{as:exact_conv_rate} holds. 
 	Consider $k$th iteration of the inexact Algorithm \ref{alg:ISTA-SD} with errors $1 \geq \phi_k>0$ (cf. \eqref{lem:BT2.3-assump-g}). Let $\Delta F_k := F(x^k) - F(x^*)$. Then for some fixed large positive constant $\theta > 0$ either one of the two cases, i.e., \eqref{equ:bound_F_inexact_case1} and \eqref{equ:bound_F_inexact_case2}, must hold,
 	\begin{align}
 		\label{equ:bound_F_inexact_case1}
@@ -787,26 +774,6 @@ And there exists such vector $\gamma_{g, \phi}^{k+1} \in \partial g_{\phi_k}(x^{
 	% \]
 	% I am not 100\% certain this gives us desired result but it look promising...	
 \end{proof}
-
-\section{Analysis of inexact proximal Quasi-Newton method} % (fold)
-\label{sec:conv_inexact}
-
-We now follow the theory proposed in  \cite{Schmidtetal} to analyze Algorithm \ref{alg:ISTA-SD}  in the case when the computation of $p_H( v)$ is performed inexactly. 
-In other words, we consider the version of Algorithm \ref{alg:ISTA-SD} (and \ref{alg:Backtrack_SD}) where we compute 
-$x^{k+1}  := p_{H_k, \phi_k}(x^k)$.
-
-% \begin{assumption}$\\$ % let list start right below
-% \label{as:inexact_conv_rate}
-% 	\assume
-% 	\label{assub:bound_level_set}
-% 	There exists a positive constant $\delta$ such that for all iterates $\{x^k\}$ of Algorithm \ref{alg:ISTA-SD}:
-% 	\begin{align*}
-% 	     \max_{x^* \in X^*}~\|x^k - x^*\| \leq \delta
-% 	\end{align*} 
-% \end{assumption}
-
-
-We can now state the general convergence rate result for the inexact version of Algorithm \ref{alg:ISTA-SD}.
 
 \begin{theorem}\label{th:inexact_conv_rate}
 Suppose that Assumptions~\ref{as:exact_conv_rate} and \ref{as:inexact_conv_rate} hold. 
