@@ -485,20 +485,20 @@ Let $x^{k+1}:=\arg\min_{u\in\br^n} Q(H_k, u,x_k)$. There exists such vector $\ga
 \begin{lemma}
 Consider $F(\cdot)$ defined in \eqref{prob:P}. Let Assumptions~\ref{assub:gLipsch} hold. Then for any three points $u, v, w \in \dom(F)$, we have
 \begin{align}
-	\label{equ:bound_F_u_w}
+	\label{equ:bound_F_u_w_inexact}
     F(u) - F(w) 
     \leq 
-    \|\nabla f(u)+\gamma_g^v\|\|u-w\| + 2L_g \|u-v\|.
+    \|\nabla f(u)+\gamma_{g, \phi}^v\|\|u-w\| + 2L_g \|u-v\| + \phi.
 \end{align}
-where $\gamma_g^v \in \partial g(v)$ is any subgradient of $g(\cdot)$ at point $v$.
+where $\gamma_{g, \phi}^v \in \partial_{\phi} g(v)$ is any $\phi$-subgradient of $g(\cdot)$ at point $v$.
 \end{lemma}
 \begin{proof}
 	From convexity of $f$ and $g$, it follows that for any two points $u, w$,
 	\begin{align}
-		\label{equ:f_convex_upper}
+		\label{equ:_f_convex_upper}
 	    f(u) - f(w) &\leq \langle \nabla f(u), u-w \rangle, \\
-	    \label{equ:g_convex_upper}
-	    g(u) - g(w) &\leq \langle \gamma_g^u, u-w \rangle.
+	    \label{equ:_g_convex_upper_inexact}
+	    g(u) - g(w) &\leq \langle \gamma_{g, \phi}^u, u-w \rangle + \phi.
 	\end{align}
 	Hence,
 	\begin{align}
@@ -509,18 +509,20 @@ where $\gamma_g^v \in \partial g(v)$ is any subgradient of $g(\cdot)$ at point $
 	    &=f(u)-f(w)+g(u)-g(v)+g(v)-g(w) \\
 	    \label{proof:f_g_upper}
 	    &\leq \langle \nabla f(u), u-w \rangle
-	    +\langle \gamma_g^v, v-w \rangle 
-	    +g(u)-g(v) \\
+	    +\langle \gamma_{g, \phi}^v, v-w \rangle 
+	    +g(u)-g(v) 
+	    + \phi\\
 	    \nonumber
 	    &= \langle \nabla f(u), u-w \rangle
-	    +\langle \gamma_g^v, u-w \rangle 
-	    +\langle \gamma_g^v, v-u \rangle 
-	    +g(u)-g(v)\\
+	    +\langle \gamma_{g, \phi}^v, u-w \rangle 
+	    +\langle \gamma_{g, \phi}^v, v-u \rangle 
+	    +g(u)-g(v)
+	    + \phi\\
 	    \label{proof:g_upper}
-	    &\leq \|\nabla f(u)+\gamma_g^v\|\|u-w\| 
-	    + (L_g + ||\gamma_g^v||) \|u-v\|. 
+	    &\leq \|\nabla f(u)+\gamma_{g, \phi}^v\|\|u-w\| 
+	    + (L_g + ||\gamma_{g, \phi}^v||) \|u-v\|+ \phi. 
 	\end{align}
-	Here in \eqref{proof:f_g_upper} we apply \eqref{equ:f_convex_upper} and \eqref{equ:g_convex_upper} with $u$ replaced by $v$, and in \eqref{proof:g_upper} we apply Assumptions~\ref{assub:gLipsch}. Finally, \eqref{equ:bound_F_u_w} follows from \eqref{proof:g_upper} and the fact that $||\gamma_g^v|| \leq L_g$ (cf. Assumptions~\ref{assub:gLipsch}).
+	Here in \eqref{proof:f_g_upper} we apply \eqref{equ:_f_convex_upper} and \eqref{equ:_g_convex_upper_inexact} with $u$ replaced by $v$, and in \eqref{proof:g_upper} we apply Assumptions~\ref{assub:gLipsch}. Finally, \eqref{equ:bound_F_u_w_inexact} follows from \eqref{proof:g_upper} and the fact that $||\gamma_{g, \phi}^v|| \leq L_g$ (cf. Assumptions~\ref{assub:gLipsch}).
 \end{proof}
 
 
@@ -617,50 +619,6 @@ F(x^k)-F^*\leq   \frac{ 2(D_{\Xcal_0}L+2L_g)^2}{\rho L}\frac{1}{k}\approx \frac{
 \]
 if $L_g\ll D_{\Xcal_0}L$. This is a bound similar to $\frac{2\|x^0-x^*\|^2L}{k}$ established for proximal gradient method, assuming that $D_{\Xcal_0}$ is comparable to
 $\|x^0-x^*\|$. 
-
-
-\begin{lemma}
-Consider $F(\cdot)$ defined in \eqref{prob:P}. Let Assumptions~\ref{assub:gLipsch} hold. Then for any three points $u, v, w \in \dom(F)$, we have
-\begin{align}
-	\label{equ:bound_F_u_w_inexact}
-    F(u) - F(w) 
-    \leq 
-    \|\nabla f(u)+\gamma_{g, \phi}^v\|\|u-w\| + 2L_g \|u-v\| + \phi.
-\end{align}
-where $\gamma_{g, \phi}^v \in \partial_{\phi} g(v)$ is any $\phi$-subgradient of $g(\cdot)$ at point $v$.
-\end{lemma}
-\begin{proof}
-	From convexity of $f$ and $g$, it follows that for any two points $u, w$,
-	\begin{align}
-		\label{equ:_f_convex_upper}
-	    f(u) - f(w) &\leq \langle \nabla f(u), u-w \rangle, \\
-	    \label{equ:_g_convex_upper_inexact}
-	    g(u) - g(w) &\leq \langle \gamma_{g, \phi}^u, u-w \rangle + \phi.
-	\end{align}
-	Hence,
-	\begin{align}
-	    \nonumber
-	    F(u)-F(w)
-	    &=f(u)-f(w)+g(u)-g(w) \\
-	    \nonumber
-	    &=f(u)-f(w)+g(u)-g(v)+g(v)-g(w) \\
-	    \label{proof:f_g_upper}
-	    &\leq \langle \nabla f(u), u-w \rangle
-	    +\langle \gamma_{g, \phi}^v, v-w \rangle 
-	    +g(u)-g(v) 
-	    + \phi\\
-	    \nonumber
-	    &= \langle \nabla f(u), u-w \rangle
-	    +\langle \gamma_{g, \phi}^v, u-w \rangle 
-	    +\langle \gamma_{g, \phi}^v, v-u \rangle 
-	    +g(u)-g(v)
-	    + \phi\\
-	    \label{proof:g_upper}
-	    &\leq \|\nabla f(u)+\gamma_{g, \phi}^v\|\|u-w\| 
-	    + (L_g + ||\gamma_{g, \phi}^v||) \|u-v\|+ \phi. 
-	\end{align}
-	Here in \eqref{proof:f_g_upper} we apply \eqref{equ:_f_convex_upper} and \eqref{equ:_g_convex_upper_inexact} with $u$ replaced by $v$, and in \eqref{proof:g_upper} we apply Assumptions~\ref{assub:gLipsch}. Finally, \eqref{equ:bound_F_u_w_inexact} follows from \eqref{proof:g_upper} and the fact that $||\gamma_{g, \phi}^v|| \leq L_g$ (cf. Assumptions~\ref{assub:gLipsch}).
-\end{proof}
 
 \begin{lemma}\label{lem:bound_step_size_inexact}
 Let $x^{k+1} \in \dom(F)$ be any point such that the inequality $Q(H_k, x^{k+1},x^k)-\min_{y\in\br^n} Q(H_k, y,x^k)\leq \phi_k$ holds with any positive number $\phi_k > 0$. Then the decrease on the function $Q$ can be bounded from below by a quadratic function in terms of the step size, i.e., $\|x^{k+1} - x^k\|$,
