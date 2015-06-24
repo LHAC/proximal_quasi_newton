@@ -728,16 +728,16 @@ And there exists such vector $\gamma_{g, \phi}^{k+1} \in \partial g_{\phi_k}(x^{
 
 \begin{lemma}
 	Suppose that Assumptions~\ref{as:exact_conv_rate} holds. 
-	Consider $k$th iteration of the inexact Algorithm \ref{alg:ISTA-SD} with errors $\phi_k>0$ (cf. \eqref{lem:BT2.3-assump-g}). Let $\Delta F_k := F(x^k) - F(x^*)$. Then for some fixed large positive constant $\theta > 0$ either one of the two cases, i.e., \eqref{equ:bound_F_inexact_case1} and \eqref{equ:bound_F_inexact_case2}, must hold,
+	Consider $k$th iteration of the inexact Algorithm \ref{alg:ISTA-SD} with errors $1 \geq \phi_k>0$ (cf. \eqref{lem:BT2.3-assump-g}). Let $\Delta F_k := F(x^k) - F(x^*)$. Then for some fixed large positive constant $\theta > 0$ either one of the two cases, i.e., \eqref{equ:bound_F_inexact_case1} and \eqref{equ:bound_F_inexact_case2}, must hold,
 	\begin{align}
 		\label{equ:bound_F_inexact_case1}
-	    &\Delta F_k \leq b_k\sqrt{\phi_k} + \phi_k, \\
+	    &\Delta F_k \leq b_k\sqrt{\phi_k}, \\
 	    \label{equ:bound_F_inexact_case2}
 	    &\frac{1}{\Delta F_{k+1}}-\frac{1}{\Delta F_{k}}\geq c_k.
 	\end{align}
-	where $t_k, b_k$ and $c_k$ are given below,
+	where $b_k$ and $c_k$ are given below,
 	\begin{align*}
-	    t_k=\frac{\sigma_k}{2}(\frac{\theta-1}{\theta M_k})^2 - \frac{1+\theta}{\theta^2\sigma_k}- \frac{1}{2\theta^2M_k}, ~b_k = (\theta D_{\Xcal_0}+  \frac{2(1+\theta)L_g}{\sigma_k})\sqrt{2M_k}, ~c_k=\frac{\rho t_k\sigma_k^2\theta^2}{(D_{\Xcal_0}\theta\sigma_k + 2L_g(1+\theta))^2}.
+	    b_k = \theta D_{\Xcal_0}\sqrt{2M_k}+  \frac{2(1+\theta)L_g}{\sigma_k}\sqrt{2M_k} + 1, ~c_k=\frac{\rho(\sigma_k^3(\theta-1)^2 - 2\sigma_kM_k^2(1+\theta) - \sigma_K^3M_k )}{(\sqrt{2}D_{\Xcal_0}\theta\sigma_kM_k + 2\sqrt{2}L_g(1+\theta)M_k + \sigma_k\sqrt{M_k} )^2}.
 	\end{align*}
 \end{lemma}
 \begin{proof}	                
@@ -768,10 +768,12 @@ And there exists such vector $\gamma_{g, \phi}^{k+1} \in \partial g_{\phi_k}(x^{
 	\end{align}
 
 	Using \eqref{eq:case1}, \eqref{equ:_bound_F_xk_xk1}, the bound on  $\| x^{k+1} - x^k\|$ from \eqref{eq:bndcase1} together with the bound on $\|x^{k} - x^*\|$ from Assumptions~\ref{assub:bound_level_set} we get
-	\[
-		\Delta F_k\leq D_{\Xcal_0} \|\nabla f(x^k)+\gamma_{g, \phi}^{k+1}\| +  \frac{2(1+\theta)L_g\sqrt{2M_k\phi_k}}{\sigma_k} + \phi_k
-		\leq (\theta D_{\Xcal_0}+  \frac{2(1+\theta)L_g}{\sigma_k})\sqrt{2M_k\phi_k} + \phi_k.
-	\]
+	\begin{align*}
+	    \Delta F_k
+	    &\leq D_{\Xcal_0} \|\nabla f(x^k)+\gamma_{g, \phi}^{k+1}\| +  \frac{2(1+\theta)L_g\sqrt{2M_k\phi_k}}{\sigma_k} + \phi_k \\
+	    &\leq (\theta D_{\Xcal_0}+  \frac{2(1+\theta)L_g}{\sigma_k})\sqrt{2M_k\phi_k} + \phi_k 
+	    \leq (\theta D_{\Xcal_0}\sqrt{2M_k}+  \frac{2(1+\theta)L_g}{\sigma_k}\sqrt{2M_k} + 1) \sqrt{\phi_k}.
+	\end{align*}
 	  
 	We now consider Case 2, where \eqref{eq:case2} along with \eqref{equ:bound_step_size_inexact} implies
 	\begin{equation}\label{eq:bndcase2} 
@@ -779,15 +781,21 @@ And there exists such vector $\gamma_{g, \phi}^{k+1} \in \partial g_{\phi_k}(x^{
 	\end{equation}
 
 	Substituting into \eqref{equ:_bound_F_xk_xk1} the upper bound on  $\| x^{k+1} - x^k\|$ from \eqref{eq:bndcase2} and the bound on $\|x^{k} - x^*\|$ from Assumptions~\ref{assub:bound_level_set} we now get  
-	\begin{equation}\label{eq:upperbndinexact}
+	\begin{align*}
 		\Delta F_k\leq 
-		(D_{\Xcal_0} + \frac{2L_g(1+\theta)}{\theta\sigma_k})\|\nabla f(x^k)+\gamma_{g, \phi}^{k+1}\|
-	\end{equation}
-
+		(D_{\Xcal_0} + \frac{2L_g(1+\theta)}{\theta\sigma_k})\|\nabla f(x^k)+\gamma_{g, \phi}^{k+1}\| + \phi_k.
+	\end{align*}
+	From $1 \geq \phi_k > 0$ it follows that $\| \nabla f(x^k) + \gamma_{g, \phi}^{k+1} \| \geq \theta \sqrt{2M_k\phi_k} \geq \theta \sqrt{2M_k}\phi_k$. Hence we obtain
+	\begin{align}
+	\label{eq:upperbndinexact}
+		\Delta F_k\leq 
+		(D_{\Xcal_0} + \frac{2L_g(1+\theta)}{\theta\sigma_k} + \frac{1}{\theta\sqrt{2M_k}})\|\nabla f(x^k)+\gamma_{g, \phi}^{k+1}\|.
+	\end{align}
 	 
 	We will  show that in this case again we have 
 	\begin{equation}\label{eq:mainbnd}
-		F(x^{k+1})-F(x^k)\geq c_k \Delta F_k^2
+		\Delta F_k - \Delta F_{K+1} = 
+		 F(x^k) - F(x^{k+1})\geq c_k \Delta F_k^2
 	\end{equation} for some constant $c_k$.  
 	Towards that goal  we will establish a lower bound on $F(x^{k+1})-F(x^k)$ in terms of $\|\nabla f(x^k)+\gamma_{g, \phi}^{k+1}\|^2$ as before.
 	We still have $F(x^{k})-F(x^{k+1})\geq \rho (Q(H_k, x^{k}, x^k)-Q(H_k,x^{k+1}, x^k))$. 
@@ -805,12 +813,12 @@ And there exists such vector $\gamma_{g, \phi}^{k+1} \in \partial g_{\phi_k}(x^{
 	\end{align}
 	for $t_k=\frac{\sigma_k}{2}(\frac{\theta-1}{\theta M_k})^2 - \frac{1+\theta}{\theta^2\sigma_k}- \frac{1}{2\theta^2M_k}$. 
 	Finally, combining the lower bound \eqref{eq:lowerbndinexact} on $F(x^{k+1})-F(x^k)$ together with the upper bound \eqref{eq:upperbndinexact}
-	on $\Delta F_k^2$  we can conclude that
+	on $\Delta F_k^2$  we can conclude that \eqref{eq:mainbnd} holds with 
 	\begin{align*}
-		F(x^k) - F(x^{k+1})
-		= \Delta F_k - \Delta F_{k+1} \geq c_k\Delta F_k^2,\quad
-	    \mbox{with, }c_k=\frac{\rho t_k\sigma_k^2\theta^2}{(D_{\Xcal_0}\theta\sigma_k + 2L_g(1+\theta))^2}.
+		c_k= \frac{\rho t_k}{(D_{\Xcal_0} + \frac{2L_g(1+\theta)}{\theta\sigma_k} + \frac{1}{\theta\sqrt{2M_k}})^2} = \frac{\rho(\sigma_k^3(\theta-1)^2 - 2\sigma_kM_k^2(1+\theta) - \sigma_K^3M_k )}{(\sqrt{2}D_{\Xcal_0}\theta\sigma_kM_k + 2\sqrt{2}L_g(1+\theta)M_k + \sigma_k\sqrt{M_k} )^2}.    
 	\end{align*}
+	Finally, \eqref{equ:bound_F_inexact_case2} follows from \eqref{eq:mainbnd} divided by $\Delta F_k\Delta F_{k+1}$ and using the fact that $\frac{\Delta F_k}{\Delta F_{k+1}} \geq 1$.
+	
 	% In conclusion what we obtain is that at each iteration we either have 
 	%  \[
 	% \frac{1}{\Delta_{k+1}}-\frac{1}{\Delta_{k}}\geq c_k
