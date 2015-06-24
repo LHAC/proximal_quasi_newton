@@ -292,38 +292,38 @@ An inexact version of Algorithm \ref{alg:ISTA-SD}  is obtained by simply replaci
 
 In the next three sections we present the analysis of convergence rate of  Algorithm \ref{alg:ISTA-SD}. Recall that we assume that $f(x)$ is convex and smooth, in other words $\|\nabla f(x)-\nabla f(y)\|\leq L(f)\|x-y\|$ for all $x$ and $y$ in the domain of interest, while $g(x)$ is simply convex. In Section \ref{sec:coordinate_descent_iteration_complexity} we assume that $g(x)=\lambda \|x\|_1$. Note that we do not assume that $f(x)$ is strongly convex or that it is twice continuously differentiable, because we do not rely on any accurate second order information in our framework. We only assume that the Hessian approximations are positive definite and bounded, but their accuracy can be arbitrary, as long as sufficient decrease condition holds. Hence we only achieve sublinear rate of convergence. To achieve higher local rates of convergence stronger assumptions on $f(x)$ and on the Hessian approximations have to be made, see for instance, \cite{Byrdetal2013} and \cite{Saundersetal} for related local convergence analysis. 
 
-First we present a helpful lemma which is a simple extension of Lemma 2 in \cite{Schmidtetal} to the case of general positive definite Hessian estimate. This lemma establishes some simple properties of an $\epsilon$-optimal solution to the proximal problem (\ref{prob:g-shrink}).  It uses the concept of the $\epsilon$-subdifferential of a convex function $a$ at $x$, 
-$\partial_{\epsilon} a(x)$, which is defined as the set of vectors $y$ such that $a(x) - y^Tx \leq a(t) - y^Tt + \epsilon$ for all $t$. 
+First we present a helpful lemma which is a simple extension of Lemma 2 in \cite{Schmidtetal} to the case of general positive definite Hessian estimate. This lemma establishes some simple properties of an $\phi$-optimal solution to the proximal problem (\ref{prob:g-shrink}).  It uses the concept of the $\phi$-subdifferential of a convex function $a$ at $x$, 
+$\partial_{\phi} a(x)$, which is defined as the set of vectors $y$ such that $a(x) - y^Tx \leq a(t) - y^Tt + \phi$ for all $t$. 
 \begin{lemma}
     \label{lem:inexact_1st_opt_cond}
-    Given $\epsilon >0$, a p.d. matrix $H$ and $v\in \br^n$, let $p_{\epsilon}(v)$ denote the $\epsilon$-optimal solution to the proximal problem (\ref{prob:g-shrink}) in the sense that
+    Given $\phi >0$, a p.d. matrix $H$ and $v\in \br^n$, let $p_{\phi}(v)$ denote the $\phi$-optimal solution to the proximal problem (\ref{prob:g-shrink}) in the sense that
     \begin{align}
         \label{equ:eps_minimizer}
-        g(p_{\epsilon}(v))+\frac{1}{2}\|p_{\epsilon}(v)-z\|_H^2 \leq \epsilon +
+        g(p_{\phi}(v))+\frac{1}{2}\|p_{\phi}(v)-z\|_H^2 \leq \phi +
         \min_{x\in\br^n}\left\{g(x)+\frac{1}{2}\|x-z\|_H^2 \right\},
     \end{align}
-    where $z = v - H^{-1} \nabla f(v)$. Then there exists $\eta$ such that $\frac{1}{2} \| \eta \|^2_{H^{-1}} \leq \epsilon$ and
+    where $z = v - H^{-1} \nabla f(v)$. Then there exists $\eta$ such that $\frac{1}{2} \| \eta \|^2_{H^{-1}} \leq \phi$ and
     \begin{align}
         \label{equ:inexact_solvQ_lem}
-        H(v-p_{\epsilon}(v))  - \eta \in \partial_{\epsilon}g(p_{\epsilon}(v)).
+        H(v-p_{\phi}(v))  - \eta \in \partial_{\phi}g(p_{\phi}(v)).
     \end{align}
 \end{lemma}
 
 
 \begin{proof}
-    (\ref{equ:eps_minimizer}) indicates that $p_{\epsilon}(v)$ is an $\epsilon$-minimizer of the convex function $a(x) := \frac{1}{2}\|x-z\|_H^2+g(x)$. If we let $a_1(x) = \frac{1}{2}\|x-z\|_H^2$ and $a_2(x) = g(x)$, then this is equivalent to
+    (\ref{equ:eps_minimizer}) indicates that $p_{\phi}(v)$ is an $\phi$-minimizer of the convex function $a(x) := \frac{1}{2}\|x-z\|_H^2+g(x)$. If we let $a_1(x) = \frac{1}{2}\|x-z\|_H^2$ and $a_2(x) = g(x)$, then this is equivalent to
     \begin{align}
         \label{equ:zero_in_subdiff}
-        0 \subset \partial_{\epsilon} a(p_{\epsilon}(v)) \subset \partial_{\epsilon} a_1(p_{\epsilon}(v)) + \partial_{\epsilon} a_2(p_{\epsilon}(v)).
+        0 \subset \partial_{\phi} a(p_{\phi}(v)) \subset \partial_{\phi} a_1(p_{\phi}(v)) + \partial_{\phi} a_2(p_{\phi}(v)).
     \end{align}
     Hence,
     \begin{align*}
-        \partial_{\epsilon} a_1(p_{\epsilon}(v)) &= \left\{ y \in \br^n ~|~ \frac{1}{2} \| y + H(z-p_{\epsilon}(v)) \|^2_{H^{-1}} \leq \epsilon \right\} \\
-        &= \left\{ y \in \br^n, ~y = \eta - H(z-p_{\epsilon}(v)) ~|~ \frac{1}{2} \|\eta\|^2_{H^{-1}} \leq \epsilon \right\}.
+        \partial_{\phi} a_1(p_{\phi}(v)) &= \left\{ y \in \br^n ~|~ \frac{1}{2} \| y + H(z-p_{\phi}(v)) \|^2_{H^{-1}} \leq \phi \right\} \\
+        &= \left\{ y \in \br^n, ~y = \eta - H(z-p_{\phi}(v)) ~|~ \frac{1}{2} \|\eta\|^2_{H^{-1}} \leq \phi \right\}.
     \end{align*}
     From (\ref{equ:zero_in_subdiff}) we have
     \begin{align}
-        H(z-p_{\epsilon}(v)) - \eta \in \partial_{\epsilon}g(p_{\epsilon}(v)) \mbox{ with } \frac{1}{2} \|\eta\|^2_{H^{-1}} \leq \epsilon.
+        H(z-p_{\phi}(v)) - \eta \in \partial_{\phi}g(p_{\phi}(v)) \mbox{ with } \frac{1}{2} \|\eta\|^2_{H^{-1}} \leq \phi.
     \end{align}
     Then (\ref{equ:inexact_solvQ_lem}) follows using $z = v - H^{-1} \nabla f(v)$.
 \end{proof}
@@ -682,7 +682,7 @@ And there exists such vector $\gamma_{g, \phi}^{k+1} \in \partial g_{\phi_k}(x^{
 	\end{align}
 	where $b_k$ and $c_k$ are given below,
 	\begin{align*}
-	    b_k = \theta D_{\Xcal_0}\sqrt{2M_k}+  \frac{2(1+\theta)L_g}{\sigma_k}\sqrt{2M_k} + 1, ~c_k=\frac{\rho(\sigma_k^3(\theta-1)^2 - 2\sigma_kM_k^2(1+\theta) - \sigma_K^3M_k )}{(\sqrt{2}D_{\Xcal_0}\theta\sigma_kM_k + 2\sqrt{2}L_g(1+\theta)M_k + \sigma_k\sqrt{M_k} )^2}.
+	    b_k = \theta D_{\Xcal_0}\sqrt{2M_k}+  \frac{2(1+\theta)L_g}{\sigma_k}\sqrt{2M_k} + 1, ~c_k=\frac{\rho(\sigma_k^3(\theta-1)^2 - 2\sigma_kM_k^2(1+\theta) - \sigma_k^3M_k )}{(\sqrt{2}D_{\Xcal_0}\theta\sigma_kM_k + 2\sqrt{2}L_g(1+\theta)M_k + \sigma_k\sqrt{M_k} )^2}.
 	\end{align*}
 \end{lemma}
 \begin{proof}	                
