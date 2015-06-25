@@ -784,7 +784,7 @@ Let constants $a = \min\{c, \frac{1}{b\sqrt{\alpha_s}}\}$ and $b, c$ be given as
     ~
     c = \frac{\rho \left( \frac{\sigma^2}{M^2}(1 - \psi)^2 - (2\psi + 3\psi^2) \right)}{2(D_{\Xcal_0} + \frac{2L_g(1+\psi)}{\sqrt{\sigma}} + \frac{\psi}{\sqrt{2}})^2}.
 \end{align}
-where $\psi = \frac{1}{\theta}$ and $\theta$ is the same as specified in Lemma~\ref{lem:bound_iter_inexact}. Then,
+where $\psi = \frac{1}{\theta}$ and $\theta$ is the same as specified in Lemma~\ref{lem:bound_iter_inexact}. Then for any $k \geq k_0$
 \begin{align}
     \label{eq:bound_F_F*}
 	F(x^k) - F(x^*) 
@@ -833,7 +833,7 @@ where $\psi = \frac{1}{\theta}$ and $\theta$ is the same as specified in Lemma~\
 	\label{equ:_thm_conv_rate_case3}
 	    F(x^{k+1}) - F(x^*) = \Delta F_{k+1} \leq \frac{1}{ak}
 	\end{align}
-	Finally, \eqref{eq:bound_F_F*} follows from considering all cases \eqref{equ:_thm_conv_rate_case1}, \eqref{equ:_thm_conv_rate_case2} and \eqref{equ:_thm_conv_rate_case3}.
+	Finally, \eqref{eq:bound_F_F*} follows from arbitrariness of $k$ and the fact that one of the three cases \eqref{equ:_thm_conv_rate_case1}, \eqref{equ:_thm_conv_rate_case2} and \eqref{equ:_thm_conv_rate_case3} must hold for $k \geq k_0$.
 	
 \end{proof}
 
