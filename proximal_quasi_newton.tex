@@ -673,6 +673,7 @@ And there exists such vector $\gamma_{g, \phi}^{k+1} \in \partial g_{\phi_k}(x^{
 \end{proof}
 
 \begin{lemma}
+\label{lem:bound_iter_inexact}
 	Consider $k$th iteration of the inexact Algorithm \ref{alg:ISTA-SD} with errors $1 \geq \phi_k>0$ (cf. \eqref{lem:BT2.3-assump-g}). Let $\Delta F_k := F(x^k) - F(x^*)$. Then for some fixed large positive constant $\theta > 0$ either one of the two cases, i.e., \eqref{equ:bound_F_inexact_case1} and \eqref{equ:bound_F_inexact_case2}, must hold,
 	\begin{align}
 		\label{equ:bound_F_inexact_case1}
@@ -681,9 +682,12 @@ And there exists such vector $\gamma_{g, \phi}^{k+1} \in \partial g_{\phi_k}(x^{
 	    &\frac{1}{\Delta F_{k+1}}-\frac{1}{\Delta F_{k}}\geq c_k.
 	\end{align}
 	where $b_k$ and $c_k$ are given below,
-	\begin{align*}
-	    b_k = \theta D_{\Xcal_0}\sqrt{2M_k}+  \frac{2(1+\theta)L_g}{\sigma_k}\sqrt{2M_k} + 1, ~c_k=\frac{\rho(\sigma_k^3(\theta-1)^2 - 2\sigma_kM_k^2(1+\theta) - \sigma_k^3M_k )}{(\sqrt{2}D_{\Xcal_0}\theta\sigma_kM_k + 2\sqrt{2}L_g(1+\theta)M_k + \sigma_k\sqrt{M_k} )^2}.
-	\end{align*}
+	\begin{align}
+	\label{equ:bound_bk_ck}
+	    b_k = \theta D_{\Xcal_0}\sqrt{2M_k}+  \frac{2(1+\theta)L_g}{\sigma_k}\sqrt{2M_k} + 1, 
+	    ~
+	    c_k=\frac{\rho(\sigma_k^3(\theta-1)^2 - 2\sigma_kM_k^2(1+\theta) - \sigma_k^3M_k )}{(\sqrt{2}D_{\Xcal_0}\theta\sigma_kM_k + 2\sqrt{2}L_g(1+\theta)M_k + \sigma_k\sqrt{M_k} )^2}.
+	\end{align}
 \end{lemma}
 \begin{proof}	                
 	We will consider two cases that are possible at each iteration $k$ for some fixed constant $\theta>1$ which we will specify later. 
@@ -763,71 +767,131 @@ And there exists such vector $\gamma_{g, \phi}^{k+1} \in \partial g_{\phi_k}(x^{
 		c_k= \frac{\rho t_k}{(D_{\Xcal_0} + \frac{2L_g(1+\theta)}{\theta\sigma_k} + \frac{1}{\theta\sqrt{2M_k}})^2} = \frac{\rho(\sigma_k^3(\theta-1)^2 - 2\sigma_kM_k^2(1+\theta) - \sigma_K^3M_k )}{(\sqrt{2}D_{\Xcal_0}\theta\sigma_kM_k + 2\sqrt{2}L_g(1+\theta)M_k + \sigma_k\sqrt{M_k} )^2}.    
 	\end{align*}
 	Finally, \eqref{equ:bound_F_inexact_case2} follows from \eqref{eq:mainbnd} divided by $\Delta F_k\Delta F_{k+1}$ and using the fact that $\frac{\Delta F_k}{\Delta F_{k+1}} \geq 1$.
-	
-	% In conclusion what we obtain is that at each iteration we either have 
-	%  \[
-	% \frac{1}{\Delta_{k+1}}-\frac{1}{\Delta_{k}}\geq c_k
-	% \]
-	% for some constant $c_k$ or
-	%  \[
-	% \frac{1}{\Delta_{k}}\geq  1/[(2D+  \frac{2(1+\theta)L_g}{\sigma_k})\sqrt{2M_k\phi_k}].
-	% \]
-	% I am not 100\% certain this gives us desired result but it look promising...	
 \end{proof}
 
 \begin{theorem}\label{th:inexact_conv_rate}
-Suppose that Assumptions~\ref{as:exact_conv_rate} and \ref{as:inexact_conv_rate} hold. 
-Assume that all iterates $\{x^k\}$ of inexact Algorithm \ref{alg:ISTA-SD} are generated with some $\phi_k>0$ (cf. \eqref{lem:BT2.3-assump-g}), then
+Suppose that Assumptions~\ref{as:exact_conv_rate} hold. 
+Assume that all iterates $\{x^k\}$ of inexact Algorithm \ref{alg:ISTA-SD} are generated with some $\phi_k>0$ that satisfy
+\begin{align}
+\label{equ:phi_conv_rate_required}
+    \phi_k \leq \frac{\alpha_s}{k^2}, \mbox{ with } \alpha_s > 0.
+\end{align}
+Let $k_0$ be the smallest integer such that $\phi_{k_0} \leq \frac{\alpha_s}{k_0^2} \leq 1$.
+Let constants $a = \min\{c, \frac{1}{b\sqrt{\alpha_s}}\}$ and $b, c$ be given as follows,
+\begin{align}
+\label{equ:bound_b_c}
+    b = \theta D_{\Xcal_0}\sqrt{2M}+  \frac{2(1+\theta)L_g}{\sigma}\sqrt{2M} + 1, 
+    ~
+    c = \frac{\rho \left( \frac{\sigma^2}{M^2}(1 - \psi)^2 - (2\psi + 3\psi^2) \right)}{2(D_{\Xcal_0} + \frac{2L_g(1+\psi)}{\sqrt{\sigma}} + \frac{\psi}{\sqrt{2}})^2}.
+\end{align}
+where $\psi = \frac{1}{\theta}$ and $\theta$ is the same as specified in Lemma~\ref{lem:bound_iter_inexact}. Then,
 \begin{align}
     \label{eq:bound_F_F*}
-    F(x^k) - F(x^*) \leq 
-    \frac{1}{k_m} \left( \frac{1}{2} \|x^0-x^*\|_{\frac{H_0}{M_0}}^2 
-    + \frac{(1-\rho)(F(x^0)-F(x^*))}{\rho\sigma} 
-    + \sum_{i=0}^{k-1}\frac{\phi_i}{M_i}
-    + \delta\sum_{i=0}^{k-1} \sqrt{\frac{2\phi_i}{M_i}} \right),
+	F(x^k) - F(x^*) 
+    \leq \max\{b \frac{\sqrt{\alpha_s}}{k}, \frac{1}{a(k-1)}, \frac{1}{c(k-k_0+1)} \}.
 \end{align}
 \end{theorem}
-
-
 \begin{proof}
-    As is done in Theorem~\ref{the:ISTA-SD},  we apply Lemma \ref{lem:subp_inexact}, sequentially, with $u=x^*$, $p_{\phi}(v)=x^i$ and nonzero subproblem minimization residual $\phi_i$ for $i=0, \ldots, k-1$. Adding up resulting inequalities, we obtain  
-    \begin{align}
-        &\sum_{i=0}^{k-1} \frac{F(x^{i+1}) - F(x^*)}{M_i}\leq 
-        \frac{1}{2} \sum_{i=0}^{k-1} \left(\|x^i-x^*\|_{H_i/M_i}^2 
-        - \|x^{i+1}-x^*\|_{H_i/M_i}^2 \right) 
-        + \sum_{i=0}^{k-1} \frac{\epsilon_i}{M_i} 
-        + \sum_{i=0}^{k-1} \frac{\phi_i}{M_i} 
-        + \sum_{i=0}^{k-1} \frac{\langle \eta_i,x^* - x^{i+1} \rangle}{M_i}  \\
-        \label{equ:bound_F_diff}
-        &= 
-        \frac{1}{2} \left( \|x^0-x^*\|_{\frac{H_0}{M_0}}^2 
-        + \sum_{i=0}^{k-1}\|x^{i+1} - x^*\|_{\frac{H_{i+1}}{M_{i+1}}- \frac{H_i}{M_i}}^2 
-        - \|x^k-x^*\|_{\frac{H_k}{M_k}}^2 \right) 
-        + \sum_{i=0}^{k-1} \frac{\epsilon_i}{M_i} 
-        + \sum_{i=0}^{k-1} \frac{\phi_i}{M_i} 
-        + \sum_{i=0}^{k-1} \frac{\langle \eta_i,x^* - x^{i+1} \rangle}{M_i}  \\
-        \nonumber &\mbox{from the assumptions that $H_{i+1} \preceq H_i $ and that $\|x^i - x^*\| \leq \delta, \forall i $} \\
-        \nonumber &\leq 
-        \frac{1}{2} \|x^0-x^*\|_{\frac{H_0}{M_0}}^2 
-        + \sum_{i=0}^{k-1} \frac{\epsilon_i}{M_i} 
-        + \sum_{i=0}^{k-1} \frac{\phi_i}{M_i} 
-        + \delta\sum_{i=0}^{k-1} \frac{\|\eta_i\|}{M_i} \\
-        \nonumber &\mbox{note that $\|\eta_i\|\leq \sqrt{2M_i\phi_i}$, and use the already established bound $\sum_{i=0}^{k-1}\epsilon_i \leq \frac{(1-\rho)(F(x^0)-F(x^*))}{\rho}$}\\
-        \nonumber &\leq 
-        \frac{1}{2} \|x^0-x^*\|_{\frac{H_0}{M_0}}^2 
-        + \frac{(1-\rho)(F(x^0)-F(x^*))}{\rho\sigma} 
-        + \sum_{i=0}^{k-1}\frac{\phi_i}{M_i}
-        + \delta\sum_{i=0}^{k-1} \sqrt{\frac{2\phi_i}{M_i}}.
-    \end{align}
-    Hence,
-    \begin{align*}
-        F(x^k) - F(x^*) &\leq \frac{1}{k_m}\sum_{i=0}^{k-1} \frac{F(x^{i+1}) - F(x^*)}{M_i}\\        
-        &\leq \frac{1}{k_m} \left( \frac{1}{2} \|x^0-x^*\|_{\frac{H_0}{M_0}}^2 
-        + \frac{(1-\rho)(F(x^0)-F(x^*))}{\rho\sigma} 
-        + \sum_{i=0}^{k-1}\frac{\phi_i}{M_i}
-        + \delta\sum_{i=0}^{k-1} \sqrt{\frac{2\phi_i}{M_i}} \right).
-    \end{align*}
+	For all $k \geq k_0$, let $b$ and $c$ denote the uniform upper and lower bounds, respectively, for $b_k$ and $c_k$ in \eqref{equ:bound_bk_ck}, i.e., $b_k \leq b$, $c_k \geq c, \forall k\geq k_0$. Then from Assumptions~\ref{assub:bound_h} we can derive the expressions for $c$ as follows,
+	\begin{align*}
+	    c_k
+	    &= \frac{\rho \left( \frac{\sigma_k}{2}(\frac{\theta-1}{\theta M_k})^2 - \frac{1+\theta}{\theta^2\sigma_k}- \frac{1}{2\theta^2M_k} \right)}{(D_{\Xcal_0} + \frac{2L_g(1+\theta)}{\theta\sigma_k} + \frac{1}{\theta\sqrt{2M_k}})^2} 
+	    \geq \frac{\rho \left( \frac{\sigma}{2}(\frac{\theta-1}{\theta M})^2 - \frac{1+\theta}{\theta^2\sigma}- \frac{1}{2\theta^2\sigma} \right)}{(D_{\Xcal_0} + \frac{2L_g(1+\theta)}{\theta\sigma} + \frac{1}{\theta\sqrt{2\sigma}})^2} 
+	    \geq \frac{\rho \left( \frac{\sigma^2}{2M^2}(\frac{\theta-1}{\theta})^2 - \frac{1+\theta}{\theta^2}- \frac{1}{2\theta^2} \right)}{(D_{\Xcal_0} + \frac{2L_g(1+\theta)}{\theta\sqrt{\sigma}} + \frac{1}{\theta\sqrt{2}})^2} 
+	\end{align*}
+	from which \eqref{equ:bound_b_c} follows by substituting $\psi = \frac{1}{\theta}$. And $b$ can be obtained in a similar fashion.
+
+	Now consider any iteration $k \geq k_0$. From Lemma~\ref{lem:bound_iter_inexact}, it follows that either \eqref{equ:bound_F_inexact_case1} or \eqref{equ:bound_F_inexact_case2} must hold. First we suppose \eqref{equ:bound_F_inexact_case1} hold and obtain
+	\begin{align}
+	\label{equ:_thm_conv_rate_case1}
+	    F(x^k) - F(x^*) = \Delta F_k \leq b_k \sqrt{\phi_k} \leq b \frac{\sqrt{\alpha_s}}{k}
+	\end{align}
+	Next, we consider the other case where \eqref{equ:bound_F_inexact_case2} holds. Let $k_1 \geq k_0$ denote the largest index of such iteration before $k$, i.e., $k_1 < k$, that \eqref{equ:bound_F_inexact_case1} holds. If no such $k_1$ exists, then \eqref{equ:bound_F_inexact_case2} hold for all $k \geq k_0$. Summing \eqref{equ:bound_F_inexact_case2} from $k_0$ till $k$, we obtain,
+	\begin{align*}
+	    \frac{1}{\Delta F_k}  \geq c(k - k_0 + 1)  + \frac{1}{\Delta F_{k_0}} \geq c(k - k_0 + 1)
+	\end{align*}
+	which implies,
+	\begin{align}
+	\label{equ:_thm_conv_rate_case2}
+	    F(x^k) - F(x^*) \leq \frac{1}{c(k - k_0 + 1)}
+	\end{align}
+	On the other hand, if such $k_1$ exists, then
+	\begin{align}
+	\label{equ:_thm_conv_rate_Fk1_upper}
+	    \Delta F_{k_1} \leq b \frac{\sqrt{\alpha_s}}{k_1}
+	\end{align}
+	and \eqref{equ:bound_F_inexact_case2} holds true for all iteration from $k_1+1$ to $k$, i.e.,
+	\begin{align*}
+	    \frac{1}{\Delta F_{k_1 + i + 1}} - \frac{1}{\Delta F_{k_1 + i}} \geq c, ~\forall i = 1, ..., k-k_1
+	\end{align*}
+	Summing up the above inequalities for $i$ from $1$ to $k-k_1$ and using \eqref{equ:_thm_conv_rate_Fk1_upper} we obtain the following bound on $\Delta F_{k+1}$, with $a = \min\{c, \frac{1}{b\sqrt{\alpha_s}}\}$,
+	\begin{align*}
+	    \frac{1}{\Delta F_{k + 1}} \geq c (k-k_1) + \frac{1}{\Delta F_{k_1 + 1}} \geq c (k-k_1) + \frac{1}{\Delta F_{k_1}} \geq c (k-k_1) + \frac{k_1}{b\sqrt{\alpha_s}} \geq a k.
+	\end{align*}
+	which implies,
+	\begin{align}
+	\label{equ:_thm_conv_rate_case3}
+	    F(x^{k+1}) - F(x^*) = \Delta F_{k+1} \leq \frac{1}{ak}
+	\end{align}
+	Finally, \eqref{eq:bound_F_F*} follows from considering all cases \eqref{equ:_thm_conv_rate_case1}, \eqref{equ:_thm_conv_rate_case2} and \eqref{equ:_thm_conv_rate_case3}.
+	
 \end{proof}
+
+
+
+% \begin{theorem}\label{th:inexact_conv_rate}
+% Suppose that Assumptions~\ref{as:exact_conv_rate} and \ref{as:inexact_conv_rate} hold. 
+% Assume that all iterates $\{x^k\}$ of inexact Algorithm \ref{alg:ISTA-SD} are generated with some $\phi_k>0$ (cf. \eqref{lem:BT2.3-assump-g}), then
+% \begin{align}
+%     \label{eq:bound_F_F*}
+%     F(x^k) - F(x^*) \leq 
+%     \frac{1}{k_m} \left( \frac{1}{2} \|x^0-x^*\|_{\frac{H_0}{M_0}}^2 
+%     + \frac{(1-\rho)(F(x^0)-F(x^*))}{\rho\sigma} 
+%     + \sum_{i=0}^{k-1}\frac{\phi_i}{M_i}
+%     + \delta\sum_{i=0}^{k-1} \sqrt{\frac{2\phi_i}{M_i}} \right),
+% \end{align}
+% \end{theorem}
+
+
+% \begin{proof}
+%     As is done in Theorem~\ref{the:ISTA-SD},  we apply Lemma \ref{lem:subp_inexact}, sequentially, with $u=x^*$, $p_{\phi}(v)=x^i$ and nonzero subproblem minimization residual $\phi_i$ for $i=0, \ldots, k-1$. Adding up resulting inequalities, we obtain  
+%     \begin{align}
+%         &\sum_{i=0}^{k-1} \frac{F(x^{i+1}) - F(x^*)}{M_i}\leq 
+%         \frac{1}{2} \sum_{i=0}^{k-1} \left(\|x^i-x^*\|_{H_i/M_i}^2 
+%         - \|x^{i+1}-x^*\|_{H_i/M_i}^2 \right) 
+%         + \sum_{i=0}^{k-1} \frac{\epsilon_i}{M_i} 
+%         + \sum_{i=0}^{k-1} \frac{\phi_i}{M_i} 
+%         + \sum_{i=0}^{k-1} \frac{\langle \eta_i,x^* - x^{i+1} \rangle}{M_i}  \\
+%         \label{equ:bound_F_diff}
+%         &= 
+%         \frac{1}{2} \left( \|x^0-x^*\|_{\frac{H_0}{M_0}}^2 
+%         + \sum_{i=0}^{k-1}\|x^{i+1} - x^*\|_{\frac{H_{i+1}}{M_{i+1}}- \frac{H_i}{M_i}}^2 
+%         - \|x^k-x^*\|_{\frac{H_k}{M_k}}^2 \right) 
+%         + \sum_{i=0}^{k-1} \frac{\epsilon_i}{M_i} 
+%         + \sum_{i=0}^{k-1} \frac{\phi_i}{M_i} 
+%         + \sum_{i=0}^{k-1} \frac{\langle \eta_i,x^* - x^{i+1} \rangle}{M_i}  \\
+%         \nonumber &\mbox{from the assumptions that $H_{i+1} \preceq H_i $ and that $\|x^i - x^*\| \leq \delta, \forall i $} \\
+%         \nonumber &\leq 
+%         \frac{1}{2} \|x^0-x^*\|_{\frac{H_0}{M_0}}^2 
+%         + \sum_{i=0}^{k-1} \frac{\epsilon_i}{M_i} 
+%         + \sum_{i=0}^{k-1} \frac{\phi_i}{M_i} 
+%         + \delta\sum_{i=0}^{k-1} \frac{\|\eta_i\|}{M_i} \\
+%         \nonumber &\mbox{note that $\|\eta_i\|\leq \sqrt{2M_i\phi_i}$, and use the already established bound $\sum_{i=0}^{k-1}\epsilon_i \leq \frac{(1-\rho)(F(x^0)-F(x^*))}{\rho}$}\\
+%         \nonumber &\leq 
+%         \frac{1}{2} \|x^0-x^*\|_{\frac{H_0}{M_0}}^2 
+%         + \frac{(1-\rho)(F(x^0)-F(x^*))}{\rho\sigma} 
+%         + \sum_{i=0}^{k-1}\frac{\phi_i}{M_i}
+%         + \delta\sum_{i=0}^{k-1} \sqrt{\frac{2\phi_i}{M_i}}.
+%     \end{align}
+%     Hence,
+%     \begin{align*}
+%         F(x^k) - F(x^*) &\leq \frac{1}{k_m}\sum_{i=0}^{k-1} \frac{F(x^{i+1}) - F(x^*)}{M_i}\\        
+%         &\leq \frac{1}{k_m} \left( \frac{1}{2} \|x^0-x^*\|_{\frac{H_0}{M_0}}^2 
+%         + \frac{(1-\rho)(F(x^0)-F(x^*))}{\rho\sigma} 
+%         + \sum_{i=0}^{k-1}\frac{\phi_i}{M_i}
+%         + \delta\sum_{i=0}^{k-1} \sqrt{\frac{2\phi_i}{M_i}} \right).
+%     \end{align*}
+% \end{proof}
 
 
 As in  \cite{Schmidtetal}  it follows that the inexact version of Algorithm \ref{alg:ISTA-SD} converges  to the optimal value if $(\sum_{i=0}^{k-1} \sqrt{\phi_i})/k \to 0$ and it has sublinear convergence rate if $\sum_{i=0}^{\infty} \sqrt{\phi_i}$ is  bounded.
