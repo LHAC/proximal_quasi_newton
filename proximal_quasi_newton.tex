@@ -180,11 +180,11 @@ This paper contains the following  three main results.
 \item We discuss   theoretical properties of the above framework in terms of global convergence rates.
 In particular, we show that if we replace the line search by a prox-parameter update mechanism, we can derive sublinear global convergence results for the above methods under mild assumptions on Hessian approximation matrices, which can include diagonal, quasi-Newton and limited memory quasi-Newton approximations. We also provide the convergence rate for the case of inexact subproblem optimization. 
 It turns out that standard global convergence analysis of proximal gradient methods (see \cite{Beck2009,Schmidtetal}) does not extend in a natural way to  proximal
-quasi-Newton frameworks, hence we use a different technique use for smooth optimization in \cite{Nesterov, NesterovPolyak, Cartisetal2012},  in a novel way, to obtain the global complexity result.  
+quasi-Newton frameworks, hence we use a different technique used for smooth optimization in \cite{Nesterov, NesterovPolyak, Cartisetal2012},  in a novel way, to obtain the global complexity result.  
 
 \item The heuristic of applying $l(k)$ passes of coordinate descent to the subproblem is very useful in practice, but has not yet been theoretically justified, due to the lack of known complexity estimates. Here we use probabilistic complexity bounds of randomized coordinate descent to show that this heuristic is indeed  well justified theoretically.
 In particular, it guarantees the sufficiently rapid decrease of the expectation of the error in the subproblems  and hence allows for sublinear global convergence rate to hold for the entire algorithm (again, in expectation). This gives us the  first complete global convergence rate result for the algorithmic schemes for  practical (inexact) proximal Newton-type methods. Moreover, using the new analysis from \cite{Nesterov, NesterovPolyak, Cartisetal2012} we are able to provide lower overall complexity
-bound that the one that follows from  \cite{Schmidtetal}
+bound than the one that follows from  \cite{Schmidtetal}
 \item
 Finally, we propose an efficient {\em general purpose} algorithm that uses the same theoretical framework, but  which does not rely on the special structure of the Hessian, and yet in our tests compares favorably with the state-of-the-art, specialized methods such as   QUIC and GLMNET. We replace the exact Hessian computation by the limited memory BFGS Hessian approximations  \cite{NoceWrig06}  (LBFGS) and exploit their special structure within a coordinate descent approach to solve the subproblems.
 %We also propose and implement  another efficient active set selection strategy (different from those implemented in QUIC and GLMNET), but, as mentioned above, we treat these strategies as heuristic aimed at speeding up computations.  
@@ -203,7 +203,7 @@ as it is for the smooth optimization problems.  These results apply to our frame
 does not provide global convergence rates for these methods, and  just as in the case on smooth optimization,
 the super linear local convergence rates, generally,  do not apply in the case of LBFGS Hessian approximations. 
 
-The convergence rate that we show is sub linear, which is generally the best that can expected from a proximal (quasi-)Newton method
+The convergence rate that we show is sub linear, which is generally the best that can be expected from a proximal (quasi-)Newton method
  with no assumptions on the accuracy of the Hessian approximations.  Practical benefits of using 
 LBFGS Hessian approximations is well known for smooth optimization \cite{NocedalWright} and have been exploited in many large scale applications. 
 In this paper we demonstrate this benefit in the composite optimization setting \eqref{prob:P}. Some prior work showing benefit of limiter memory quasi-Newton method in proximal setting include \cite{Becker, Jiangetal2012}. 
@@ -410,7 +410,7 @@ Below are the assumptions made in our analysis.
 	\end{align*} 
 \end{assumption}
 
-In the analysis of the proximal gradient methods  Assumption~\ref{assub:bound_level_set} is removed by directly establishing a uniform bound on $\|x^k - x^*\|$ (rf. \cite{OML,Schmidtetal}).  In the next section we show an outline of a proximal-gradient type analysis where this assumption imposed  for simplicity of the presentation. It is possible \cite{OML} to establish a similar, but more complex bound without this assumption.
+In the analysis of the proximal gradient methods  Assumption~\ref{assub:bound_level_set} is removed by directly establishing a uniform bound on $\|x^k - x^*\|$ (rf. \cite{OML,Schmidtetal}).  In the next section we show an outline of a proximal-gradient type analysis where this assumption is imposed  for simplicity of the presentation. It is possible \cite{OML} to establish a similar, but more complex bound without this assumption.
 The proximal gradient approach in the next subsection, however, requires another, stronger, assumption on $H_k$. In the alternative analysis that follows 
 we impose Assumption~\ref{assub:bound_level_set} but relax the assumption on $H_k$ matrices. 
 Note that all iterates $\{x^k\}$ fall into the level set $\Xcal_0$, due to the sufficient decrease condition \eqref{eq:dec_cond} that demands a monotonic decrease on the objective values. Assumption~\ref{assub:bound_level_set} thus follows straightforwardly if the level set is bounded, which often holds  in real-world problems or can be easily imposed.
@@ -605,7 +605,8 @@ where $\gamma_{g, \phi}^v \in \partial_{\phi} g(v)$ is any $\phi$-subgradient of
 	    \label{equ:_g_convex_upper_inexact}
 	    g(v) - g(w) &\leq \langle \gamma_{g, \phi}^v, v-w \rangle + \phi\\
 	     \label{equ:_g_convex_upper_inexact2}
-	    |g(v) - g(u)| &\geq |\langle \gamma_{g, \phi}^v, v-u \rangle|- \phi.
+	    \langle \gamma_{g, \phi}^v, v-u \rangle 
+	    &\leq g(2v-u) - g(v) + \phi.
 	\end{align}
 	Hence,
 	\begin{align}
@@ -626,14 +627,14 @@ where $\gamma_{g, \phi}^v \in \partial_{\phi} g(v)$ is any $\phi$-subgradient of
 	    +g(u)-g(v)
 	    + \phi\\
 	    \nonumber
-	   & \leq \|\nabla f(u)+\gamma_{g, \phi}^v\|\|u-w\|  
-	  	    +2|g(u)-g(v)|
-	    +2 \phi. 
+	   	& \leq \|\nabla f(u)+\gamma_{g, \phi}^v\|\|u-w\|  
+	  	+ g(u)-g(v) + g(2v-u) - g(v)
+	    + 2 \phi. 
 	\end{align}
-	Here  we apploed \eqref{equ:_f_convex_upper} and \eqref{equ:_g_convex_upper_inexact} to get 
+	Here  we applied \eqref{equ:_f_convex_upper} and \eqref{equ:_g_convex_upper_inexact} to get 
 	 \eqref{proof:f_g_upper}. 
 	Using \eqref{equ:_g_convex_upper_inexact2} and 
-	  Assumption~\ref{assub:gLipsch}) we can easily derive \eqref{equ:bound_F_u_w_inexact}. 
+	  Assumption~\ref{assub:gLipsch} we can easily derive \eqref{equ:bound_F_u_w_inexact}. 
 \end{proof}
 
 
