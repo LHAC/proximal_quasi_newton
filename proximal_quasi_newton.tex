@@ -180,10 +180,10 @@ This paper contains the following  three main results.
 \item We discuss   theoretical properties of the above framework in terms of global convergence rates.
 In particular, we show that if we replace the line search by a prox-parameter update mechanism, we can derive sublinear global convergence results for the above methods under mild assumptions on Hessian approximation matrices, which can include diagonal, quasi-Newton and limited memory quasi-Newton approximations. We also provide the convergence rate for the case of inexact subproblem optimization. 
 It turns out that standard global convergence analysis of proximal gradient methods (see \cite{Beck2009,Schmidtetal}) does not extend in a natural way to  proximal
-quasi-Newton frameworks, hence we use a different technique used for smooth optimization in \cite{Nesterov, NesterovPolyak, Cartisetal2012},  in a novel way, to obtain the global complexity result.  
+quasi-Newton frameworks, hence we use a different technique derived for smooth optimization in \cite{Nesterov, NesterovPolyak, Cartisetal2012},  in a novel way, to obtain the global complexity result.  
 
 \item The heuristic of applying $l(k)$ passes of coordinate descent to the subproblem is very useful in practice, but has not yet been theoretically justified, due to the lack of known complexity estimates. Here we use probabilistic complexity bounds of randomized coordinate descent to show that this heuristic is indeed  well justified theoretically.
-In particular, it guarantees the sufficiently rapid decrease of the expectation of the error in the subproblems  and hence allows for sublinear global convergence rate to hold for the entire algorithm (again, in expectation). This gives us the  first complete global convergence rate result for the algorithmic schemes for  practical (inexact) proximal Newton-type methods. Moreover, using the new analysis from \cite{Nesterov, NesterovPolyak, Cartisetal2012} we are able to provide lower overall complexity
+In particular, it guarantees the sufficiently rapid decrease of the expectation of the error in the subproblems  and hence allows for sublinear global convergence rate to hold for the entire algorithm (again, in expectation). This gives us the  first complete global convergence rate result for the algorithmic schemes for  practical (inexact) proximal Newton-type methods. Moreover, using the new analysis from \cite{NesterovConvexBook2004, NesterovPolyak, Cartisetal2012} we are able to provide lower overall complexity
 bound than the one that follows from  \cite{Schmidtetal}
 \item
 Finally, we propose an efficient {\em general purpose} algorithm that uses the same theoretical framework, but  which does not rely on the special structure of the Hessian, and yet in our tests compares favorably with the state-of-the-art, specialized methods such as   QUIC and GLMNET. We replace the exact Hessian computation by the limited memory BFGS Hessian approximations  \cite{NoceWrig06}  (LBFGS) and exploit their special structure within a coordinate descent approach to solve the subproblems.
@@ -205,11 +205,11 @@ the super linear local convergence rates, generally,  do not apply in the case o
 
 The convergence rate that we show is sub linear, which is generally the best that can be expected from a proximal (quasi-)Newton method
  with no assumptions on the accuracy of the Hessian approximations.  Practical benefits of using 
-LBFGS Hessian approximations is well known for smooth optimization \cite{NocedalWright} and have been exploited in many large scale applications. 
-In this paper we demonstrate this benefit in the composite optimization setting \eqref{prob:P}. Some prior work showing benefit of limiter memory quasi-Newton method in proximal setting include \cite{Becker, Jiangetal2012}. 
+LBFGS Hessian approximations is well known for smooth optimization \cite{NoceWrig06} and have been exploited in many large scale applications. 
+In this paper we demonstrate this benefit in the composite optimization setting \eqref{prob:P}. Some prior work showing benefit of limiter memory quasi-Newton method in proximal setting include \cite{BeckerNIPS2012, Jiangetal2012}. 
 We also emphasize  in our theoretical analysis the potential gain of over proximal gradient methods in terms of constants occurring in the convergence rate. 
 
-To prove the sub linear rate  we borrow a technique from  \cite{Nesterov, NesterovPolyak, Cartisetal2012}. The technique used in 
+To prove the sub linear rate  we borrow a technique from  \cite{NesterovConvexBook2004, NesterovPolyak, Cartisetal2012}. The technique used in 
   \cite{Beck2009} and \cite{Schmidtetal} for the proof of convergence rates of the (inexact) proximal gradient method do not seem to extend 
  to  general positive definite Hessian approximation matrix.  In a  related work \cite{Jiangetal2012}  the authors analyze global convergence rates of an accelerated proximal quasi-Newton method, as an extension of FISTA method \cite{Beck2009}. The convergence rate they obtain match that of accelerated proximal gradient methods, hence it is a faster rate
 than that of our method presented here. However,  they have to impose much stricter conditions on the Hessian approximation matrix, in particular they require  that the difference between any two consecutive Hessian approximations (i.e., $H_{k}-H_{k+1}$) is positive semidefinite. This is actually in contradiction to   FISTA's  requirement  that the prox parameter is never increased. Such a condition is very restrictive 
@@ -230,10 +230,10 @@ of randomized coordinate descent is a subject of future research.
  
  
 The paper is organized as follows: in Section \ref{sec:basic}  we describe the  algorithmic framework. Then,  in Section \ref{sec:conv_basic}  we 
-present some of the assumptions and discussions and   convergence rate analysis based on \cite{Beck2009} and \cite{Schmidtetal}. 
-In  Section \ref{sec:conv_inexact} we show the new convergence rate analysis using  \cite{Nesterov, NesterovPolyak, Cartisetal2012} for exact and inexact
-version of our framework.  We then extend the analysis for the case of  randomized coordinate descent in Section \ref{sec:coordinate_descent_iteration_complexity},
-where inexact solution to a subproblem is random. 
+present some of the assumptions and discussions and, in Section \ref{sec:inexact_prox},  convergence rate analysis based on \cite{Beck2009} and \cite{Schmidtetal}. 
+In  Section \ref{sec:complete_conv} we show the new convergence rate analysis using  \cite{NesterovConvexBook2004, NesterovPolyak, Cartisetal2012} for exact and inexact
+version of our framework.  We then extend the analysis for the cases where inexact solution to a subproblem is random in Section \ref{sec:random}
+and in particular to the randomized coordinate descent in Section \ref{sec:coordinate_descent_iteration_complexity}. 
 Brief description of the details of our  proposed algorithm are in Section \ref{sec:alg} and  computational results  validating the theory are  presented in Section \ref{sec:comp}.
 
 
@@ -367,7 +367,7 @@ where $\lambda_{max}$ is the largest eigenvalue of $H$ or its upper bound.
 Below are the assumptions made in our analysis.
 
 
-\begin{assumption}$\\$ % let list start right below
+\begin{assumptions}$\\$ % let list start right below
 \label{as:exact_conv_rate}
 	\assume
 	\label{assub:optimal_exist}
@@ -408,7 +408,7 @@ Below are the assumptions made in our analysis.
 	\begin{align*}
 	     \sup_{x^* \in X^*}~\|x^k - x^*\| \leq D_{\Xcal_0}
 	\end{align*} 
-\end{assumption}
+\end{assumptions}
 
 In the analysis of the proximal gradient methods  Assumption~\ref{assub:bound_level_set} is removed by directly establishing a uniform bound on $\|x^k - x^*\|$ (rf. \cite{OML,Schmidtetal}).  In the next section we show an outline of a proximal-gradient type analysis where this assumption is imposed  for simplicity of the presentation. It is possible \cite{OML} to establish a similar, but more complex bound without this assumption.
 The proximal gradient approach in the next subsection, however, requires another, stronger, assumption on $H_k$. In the alternative analysis that follows 
@@ -489,6 +489,7 @@ is satisfied, then
 and  Lemma \ref{lem:subp_inexact} holds at each iteration $k$ of Algorithm \ref{alg:ISTA-SD} with  $\epsilon_k=-\frac{1-\rho}{\rho}(F(x^{k+1})- F(x^k))$. 
 
 We now  establish the sub linear convergence rate of Algorithm \ref{alg:ISTA-SD} under the following additional assumption. 
+
 \begin{assumption}\label{as:strong_matrices}
 Let $\{x^k\}$ be the sequence of iterates generated by Algorithm \ref{alg:ISTA-SD}, then there exists a constant $M_H$ such that 
  \begin{equation}\label{eq:strong_matrices}
@@ -581,7 +582,7 @@ In this paper, however, we focus on a different derivation of the sub linear con
 and different, more complex, dependence on the constants, but, on the other hand, does not require Assumption~\ref{as:strong_matrices}
 and results in a weaker assumption on $\phi_i$. 
 
-\section{Analysis of sub linear convergence}
+\section{Analysis of sub linear convergence}\label{sec:complete_conv}
 In our analysis below we will use another known technique for establishing sub linear convergence of  gradient descent type methods
 on smooth convex functions \cite{Cartisetal2012}. However, due to the non smooth nature of our function the analysis requires significant extensions,
 especially in the inexact case. Moreover, it does not apply to the line-search algorithm, we will rely on the fact that a proximal quasi-Newton method is used in that each new iteration $x^{k+1}$ is an approximate minimizer of the function $Q(H_k, u, x^k)$. Our analysis, hence, also applies to proximal gradient methods. 
@@ -605,8 +606,7 @@ where $\gamma_{g, \phi}^v \in \partial_{\phi} g(v)$ is any $\phi$-subgradient of
 	    \label{equ:_g_convex_upper_inexact}
 	    g(v) - g(w) &\leq \langle \gamma_{g, \phi}^v, v-w \rangle + \phi\\
 	     \label{equ:_g_convex_upper_inexact2}
-	    \langle \gamma_{g, \phi}^v, v-u \rangle 
-	    &\leq g(2v-u) - g(v) + \phi.
+	    g(2v-u) - g(v) &\geq \langle \gamma_{g, \phi}^v, v-u \rangle- \phi.
 	\end{align}
 	Hence,
 	\begin{align}
@@ -627,14 +627,16 @@ where $\gamma_{g, \phi}^v \in \partial_{\phi} g(v)$ is any $\phi$-subgradient of
 	    +g(u)-g(v)
 	    + \phi\\
 	    \nonumber
-	   	& \leq \|\nabla f(u)+\gamma_{g, \phi}^v\|\|u-w\|  
-	  	+ g(u)-g(v) + g(2v-u) - g(v)
-	    + 2 \phi. 
+	   & \leq \|\nabla f(u)+\gamma_{g, \phi}^v\|\|u-w\|  +
+	  	    g(2v-u) - g(v)+g(u)-g(v) 
+	    +2 \phi. 
 	\end{align}
-	Here  we applied \eqref{equ:_f_convex_upper} and \eqref{equ:_g_convex_upper_inexact} to get 
+	Here  we applied \eqref{equ:_f_convex_upper}, \eqref{equ:_g_convex_upper_inexact} 
+	agond \eqref{equ:_g_convex_upper_inexact2} to get 
 	 \eqref{proof:f_g_upper}. 
-	Using \eqref{equ:_g_convex_upper_inexact2} and 
-	  Assumption~\ref{assub:gLipsch} we can easily derive \eqref{equ:bound_F_u_w_inexact}. 
+	Using 
+	  Assumption~\ref{assub:gLipsch}) to bound the term $g(2v-u) - g(v)+g(u)-g(v)$ 
+	  we can easily derive \eqref{equ:bound_F_u_w_inexact}. 
 \end{proof}
 
 
@@ -740,7 +742,7 @@ $\|x^0-x^*\|$.
 
 We now  analyze Algorithm \ref{alg:ISTA-SD}  in the case when the computation of $p_H( v)$ is performed inexactly. 
 In other words, we consider the version of Algorithm \ref{alg:ISTA-SD} (and \ref{alg:Backtrack_SD}) where we compute 
-$x^{k+1}  := p_{H_k, \phi_k}(x^k)$ and $\phi_k$ can be positive for any $k$. The analysis is similar to that of the exact case, with few additional terms that need to be bounded. We begin by extending Lemma \ref{lem:bound_step_size}.
+$x^{k+1}  := p_{H_k, \phi_k}(x^k)$ and $\phi_k$ can be positive for any $k$. The analysis is similar to that of the exact case, with a few additional terms that need to be bounded. We begin by extending Lemma \ref{lem:bound_step_size}.
 
 \begin{lemma}\label{lem:bound_step_size_inexact}
 Let $x^{k+1} \in \dom(F)$ be such that the inequality $Q(H_k, x^{k+1},x^k)-\min_{y\in\br^n} Q(H_k, y,x^k)\leq \phi_k$ holds 
@@ -760,10 +762,10 @@ Moreover there exists a vector $\gamma_{g, \phi}^{k+1} \in \partial g_{\phi_k}(x
 \end{align}
 \end{lemma}
 \begin{proof}
-Recall Lemma \ref{lem:inexact_1st_opt_cond}. From \eqref{equ:inexact_solvQ_lem}, there
+Recall Lemma \ref{lem:inexact_1st_opt_cond}, from \eqref{equ:inexact_solvQ_lem}, there
  exists a vector, which we will refer to as $\gamma_{g, \phi}^{k+1}$, such that
     \begin{align}       \label{eq:gammagdefine}
-        \gamma_{g, \phi}^{k+1}=H_k(x^k-x^{k+1})- \nabla f(x^k)  - \eta_k \in \partial_{\phi}g(p_{\phi}(x^{k+1})),
+        \gamma_{g, \phi}^{k+1}=H_k(x^k-x^{k+1})- \nabla f(x^k)  - \eta_k \in \partial_{\phi}g(x^{k+1}),
     \end{align}
     with  $\frac{1}{2}\|\eta_k\|^2_{H_k^{-1}}\leq \phi_k$, which, in turn, implies $\|\eta_k\| \leq \sqrt{2M_k\phi_k}$.
   The following inequality follows from the definition of $\phi$-subdifferential,
@@ -813,9 +815,9 @@ Recall Lemma \ref{lem:inexact_1st_opt_cond}. From \eqref{equ:inexact_solvQ_lem},
 	\end{align*}
 \end{proof}
 
-To establish the convergence rate we would like to show that, as before, 
-$\frac{1}{\Delta F_{k+1}}-\frac{1}{\Delta F_{k}}\geq c_k$ on each iteration, however, this can no longer be guaranteed. 
-The proof is obtained by observing that when this desired inequality fails another inequality always holds, which bounds 
+Unlike the exact case, the inquality 
+$\frac{1}{\Delta F_{k+1}}-\frac{1}{\Delta F_{k}}\geq c_k$ can no longer be guaranteed to hold on each iteration. 
+The convergence rate is obtained by observing that when this desired inequality fails another inequality always holds, which bounds 
 $\Delta F_{k}$ in terms of $\phi_k$. Specifically, we have the following theorem.
 \begin{lemma}
 \label{lem:bound_iter_inexact}
@@ -846,12 +848,12 @@ First, applying \eqref{equ:bound_F_u_w_inexact} with $u = x^k, w = x^*$ and $v =
 	\begin{itemize}
 	\item{Case 1} 
 	\begin{equation}\label{eq:case1}
-		\|  \nabla f(x^k) + \gamma_{g, \phi}^{k+1} \| < \theta\sqrt{2M_k\phi_k}
+		\|  \nabla f(x^k) + \gamma_{g, \phi}^{k+1} \| < \theta\sqrt{2M_k\phi_k}.
 	\end{equation}
 
 	\item{Case 2}
 	\begin{equation}\label{eq:case2}
-		\| \nabla f(x^k) + \gamma_{g, \phi}^{k+1} \| \geq \theta \sqrt{2M_k\phi_k}
+		\| \nabla f(x^k) + \gamma_{g, \phi}^{k+1} \| \geq \theta \sqrt{2M_k\phi_k}.
 	\end{equation}
 
 	\end{itemize}
@@ -859,7 +861,7 @@ First, applying \eqref{equ:bound_F_u_w_inexact} with $u = x^k, w = x^*$ and $v =
 	Let us assume that Case 1 holds, then from \eqref{equ:bound_step_size_inexact}  and \eqref{eq:case1} it simply 
 	follows that
 	\begin{equation}\label{eq:bndcase1} 
-		\| x^{k+1} - x^k\|\leq \frac{(1+\theta)\sqrt{2M_k\phi_k}}{\sigma_k}
+		\| x^{k+1} - x^k\|\leq \frac{(1+\theta)\sqrt{2M_k\phi_k}}{\sigma_k}.
 	\end{equation}
 
 	
@@ -875,7 +877,8 @@ First, applying \eqref{equ:bound_F_u_w_inexact} with $u = x^k, w = x^*$ and $v =
 	  
 	We now consider Case 2, where \eqref{eq:case2} along with \eqref{equ:bound_step_size_inexact} from Lemma  \ref{lem:bound_step_size_inexact} imply
 	\begin{equation}\label{eq:bndcase2} 
-		\frac{\theta-1}{\theta M_k}\| \nabla f(x^k) + \gamma_{g, \phi}^{k+1} \| \leq \| x^{k+1} - x^k\|\leq \frac{1+\theta}{\theta\sigma_k}\| \nabla f(x^k) + \gamma_{g, \phi}^{k+1} \|
+		\frac{\theta-1}{\theta M_k}\| \nabla f(x^k) + \gamma_{g, \phi}^{k+1} \| \leq \| x^{k+1} -
+		 x^k\|\leq \frac{1+\theta}{\theta\sigma_k}\| \nabla f(x^k) + \gamma_{g, \phi}^{k+1} \|.
 	\end{equation}
 
 	Substituting into \eqref{equ:_bound_F_xk_xk1} the upper bound on  $\| x^{k+1} - x^k\|$ from \eqref{eq:bndcase2} and the bound on $\|x^{k} - x^*\|$ from Assumptions~\ref{assub:bound_level_set} we now get  
@@ -920,15 +923,16 @@ First, applying \eqref{equ:bound_F_u_w_inexact} with $u = x^k, w = x^*$ and $v =
 \end{proof}
 
 
-Let us discuss the result of the above lemma. The lemma applies for any value of $\theta$ for which
+\begin{remark} Let us discuss the result of the above lemma. The lemma applies for any value of $\theta$ for which
 $t_k$, and hence, $c_k$ is positive for all $k$.  It is easy to see that large values of  $\theta$ 
 imply large values of $c_k$. On the other hand, large $\theta$ is likely to cause  Case 1 to hold (i.e., \eqref{equ:bound_F_inexact_case1}) 
-instead of Case 2 (i.e.,\eqref{equ:bound_F_inexact_case2}) on any given iteration, with $b_k$ also growing with the size of $\theta$. 
+instead of Case 2 (i.e., \eqref{equ:bound_F_inexact_case2}) on any given iteration, with $b_k$ also growing with the size of $\theta$. 
 As we will show below the overall rate of convergence of the algorithm is derived using the two bounds - \eqref{equ:bound_F_inexact_case1}, where
 the rate is controlled by the rate of $\phi_k\to 0$ and \eqref{equ:bound_F_inexact_case2}, which is similar to the bound in the exact case.
 The overall bound, thus, will depend on the upper bound on $b_k$'s and the inverse of 
 the lower bound on $c_k$'s. If, again, we assume that $\sigma_k=M_k=L(f)$ for all $k$, then $\theta=O(\sqrt{L(f)})$ is sufficient to ensure that $c_k>0$
 and this results in $b_k\leq O(D_{\Xcal_0}L(f))$ and $1/c_k\geq O(D_{\Xcal_0}^2L(f))$, thus again, we obtain a bound which is comparable to that of proximal gradient methods, although with more complex constants. 
+\end{remark}
 
 We now derive the overall convergence rate, under the assumption that $\phi_{k}$ decays sufficiently fast. 
 
@@ -1072,7 +1076,7 @@ Substituting bounds $b$ and $c$ in \eqref{eq:finalsum} we get
 % \end{proof}
 
 
-It follows that the inexact version of Algorithm \ref{alg:ISTA-SD}   has sublinear convergence rate if 
+\begin{remark} It follows that the inexact version of Algorithm \ref{alg:ISTA-SD}   has sublinear convergence rate if 
 $\phi_i\leq a^2/i^2$  for some $a<1$ and all iterations $i=0, \ldots, k$. 
 In contrast,  the bounds in \cite{Schmidtetal} and in Section \ref{sec:inexact_prox} 
 require that $\sum_{i=0}^{\infty} \sqrt{\phi_i}$ is  bounded. 
@@ -1080,20 +1084,22 @@ This bound  on the overall sequence is clearly
 stronger than $\phi_i\leq a^2/i^2$, since $\sum_{i=0}^{\infty} \frac{a}{i}=\infty$. 
 On the other hand, is does not impose any particular requirement on any given iteration, except that 
 each $\phi_i$ is finite, which our bound on $\phi_i$ is assumed to hold at each iteration, so far. 
+\end{remark}
 
-Let us discuss these two conditions on the sequence of $\phi_i$ and how they can be ensured. 
-Firstly, let us note that condition $a<1$ can easily be removed. 
+\subsection{Complexity in terms of subproblem solver iterations}
+Let us discuss  conditions on the sequence of $\phi_i$ established above and how they can be ensured. 
+Firstly, let us note that condition $a<1$ in Theorem \ref{th:inexact_conv_rate} can easily be removed. 
 We introduced it for the sake of brevity, to ensure that $\phi_i\leq 1$ on each iteration. Clearly, an arbitrarily large $a$ can be used and in that case
 $\phi_i\leq 1$ for all $i\geq 1/a$. Moreover, the condition $\phi_i\leq 1$ is only needed to replace $\phi_i$ with $\sqrt{\phi_i}$ in 
-Lemma \ref{lem:bound_iter_inexact} in inequality \eqref{eq:phi_k_replaced}. Instead we can use bound \eqref{eq:case2} and an upper bound 
-on $\nabla f(x^i)$ and $\gamma^{i+1}_{g,\phi}$ to replace $\phi_k$ with a constant multiple of $\sqrt{\phi_i}$. 
+Lemma \ref{lem:bound_iter_inexact} in inequality \eqref{eq:phi_k_replaced}. Instead we can use bound \eqref{eq:case2} and 
+upper bounds on $\nabla f(x^i)$ and $\gamma^{i+1}_{g,\phi}$ to replace $\phi_k$ with a constant multiple of $\sqrt{\phi_i}$. 
 In conclusion, it is sufficient to solve the subproblem on the $i$-th iteration to accuracy $O(1/i^2)$. 
 
 
 
 %
 %To ensure such a  bound, it is sufficient to require that  $\phi_i\leq delta^i$, for some $\delta\in (0,1)$ for all $i$. We are hence interested in practical approaches to subproblem optimization which can be terminated upon reducing the gap in the function value of the subproblem to $\delta^i$, where $0<\delta<1$ is a fixed number and  $i=1, 2, \ldots$ is the  index of the corresponding iteration of  Algorithm \ref{alg:ISTA-SD}. 
-The question now is: what method and what stopping criterion should we use for subproblem optimization, so that sufficient accuracy is achieved 
+The question now is: what method and what stopping criterion should be used for subproblem optimization, so that sufficient accuracy is achieved 
 and no excessive computations are performed, in other word, how can we guarantee the bound on $\phi_i$,  
 while maintaining efficiency of the subproblem optimization? 
 It is possible to consider terminating
@@ -1101,19 +1107,21 @@ It is possible to consider terminating
  However, checking duality gap can be computationally  very expensive. 
  Alternatively one can use an algorithm with a known  convergence rate. 
  This way it can be determined apriori how many iterations of such an algorithm should be applied to the $i$-th subproblem to achieve the desired accuracy. In particular, we note that the objective functions in our subproblems  are all $\sigma$-strongly convex, so a simple proximal gradient method, or some of its accelerated versions,  will enjoy linear convergence rates when applied to these subproblems.  Hence, after $i$ iterations of optimizing
-  $Q_i$,  such a method will achieve accuracy $\phi_i$ that decays geometrically.  Under this trivial termination criterion,  the subproblem is solved more and more accurately as the outer iteration approaches optimality, which is a common condition required in classic inexact Newton method analysis \cite{DemboEisenstatSteihaug1982}. 
-Note that the same property holds for any linearly convergent  method, such as the proximal gradient or a semi-smooth Newton method. 
-Using a method with linear convergence rate for subproblem ensures that $\phi_i=C\delta^i$, for some constants $C>0$ and $0<\delta<1$, hence 
-$\sum_{i=0}^{\infty} \sqrt{\phi_i}$ is  bounded. Also, clearly, $\phi_i\leq \delta^2/i^2$ for some $\delta>0$ for all $i$.   
-We also can use FISTA \cite{Beck2009} which will provide $\phi_i\leq \delta^2/i^2$ but will not guarantee $\sum_{i=0}^{\infty} \sqrt{\phi_i}$.
-The advantage of using FISTA and its resulting rate is that is does not depend on the strong convexity constant, hence the subproblem complexity does 
-not depend on  $\sigma$ - the lower bound on the smallest eigenvalues of the Hessian approximations. In conclusion we have the following overall bounds. 
+  $Q_i$,  such a method will achieve accuracy $\phi_i$ that decays geometrically, i.e., $\phi_i=C\delta^i$, for some constants $C>0$ and $0<\delta<1$, hence 
+$\sum_{i=0}^{\infty} \sqrt{\phi_i}$ is  bounded.   Note that the same property holds for any linearly convergent  method, such as the proximal gradient or a semi-smooth Newton method. 
+ Also, it is easy to see that $\phi_i\leq a^2/i^2$ holds for some $a>0$ for all $i$.   
+One can also can use FISTA \cite{Beck2009} to optimize $Q_i$ which will ensure 
+$\phi_i\leq a^2/i^2$ for some $a>0$ but will not guarantee $\sum_{i=0}^{\infty} \sqrt{\phi_i}$.
+The advantage of using FISTA and its resulting rate is that ist does not depend on the strong convexity constant,
+ hence the subproblem complexity does 
+not depend on  $\sigma$ - the lower bound on the smallest eigenvalues of the Hessian approximations.
+ In conclusion, we have the following overall bounds. 
 
 
 
 \begin{theorem}\label{th:inexact_total_conv_rate_k2}
 Suppose that Assumptions~\ref{as:exact_conv_rate} hold and that at the $k$-th iteration of inexact Algorithm \ref{alg:ISTA-SD} 
-function $Q(H_k, u, x^k)$ is approximately minimized, to obtain $x^{k+1}$ by applying $\alpha k+\beta$ steps of any algorithm which guarantees that
+function $Q(H_k, u, x^k)$ is approximately minimized, to obtain $x^{k+1}$ by applying $l(k)=\alpha k+\beta$ steps of any algorithm which guarantees that
  $Q(H_k, x^{k+1}, x^k)\leq Q(H_k, x^k, x^k)$ and whose convergence 
 rate ensures  the error bound $\phi_k\leq a^2/(\alpha k+\beta)^2$ for some $a>0$.  Then accuracy $F(x^k) - F(x^*)\leq \epsilon$ is achieved after at most 
 \begin{align}
@@ -1123,32 +1131,36 @@ rate ensures  the error bound $\phi_k\leq a^2/(\alpha k+\beta)^2$ for some $a>0$
 inner iterations (of the chosen algorithm), 
 with $b, c$  given in Theorem \ref{th:inexact_conv_rate}. 
 \end{theorem}
-
+\proof{A proof follows trivially from Theorem  \ref{th:inexact_conv_rate}. }
 \begin{theorem}\label{th:inexact_total_conv_rate_klogk}
 Suppose that Assumptions~\ref{as:exact_conv_rate} hold and that at the $k$-th iteration of inexact Algorithm \ref{alg:ISTA-SD} 
-function $Q(H_k, u, x^k)$ is approximately minimized, to obtain $x^{k+1}$ by applying a $m_k$ steps of an algorithm, which guarantees that
+function $Q(H_k, u, x^k)$ is approximately minimized, to obtain $x^{k+1}$ by applying  $l(k)$ steps of an algorithm, which guarantees that
  $Q(H_k, x^{k+1}, x^k)\leq Q(H_k, x^k, x^k)$ and whose convergence 
-rate ensures  the error bound $\phi_k\leq \delta^{m_k}M_Q$, for some constants $0<\delta<1$ and $M_Q>0$. 
- Then, by setting $m_k= 2 log_{\frac{1}{\delta}}(k)$, accuracy $F(x^k) - F(x^*)\leq \epsilon$ is achieved after at most 
+rate ensures  the error bound $\phi_k\leq \delta^{l(k)}M_Q$, for some constants $0<\delta<1$ and $M_Q>0$. 
+ Then, by setting $l_k= 2 log_{\frac{1}{\delta}}(k)$, accuracy $F(x^k) - F(x^*)\leq \epsilon$ is achieved after at most 
 \begin{align}
     \label{eq:total_bound_F_F*}
 	K=\sum_{k=0}^t 2 log_{\frac{1}{\delta}}(k)\leq 2t log_{\frac{1}{\delta}}(t)
 	\end{align}
-	
-inner iterations (of the chosen algorithm), with $t=\lceil \frac{\max\{b a, \frac{1}{c}\}}{\epsilon} +1\rceil$
+	inner iterations (of the chosen algorithm), with $t=\lceil \frac{\max\{b a, \frac{1}{c}\}}{\epsilon} +1\rceil$
 and  $b, c$  given in Theorem \ref{th:inexact_conv_rate}. 
 \end{theorem}
+\proof{A proof follows trivially from Theorem  \ref{th:inexact_conv_rate}. }
 
 \begin{remark} The total complexity in terms of the inner iterations should not be viewed as  a summary of the whole complexity of Algorithm \ref{alg:ISTA-SD}.
-A key step of the algorithm is the computation of $F(x^{k}$ and $\nabla f(x^k)$ at each iteration. In  big data applications this is often the 
-most extensive step, hence the main complexity is defined by the number of function and gradient computations. Due to backtracking via proximal parameter update and sufficient decrease condition, the number of function and gradient computation may be larger than the number of outer iterations of 
-Algorithm \ref{alg:ISTA-SD}, however, it does not exceed this number of outer iterations  by more than a logarithmic factor. In practice, only several initial iterations contain backtracking steps. 
+A key step of the algorithm is the computation of $F(x^{k})$ and $\nabla f(x^k)$ at each iteration. In  big data applications this is often the 
+most extensive step, hence the main complexity is defined by the number of function and gradient computations. 
+Due to backtracking via proximal parameter update to satisfy sufficient decrease condition, 
+the number of function and gradient  computation may be larger than the number of iterations of 
+Algorithm \ref{alg:ISTA-SD}, however,
+ it does not exceed this number  by more than a logarithmic factor. In practice, only several initial iterations contain backtracking steps, hence 
+ Theorem  \ref{th:inexact_conv_rate} provides the bound  on the complexity in terms of function and gradient computations. 
 \end{remark}
 
 In the next section we extend our convergence rate results to the case of solving subproblems via randomized coordinate descent,  where
  $\phi$ is random and hence does not satisfy required bounds on each iteration. 
 
-\section{Analysis of the inexact case under random subproblem accuracy}
+\section{Analysis of the inexact case under random subproblem accuracy}\label{sec:random}
 As we pointed out in the introduction, the most efficient  practical approach to subproblem optimization, in the case when  $g(x)=\lambda \|x\|_1$, seems to be the coordinate descent method. One iteration of a coordinate descent step can be a lot less expensive 
 than that of a proximal gradient or a Newton method. In particular, if matrix $H$ is constructed via the 
 LBFGS approach, then one step of a coordinate decent
@@ -1251,6 +1263,8 @@ Return $p(x)$.
 
 
 
+Here we will show how properties of coordinate descent can be used together with the analysis in Section \ref{sec:complete_conv}. Combination of
+coordinate descent with the waker analysis presented in Section \ref{sec:inexact_prox} can be found in \cite{OML}. 
 
 Our analysis is based on Richtarik and Takac's results on iteration complexity of randomized coordinate descent  \cite{Richtarik2012}. In particular, we make use of Theorem 7 in \cite{Richtarik2012}, which we restate below without proof, while adapting it to our context.
 
@@ -1270,11 +1284,57 @@ where $\mu(H)$ is a constant that measures conditioning of $H$ along the coordin
 number of $H$.
 \end{lemma}
 
- The key conclusion of the above lemma is that  when applying $i$ steps of  randomized coordinate descent 
- approximately to optimize $Q(H_k,  u,x^k)$, $\phi_k\leq M_Q\delta^i$, with probability $p$, where  
- $M_Q\geq \frac{Q(H_k,x^k, x^k) - Q(H_k, p_H(x^k), x^k)}{p}$ and $\delta=e^{\frac{1}{n(1+\mu(H_k))}}$.
- This, together with Theorem \ref{th:inexact_random_conv_rate} implies that to solve subproblem on iteration $k$ it is sufficient to set $l$ parameter in Algorithm \ref{alg:randomized_cd} to equal $O(log(k))$ and the resulting convergence rate will then obey Theorems \ref{th:inexact_conv_rate} and \ref{th:inexact_total_conv_rate_klogk}.  However, as we observe from the bounds, it is necessary to know constants $M_Q$ and $\delta$ to be able to construct efficient stately for picking parameter $l$. Moreover, in theory, the number of steps of the randomized coordinate descent should be $O(nlog(k))$. In practice, a successful strategy
- is to select a slow growing linear function  of $k$, $l(k)=ak+b$. This certainly guarantees convergence rate of the outer iteration as in Theorem \ref{th:inexact_random_conv_rate}. In terms of overall rate this gives inferior complexity, however, we believe that the real difference in terms of the workload appears only in the limit, while in most cases the algorithm successfully terminated before  our practical formula $l(k)=ak+b$, described in the next section, significantly exceeds, the theoretical bound $O(nlog(k))$ with appropriate constants. 
+Let us now state the version of  Algorithms \ref{alg:ISTA-SD} and \ref{alg:Backtrack_SD} which is close to what implement in practice and 
+discuss in the following sections  and for which the complexity  bound can be applied.
+
+\begin{algorithm2e}\caption{Proximal Quasi-Newton method using randomized coordinate descent}
+    \label{alg:ISTA-SD_RCD}%
+%\linesnumberedhidden \dontprintsemicolon 
+{\rm Choose }
+$0<\rho\leq 1$,  $a,b>0$ and  $x^0$\; 
+\For{$k=0,1,2,\cdots$}{
+ Choose $0<\bar \mu_k,  \theta_k>0, G_k\succeq 0$.\;
+Find  $H_k=G_k+\frac{1}{2\mu_k}I$ and  $x^{k+1}  := p_{H_k,\phi_k}(x^k)$  \\ by applying {\em Prox\ Parameter\ Update\ with\ RCD\ }$(\bar \mu_k, G_k, x^k, \rho, a, b)$.\;
+%Set $H_k=B_k+\frac{1}{2\mu_k}I$ and compute $x^{k+1}  := p_{H_k}(x^k)$, with \;
+}
+\end{algorithm2e}
+
+
+
+
+\begin{algorithm2e}\caption{Prox Parameter Update with RCD $(\bar \mu, G, x, \rho, a,b)$ }
+    \label{alg:Backtrack_SD_RCD}%
+%\linesnumberedhidden \dontprintsemicolon 
+Select $0<\beta<1$ and set $\mu=\bar \mu$\; \For{$i=1,2,\cdots$}{
+Define $H=G+\frac{1}{2\mu} I$,  and compute $p(x):=p_{H,\phi}(x)$\\ by applying {\em RCD \ }$(Q(H,  v,x), x, \lceil ak+b\rceil)$\;
+If $F(p(x))- F(x) \leq \rho (Q(H,  p(x),x)- F(x))$, then output $H$ and $p(x)$, {\bf Exit} \;
+Else $\mu=\beta^{i}\bar  \mu$\;
+}
+\end{algorithm2e}
+
+
+ The  conclusion of Lemma \ref{lem:randomized_CD} in application to Algorithms \ref{alg:randomized_cd}-\ref{alg:Backtrack_SD_RCD} 
+ is that  when applying $l(k)$ steps of  randomized coordinate descent 
+ approximately to optimize $Q(H_k,  u,x^k)$, $\phi_k\leq M_Q\delta^{l(k)}$, with probability $p$, where  
+ $M_Q$ is an upper bound on  $\frac{Q(H_k,x^k, x^k) - Q(H_k, p_H(x^k), x^k)}{p}$ and $\delta=e^{-\frac{1}{n(1+\mu(H_k))}}$.
+ This, together with Theorem \ref{th:inexact_random_conv_rate} implies that to solve subproblem on iteration $k$ it is sufficient to set 
+ $l(k)=O(n(1+\mu(H))log(kp/M_Q))$ and the resulting convergence rate will then obey
+  Theorems \ref{th:inexact_conv_rate} and \ref{th:inexact_total_conv_rate_klogk}. 
+   However, it is necessary to know constants $M_Q$ 
+   and $\mu(H)$ to be able to construct efficient expression $l(k)$.
+ In practice, a successful strategy
+ is to select a slow growing linear function  of $k$, $l(k)=ak+b$. This certainly guarantees convergence rate of the outer iteration as in Theorem \ref{th:inexact_random_conv_rate}. In terms of overall rate this gives inferior complexity, however, we believe that the real difference in
+  terms of the workload appears only in the limit, while in most cases the algorithm successfully terminated before  our practical formula $l(k)=ak+b$, described in the next section, significantly exceeds, the theoretical bound $O(n(1+\mu(H))log(kp/M_Q))$ with appropriate constants. Moreover, as noted earlier, the number of function 
+  and gradient evaluations may be the dominant complexity in the big data cases, 
+  hence it may be worthwhile to increase workload of coordinate descent  in order to reduce the constants in the bound in
+   Theorem \ref{th:inexact_random_conv_rate}. 
+   
+   Finally, we note that when using ISTA method for the subproblem, instead of randomized coordinate descent, 
+   the number of inner iteration does not need to depend on the dimension $n$. However, 
+   it depends on $\sigma_k/M_k$ and the cost per iteration is roughly $n$ times bigger than that of coordinate descent (with LBFGS matrices). 
+   Hence the overall complexity of using coordinate descent is better than that of ISTA if $\mu(H_k)\ll \sigma_k/M_k$. 
+   This indeed happens often in practical problems, as is discussed in \cite{Richtarik2012} and other works on coordinate descent. 
+
  
 % section is showing that, 
 % to provide convergence rates developed in the previous sections, 
@@ -1350,10 +1410,12 @@ number of $H$.
 %    
 %    
 %\end{proof}
-    
-    \begin{remark}
-    Note that the choice of the number of coordinates decent steps in each applications of RCD, in other words, the choice of constants $a$ and $b$ has a direct affect on the constants in  the complexity bound.  Clearly taking more RCD steps leads to fewer iterations of the main algorithm, as larger values of $a$ and $b$ lead to smaller value of $\zeta$.  On the other hand, each iterations becomes more expensive. We believe that our 
-    practical approach described in Section \ref{sec:comp} strikes a good balance in this trade-off.  \end{remark} 
+
+
+%    
+%    \begin{remark}
+%    Note that the choice of the number of coordinates decent steps in each applications of RCD, in other words, the choice of constants $a$ and $b$ has a direct affect on the constants in  the complexity bound.  Clearly taking more RCD steps leads to fewer iterations of the main algorithm, as larger values of $a$ and $b$ lead to smaller value of $\zeta$.  On the other hand, each iterations becomes more expensive. We believe that our 
+%    practical approach described in Section \ref{sec:comp} strikes a good balance in this trade-off.  \end{remark} 
 %    \begin{remark}
 %    Note that we require that condition \eqref{equ:bound_delta_x_inexact} holds at each iteration. This condition is easy and cheap to check, is eventually satisfied, if we allow the coordinate descent to run long enough, and was always satisfied in our numerical experiments. However, in theory, enforcing  this condition  at each iteration may imply that some of the
 %    subproblems require more coordinate descent steps than $k$ (or $l(k)$). This condition is needed to derive the constant $C$ in \eqref{eq:exp_bound}. Instead of deriving $C$ as a  constant one can consider bounding the expectation of $C$, and require that \eqref{equ:bound_delta_x_inexact} only holds in expectation. This will make the derivations of our results a lot more complicated, while not necessarily providing a significant theoretical improvement, hence we omit this analysis in the paper. 
@@ -1493,7 +1555,7 @@ Then $S_k$ and $T_k$ are the $p \times m$ matrices with columns defined by  vect
         \end{cases} \quad D_k = \diag[s^T_{k-m}t_{k-m},...,s_{k-1}^Tt_{k-1}].
     \end{equation*}
  The particular choice of $\gamma_k$ is meant  to promote   well-scaled quasi-Newton steps, so that less time is spent on line search or updating of prox parameter $\mu_k$ \cite{NoceWrig06}. In fact instead of updating and maintaining $\mu_k$, exactly as described in Algorithm \ref{alg:Backtrack_SD}  we simply
- double $\gamma_k$ in \eqref{equ:LBFGS} at each backtracking step. This can be viewed as choosing   $\mu_k=\infty$ the first step of backtracking, and $\mu_k=1/(2^{i-1}-1)\gamma_k$ for the $i$-th backtracking step, when $i>1$. As long as $G_K$ in \eqref{equ:LBFGS}, is positive definite, with smallest eigenvalue bounded by $\sigma>0$, our theory applies to this particular backtracking procedure. 
+ double $\gamma_k$ in \eqref{equ:LBFGS} at each backtracking step. This can be viewed as choosing   $\mu_k=\infty$ for the first step of backtracking, and $\mu_k=1/(2^{i-1}-1)\gamma_k$ for the $i$-th backtracking step, when $i>1$. As long as $G_K$ in \eqref{equ:LBFGS}, is positive definite, with smallest eigenvalue bounded by $\sigma>0$, our theory applies to this particular backtracking procedure. 
 
 % subsection low_rank_hessian_approximation_b_k_ (end)
 
@@ -1523,7 +1585,7 @@ Suppose $j$-th coordinate in $d$ is updated, hence $d' = d + ze_j$ ($e_j$ is the
 \end{align}
 which has a simple closed-form solution \cite{Donoho92de-noisingby,Hsieh2011}. 
 
-The most costly step of an iteration of the coordinate descent method is computing or maintaining vector  $H_kd$. Naively, or in the case of general $H_k$, this step takes $O(n)$ flops, since the vector needs to be updated at the end of each iteration, when one of the coordinates of vector $d$ changes.  The special form of  $G_k$ in $H_k=G_k+\frac{1}{\mu} I=\gamma_kI-Q\hat Q$ provides us an opportunity to accelerate this step, reducing the complexity from problem-dependent $O(n)$ to $O(m)$ with $m$ chosen as a small constant. In particular we only store the diagonal elements of $G_k$, $(G_k)_{ii} = \gamma_k - q_i^T\hat q_i$, where $q_i$ is the $i$th row of the matrix $Q$ and $\hat q_i$ is the $i$th column vector of the matrix $\hat Q$. We compute $(G_kd)_i$,  whenever it is needed, by 
+The most costly step of an iteration of the coordinate descent method is computing or maintaining vector  $H_kd$. Naively, or in the case of general $H_k$, this step takes $O(n)$ flops, since the vector needs to be updated at the end of each iteration, when one of the coordinates of vector $d$ changes.  The special form of  $G_k$ in $H_k=G_k+\frac{1}{\mu} I=\gamma_kI-Q\hat Q$ gives us an opportunity to accelerate this step, reducing the complexity from problem-dependent $O(n)$ to $O(m)$ with $m$ chosen as a small constant. In particular we only store the diagonal elements of $G_k$, $(G_k)_{ii} = \gamma_k - q_i^T\hat q_i$, where $q_i$ is the $i$th row of the matrix $Q$ and $\hat q_i$ is the $i$th column vector of the matrix $\hat Q$. We compute $(G_kd)_i$,  whenever it is needed, by 
  maintaining a $2m$ dimensional vector $v := \hat Qd$, 
 which takes $O(2m)$ flops, and using  $(G_kd)_i = \gamma_k d_i - q_i^T v$.
 After each coordinate step $v$ is updated by $v \gets v + z_i \hat q_i$, which costs $O(m)$. We also need to use extra memory for caching $\hat Q$ and $\hat d$ which takes $O(2mp + 2m)$ space. With the other $O(2p + 2mn)$ space for storing the diagonal of $G_k$, $Q$ and $d$, altogether we need $O(4mp + 2n + 2m)$ space, which is essentially $O(4mn)$ when $n \gg m$.
@@ -1535,7 +1597,7 @@ After each coordinate step $v$ is updated by $v \gets v + z_i \hat q_i$, which c
 The aim of this section is to provide validation for our general purpose algorithm, but not to conduct extensive comparison of various inexact proximal Newton approaches. 
 In particular, we aim to demonstrate a) that using the exact Hessian is not necessary in these methods, b) that backtracking using prox parameter, based on sufficient decrease condition, which our theory uses, does in fact work well in practice and c) that randomized coordinate descent is at least as effective as the cyclic one, which is standardly used by other methods.
 
-LHAC, for \textbf{L}ow rank \textbf{H}essian \textbf{A}pproximation in \textbf{A}ctive-set \textbf{C}oordinate descent, is a C/C++ package that implements Algorithms \ref{alg:randomized_cd}- \ref{alg:ISTA-SD_RCD} for solving general $\ell_1$ regularization problems. We conduct experiments on two of the most well-known $\ell_1$ regularized models -- Sparse Inverse Covariance Selection (SICS) and Sparse Logistic Regression (SLR). The following two specialized C/C++ solvers are included in our comparisons:
+LHAC, for \textbf{L}ow rank \textbf{H}essian \textbf{A}pproximation in \textbf{A}ctive-set \textbf{C}oordinate descent, is a C/C++ package that implements Algorithms \ref{alg:randomized_cd}-\ref{alg:ISTA-SD_RCD} for solving general $\ell_1$ regularization problems. We conduct experiments on two of the most well-known $\ell_1$ regularized models -- Sparse Inverse Covariance Selection (SICS) and Sparse Logistic Regression (SLR). The following two specialized C/C++ solvers are included in our comparisons:
 
 \begin{itemize}
     \item QUIC: the quadratic inverse covariance algorithm for solving SICS described in \cite{Hsieh2011}. 
@@ -1576,7 +1638,7 @@ When solving the subproblems, we terminate the RCD procedure whenever the number
 \label{cond:subprob_tol}
      (1 + \lfloor \frac{k}{m} \rfloor ) |\Ical_k|,
  \end{align} 
-where $|\Ical_k|$ denotes the number of coordinates in the current working set. Condition \eqref{cond:subprob_tol} indicates that we expect to update each coordinate in $\Ical_k$ only once when $k < m$, and that when $k > m$ we increase the number of expected passes through $\Ical_l$ by 1 every $m$ iterations, i.e., after LBFGS receives a full update. The idea is not only to avoid spending too much time on the subproblem especially at the beginning of the algorithm when the Hessian approximations computed by LBFGS are often fairly coarse, but also to solve the subproblem more accurately as the iterate moves closer to the optimality. Note that in practice when $|\Ical_k|$ is large, the value of  \eqref{cond:subprob_tol} almost always dominates $k$, hence it can be lower bounded by $l(k)=ak+b$ with some reasonably large values of $a$ and $b$, which, as we analyzed in Section \ref{sec:coordinate_descent_iteration_complexity},  guarantees the sub linear convergence rate. We also find that \eqref{cond:subprob_tol} works quite well in practice in preventing from ``over-solving'' the subproblems, particularly for LBFGS type algorithms. In \ref{fig:sics-cd} and \ref{fig:slr-cd} we plot the data with respect to the number of RCD iterations. In particular Figures \ref{fig:sics-cd-iter} and \ref{fig:slr-cd-iter} show the number of RCD steps taken at the $k$-th iteration, as a function of  $k$. Figures \ref{fig:sics-cd-obj} and \ref{fig:slr-cd-obj} show convergence of the objective function to its optimal value as a function of the total number of RCD steps taken so far (both values are plotted in logarithmic scale). Note that RCD steps are not the only component of the CPU time of the algorithms, since gradient computation has to be performed at least once per iteration. 
+where $|\Ical_k|$ denotes the number of coordinates in the current working set. Condition \eqref{cond:subprob_tol} indicates that we expect to update each coordinate in $\Ical_k$ only once when $k < m$, and that when $k > m$ we increase the number of expected passes through $\Ical_l$ by 1 every $m$ iterations, i.e., after LBFGS receives a full update. The idea is not only to avoid spending too much time on the subproblem especially at the beginning of the algorithm when the Hessian approximations computed by LBFGS are often fairly coarse, but also to solve the subproblem more accurately as the iterate moves closer to the optimality. Note that in practice when $|\Ical_k|$ is large, the value of  \eqref{cond:subprob_tol} almost always dominates $k$, hence it can be lower bounded by $l(k)=ak+b$ with some reasonably large values of $a$ and $b$, which, as we analyzed in Section \ref{sec:coordinate_descent_iteration_complexity},  guarantees the sub linear convergence rate. We also find that \eqref{cond:subprob_tol} works quite well in practice in preventing from ``over-solving'' the subproblems, particularly for LBFGS type algorithms. In Figures \ref{fig:sics-cd} and \ref{fig:slr-cd} we plot the data with respect to the number of RCD iterations. In particular Figures \ref{fig:sics-cd-iter} and \ref{fig:slr-cd-iter} show the number of RCD steps taken at the $k$-th iteration, as a function of  $k$. Figures \ref{fig:sics-cd-obj} and \ref{fig:slr-cd-obj} show convergence of the objective function to its optimal value as a function of the total number of RCD steps taken so far (both values are plotted in logarithmic scale). Note that RCD steps are not the only component of the CPU time of the algorithms, since gradient computation has to be performed at least once per iteration. 
 
 In LHAC-L,  a line search procedure is employed, as is done  in QUIC and LIBLINEAR,   for the convergence  to follow from the framework by \cite{Tseng2009}. In particular, the Armijo rule chooses the step size $\alpha_k$ to be the largest element from $\{\beta^0, \beta^1, \beta^2, ... \}$ satisfying
 \begin{align}
@@ -1738,7 +1800,10 @@ On the largest data set \emph{epsilon}, LHAC and LHAC-L is faster than LIBLINEAR
 
 
 
-\section{Conclusion} In this paper we presented analysis of global convergence rate of inexact proximal quasi-Newton framework, and showed that randomized coordinate descent can be used effectively to find inexact quasi-Newton directions, which guarantee sublinear convergence rate of the algorithm, in expectation. This is the first global convergence rate result for an algorithm that uses coordinate descent to inexactly optimize subproblems at each iteration. Our framework does not rely or exploit the accuracy of second order information, and hence we do not obtain fast local convergence rates. We also do not assume strong convexity of our objective function, hence a sublinear conference rate is  the best global rate we can hope to obtain. In \cite{Jiangetal2012} an accelerated scheme related to our framework is studied and an optimal sublinear convergence rate is shown, but  the assumptions on the Hessian approximations are a lot stronger in  \cite{Jiangetal2012} than in our paper, hence the accelerated method is not as widely applicable. The framework studied by us in this paper covers several existing efficient algorithms for large scale sparse optimization. However, to provide convergence rates we had to depart from some standard techniques, such as line-search, replacing it instead by a prox-parameter updating mechanism with a trust-region-like sufficient decrease condition for acceptance of iterates. We also use randomized coordinate descent instead of a cyclic one. We demonstrated  that this modified framework is,  nevertheless, very effective in practice and is competitive with state-of-the-art specialized methods.
+\section{Conclusion} In this paper we presented analysis of global convergence rate of inexact proximal quasi-Newton framework, and showed that randomized coordinate descent, among other subproblem methods,  can be used effectively to find inexact quasi-Newton directions, which guarantee sub linear convergence rate of the algorithm, in expectation. This is the first global convergence rate result for an algorithm that uses coordinate descent to inexactly optimize subproblems at each iteration. Moreover, we improve upon results for inexact proximal gradient method in \cite{Schmidtetal} in that our requirements on the error in subproblem solution are 
+weaker and the resulting bound on the total number of inner solver iterations is smaller. 
+
+Our framework does not rely on or exploit the accuracy of second order information, and hence we do not obtain fast local convergence rates. We also do not assume strong convexity of our objective function, hence a sublinear conference rate is  the best global rate we can hope to obtain. In \cite{Jiangetal2012} an accelerated scheme related to our framework is studied and an optimal sublinear convergence rate is shown, but  the assumptions on the Hessian approximations are a lot stronger in  \cite{Jiangetal2012} than in our paper, hence the accelerated method is not as widely applicable. The framework studied by us in this paper covers several existing efficient algorithms for large scale sparse optimization. However, to provide convergence rates we had to depart from some standard techniques, such as line-search, replacing it instead by a prox-parameter updating mechanism with a trust-region-like sufficient decrease condition for acceptance of iterates. We also use randomized coordinate descent instead of a cyclic one. We demonstrated  that this modified framework is,  nevertheless, very effective in practice and is competitive with state-of-the-art specialized methods.
 %\clearpage
 
 \bibliographystyle{siam}
