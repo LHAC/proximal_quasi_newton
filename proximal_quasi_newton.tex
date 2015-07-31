@@ -346,7 +346,8 @@ $\partial_{\phi} a(x)$, which is defined as the set of vectors $y$ such that $a(
         \label{equ:zero_in_subdiff}
         0 \subset \partial_{\phi} a(p_{\phi}(v)) \subset \partial_{\phi} a_1(p_{\phi}(v)) + \partial_{\phi} a_2(p_{\phi}(v)).
     \end{align}
-    Hence,
+    Consider any $y \in \partial_{\phi} a_1(p_{\phi}(v))$ and the function $\Gamma(t) := a_1(t) - y^Tt +y^Tp_{\phi}(v) - a_1(p_{\phi}(v)) + \phi$.
+    By definition of $\phi$-subdifferential, $\Gamma(t)$ is non-negative for any $t$, so $\Gamma(t^*) \geq 0$ where $t^*$ is the point where $\Gamma(t)$ attain its minimum value. Take the gradient of $\Gamma(t)$, set it to zero, and we obtain $t^* = H^{-1}y + z$. Substitute that into the inequality $\Gamma(t^*) > 0$ and after some simplifications, we obtain 
     \begin{align*}
         \partial_{\phi} a_1(p_{\phi}(v)) &= \left\{ y \in \br^n ~|~ \frac{1}{2} \| y + H(z-p_{\phi}(v)) \|^2_{H^{-1}} \leq \phi \right\} \\
         &= \left\{ y \in \br^n, ~y = \eta - H(z-p_{\phi}(v)) ~|~ \frac{1}{2} \|\eta\|^2_{H^{-1}} \leq \phi \right\}.
