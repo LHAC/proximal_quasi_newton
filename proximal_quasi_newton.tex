@@ -178,13 +178,13 @@ In this paper we {\em do not } include the theoretical analysis of various worki
 This paper contains the following  three main results. 
 \begin{enumerate}
 \item We discuss   theoretical properties of the above framework in terms of global convergence rates.
-In particular, we show that if we replace the line search by a prox-parameter update mechanism, we can derive sublinear global convergence results for the above methods under mild assumptions on Hessian approximation matrices, which can include diagonal, quasi-Newton and limited memory quasi-Newton approximations. We also provide the convergence rate for the case of inexact subproblem optimization. 
+In particular, we show that if we replace the line search by a prox-parameter update mechanism, we can derive sublinear global complexity result for the above methods under mild assumptions on Hessian approximation matrices, which can include diagonal, quasi-Newton and limited memory quasi-Newton approximations. We also provide the convergence rate for the case of inexact subproblem optimization. 
 It turns out that standard global convergence analysis of proximal gradient methods (see \cite{Beck2009,Schmidtetal}) does not extend in a natural way to  proximal
 quasi-Newton frameworks, hence we use a different technique derived for smooth optimization in \cite{Nesterov, NesterovPolyak, Cartisetal2012},  in a novel way, to obtain the global complexity result.  
 
 \item The heuristic of applying $l(k)$ passes of coordinate descent to the subproblem is very useful in practice, but has not yet been theoretically justified, due to the lack of known complexity estimates. Here we use probabilistic complexity bounds of randomized coordinate descent to show that this heuristic is indeed  well justified theoretically.
-In particular, it guarantees the sufficiently rapid decrease of the expectation of the error in the subproblems  and hence allows for sublinear global convergence rate to hold for the entire algorithm (again, in expectation). This gives us the  first complete global convergence rate result for the algorithmic schemes for  practical (inexact) proximal Newton-type methods. Moreover, using the new analysis from \cite{NesterovConvexBook2004, NesterovPolyak, Cartisetal2012} we are able to provide lower overall complexity
-bound than the one that follows from  \cite{Schmidtetal}
+In particular, it guarantees the sufficiently rapid decrease  of the error in the subproblems (with some probability) and hence allows for sublinear global convergence rate to hold for the entire algorithm (in expectation). This gives us the  first complete global convergence rate result for the algorithmic schemes for  practical (inexact) proximal Newton-type methods. Moreover, using the new analysis from \cite{NesterovConvexBook2004, NesterovPolyak, Cartisetal2012} we are able to provide lower overall complexity
+bound than the one that follows from  \cite{Schmidtetal}.
 \item
 Finally, we propose an efficient {\em general purpose} algorithm that uses the same theoretical framework, but  which does not rely on the special structure of the Hessian, and yet in our tests compares favorably with the state-of-the-art, specialized methods such as   QUIC and GLMNET. We replace the exact Hessian computation by the limited memory BFGS Hessian approximations  \cite{NoceWrig06}  (LBFGS) and exploit their special structure within a coordinate descent approach to solve the subproblems.
 %We also propose and implement  another efficient active set selection strategy (different from those implemented in QUIC and GLMNET), but, as mentioned above, we treat these strategies as heuristic aimed at speeding up computations.  
@@ -215,9 +215,8 @@ To prove the sub linear rate  we borrow a technique from  \cite{NesterovConvexBo
 than that of our method presented here. However,  they have to impose much stricter conditions on the Hessian approximation matrix, in particular they require  that the difference between any two consecutive Hessian approximations (i.e., $H_{k}-H_{k+1}$) is positive semidefinite. This is actually in contradiction to   FISTA's  requirement  that the prox parameter is never increased. Such a condition is very restrictive 
 as is impractical. In this paper we briefly show how  results in \cite{Beck2009} and \cite{Schmidtetal}  can be extended under some 
 (also possibly strong) assumptions of the Hessian approximations, to give a simple and natural convergence rate analysis. 
-We then present an alternative analysis, which only requires the Hessian approximations to have bounded eigenvalues. 
-Investigating accelerated version of our approach without restrictive assumptions on the Hessian approximations and with the use 
-of randomized coordinate descent is a subject of future research. 
+We then present an alternative analysis, which only requires the Hessian approximations to have bounded eigenvalues. Moreover, the bounds on the subproblem optimization error in our analysis are looser than those in \cite{Schmidtetal}. 
+
 
  
  
@@ -335,28 +334,34 @@ $\partial_{\phi} a(x)$, which is defined as the set of vectors $y$ such that $a(
     where $z = v - H^{-1} \nabla f(v)$. Then there exists $\eta$ such that $\frac{1}{2} \| \eta \|^2_{H^{-1}} \leq \phi$ and
     \begin{align}
         \label{equ:inexact_solvQ_lem}
-        H(v-p_{\phi}(v))  - \eta \in \partial_{\phi}g(p_{\phi}(v)).
+        H(z-p_{\phi}(v))  - \eta \in \partial_{\phi}g(p_{\phi}(v)).
     \end{align}
 \end{lemma}
 
 
 \begin{proof}
-    (\ref{equ:eps_minimizer}) indicates that $p_{\phi}(v)$ is an $\phi$-minimizer of the convex function $a(x) := \frac{1}{2}\|x-z\|_H^2+g(x)$. If we let $a_1(x) = \frac{1}{2}\|x-z\|_H^2$ and $a_2(x) = g(x)$, then this is equivalent to
+    (\ref{equ:eps_minimizer}) indicates that $p_{\phi}(v)$ is an $\phi$-minimizer of the convex function $a(x) := \frac{1}{2}\|x-z\|_H^2+g(x)$. If we let $a(x)=a_1(x)+a_2(x)$ with $a_1(x) = \frac{1}{2}\|x-z\|_H^2$ and $a_2(x) = g(x)$, then 
     \begin{align}
         \label{equ:zero_in_subdiff}
-        0 \subset \partial_{\phi} a(p_{\phi}(v)) \subset \partial_{\phi} a_1(p_{\phi}(v)) + \partial_{\phi} a_2(p_{\phi}(v)).
+        0 \in \partial_{\phi} a(p_{\phi}(v)) \subseteq \partial_{\phi} a_1(p_{\phi}(v)) + \partial_{\phi} a_2(p_{\phi}(v)).
     \end{align}
-    Consider any $y \in \partial_{\phi} a_1(p_{\phi}(v))$ and the function $\Gamma(t) := a_1(t) - y^Tt +y^Tp_{\phi}(v) - a_1(p_{\phi}(v)) + \phi$.
-    By definition of $\phi$-subdifferential, $\Gamma(t)$ is non-negative for any $t$, so $\Gamma(t^*) \geq 0$ where $t^*$ is the point where $\Gamma(t)$ attain its minimum value. Take the gradient of $\Gamma(t)$, set it to zero, and we obtain $t^* = H^{-1}y + z$. Substitute that into the inequality $\Gamma(t^*) > 0$ and after some simplifications, we obtain 
+    For any $y\partial_{\phi} a_1(p_{\phi}(v))$ we apply the definition of  $\phi$-subdifferential for point $t=H^{-1}y+z$ and we get 
     \begin{align*}
-        \partial_{\phi} a_1(p_{\phi}(v)) &= \left\{ y \in \br^n ~|~ \frac{1}{2} \| y + H(z-p_{\phi}(v)) \|^2_{H^{-1}} \leq \phi \right\} \\
-        &= \left\{ y \in \br^n, ~y = \eta - H(z-p_{\phi}(v)) ~|~ \frac{1}{2} \|\eta\|^2_{H^{-1}} \leq \phi \right\}.
+      \frac{1}{2} \| y + H(z-p_{\phi}(v)) \|^2_{H^{-1}} \leq \phi,
+      \end{align*}
+      from which it follows that 
+       \begin{align*}
+       y = \eta - H(z-p_{\phi}(v)) ~|~ \frac{1}{2} \|\eta\|^2_{H^{-1}} \leq \phi, 
     \end{align*}
-    From (\ref{equ:zero_in_subdiff}) we have
-    \begin{align}
-        H(z-p_{\phi}(v)) - \eta \in \partial_{\phi}g(p_{\phi}(v)) \mbox{ with } \frac{1}{2} \|\eta\|^2_{H^{-1}} \leq \phi.
-    \end{align}
-    Then (\ref{equ:inexact_solvQ_lem}) follows using $z = v - H^{-1} \nabla f(v)$.
+    which together with  (\ref{equ:zero_in_subdiff}) proves 
+    %we have
+  %  \begin{align}
+   %     H(z-p_{\phi}(v)) - \eta \in \partial_{\phi}g(p_{\phi}(v)) \mbox{ with } \frac{1}{2} \|\eta\|^2_{H^{-1}} \leq \phi.
+  %  \end{align}
+   % Then 
+   (\ref{equ:inexact_solvQ_lem}).
+   %follows using $z = v - H^{-1} \nabla f(v)$.
+   
 \end{proof}
 
 We will find the following bound useful on the norm of $\eta$ which follows from the above lemma.
@@ -513,7 +518,7 @@ Let $\{x^k\}$ be the sequence of iterates generated by Algorithm \ref{alg:ISTA-S
      \label{eq:bound_F_F*}
      F(x^k) - F(x^*) \leq 
      \frac{1}{k_m} \left( \frac{1}{2} \|x^0-x^*\|_{H_0/M_0}^2 
-     + M_H+ \frac{(1-\rho)(F(x^0)-F(x^*))}{\rho\sigma} 
+     + \frac{M_H}{2}+ \frac{(1-\rho)(F(x^0)-F(x^*))}{\rho\sigma} 
      + \sum_{i=0}^{k-1}\frac{\phi_i}{M_i}
      + D_{\Xcal_0}\sum_{i=0}^{k-1} \sqrt{\frac{2\phi_i}{M_i}} \right),
  \end{align}
@@ -540,7 +545,7 @@ Let $\{x^k\}$ be the sequence of iterates generated by Algorithm \ref{alg:ISTA-S
          From Assumptions~\ref{as:exact_conv_rate} and~\ref{as:strong_matrices} we have
          \begin{align*}
          &\sum_{i=0}^{k-1} \frac{F(x^{i+1}) - F(x^*)}{M_i} \leq 
-         \frac{1}{2} \|x^0-x^*\|_{H_0/M_0}^2 +M_H
+         \frac{1}{2} \|x^0-x^*\|_{H_0/M_0}^2 +\frac{M_H}{2}
          + \sum_{i=0}^{k-1} \frac{\epsilon_i}{M_i} 
          + \sum_{i=0}^{k-1} \frac{\phi_i}{M_i} 
          + D_{\Xcal_0}\sum_{i=0}^{k-1} \frac{\|\eta_i\|}{M_i}. 
@@ -549,7 +554,7 @@ Let $\{x^k\}$ be the sequence of iterates generated by Algorithm \ref{alg:ISTA-S
          Using the already established bound $\sum_{i=0}^{k-1}\epsilon_i \leq \frac{(1-\rho)(F(x^0)-F(x^*))}{\rho}$ we obtain
           \begin{align*}
          &\sum_{i=0}^{k-1} \frac{F(x^{i+1}) - F(x^*)}{M_i}\leq
-         \frac{1}{2} \|x^0-x^*\|_{H_0/M_0}^2 +M_H
+         \frac{1}{2} \|x^0-x^*\|_{H_0/M_0}^2 +\frac{M_H}{2}
          + \frac{(1-\rho)(F(x^0)-F(x^*))}{\rho\sigma} 
          + \sum_{i=0}^{k-1}\frac{\phi_i}{M_i}
          + D_{\Xcal_0}\sum_{i=0}^{k-1} \sqrt{\frac{2\phi_i}{M_i}}.
@@ -557,7 +562,7 @@ Let $\{x^k\}$ be the sequence of iterates generated by Algorithm \ref{alg:ISTA-S
      Hence,
      \begin{align*}
          F(x^k) - F(x^*) &\leq \frac{1}{k_m}\sum_{i=0}^{k-1} \frac{F(x^{i+1}) - F(x^*)}{M_i}\\        
-         &\leq \frac{1}{k_m} \left( \frac{1}{2} \|x^0-x^*\|_{H_0/M_0}^2 +M_H
+         &\leq \frac{1}{k_m} \left( \frac{1}{2} \|x^0-x^*\|_{H_0/M_0}^2 +\frac{M_H}{2}
          + \frac{(1-\rho)(F(x^0)-F(x^*))}{\rho\sigma} 
          + \sum_{i=0}^{k-1}\frac{\phi_i}{M_i}
          + D_{\Xcal_0}\sum_{i=0}^{k-1} \sqrt{\frac{2\phi_i}{M_i}} \right).
@@ -571,21 +576,20 @@ Let $\{x^k\}$ be the sequence of iterates generated by Algorithm \ref{alg:ISTA-S
 Let us consider the term $\frac{1}{k_m}=\frac{1}{\sum_{i=0}^{k-1}M_i^{-1}}$. From earlier discussions, we can see that 
 $\frac{1}{k_m}\leq\frac{M}{k}$. Moreover, if $H_k$ are diagonal matrices, then $M=L(f)$ and, hence $\frac{1}{k_m}\leq\frac{L(f)}{k}$,
 which established a bound similar to that of proximal gradient methods. The role of $M_i$ is to show that if most of these values are much smaller than the global Lipschitz constant $L(f)$, then the constant involved in the sub linear rate can be much smaller than that of the proximal gradient methods.
-This is  well known effect of using partial second order information and it is observed in our computational results. 
+This is a  well known effect of using partial second order information and it is observed in our computational results. 
 
-We conclude that under Assumption~\ref{as:strong_matrices} Algorithm \ref{alg:ISTA-SD} converges at the rate of $O(1/k)$ if 
+We conclude that under Assumption~\ref{as:strong_matrices},  Algorithm \ref{alg:ISTA-SD} converges at the rate of $O(1/k)$ if 
 $\sum_{i=0}^{k-1} \sqrt{\frac{2\phi_i}{M_i}}$ is bounded for all $k$. This result in similar to those obtained in \cite{Schmidtetal}.
 In \cite{OML} it is shown how randomized block coordinate descent and other methods can be utilized to optimize subproblems 
 $\min_u Q(H_i,u, x^i)$
 so that  $\sqrt{\frac{2\phi_i}{M_i}}$ decays sufficiently fast to guarantee  such a bound (possibly in expectation).
 
-In this paper, however, we focus on a different derivation of the sub linear convergence rate, which results in a different bound on $\phi_k$
-and different, more complex, dependence on the constants, but, on the other hand, does not require Assumption~\ref{as:strong_matrices}
+In this paper, however, we focus on a different derivation of the sub linear convergence rate, which results in a  more complex dependence on the constants, but, on the other hand, does not require Assumption~\ref{as:strong_matrices}
 and results in a weaker assumption on $\phi_i$. 
 
 \section{Analysis of sub linear convergence}\label{sec:complete_conv}
 In our analysis below we will use another known technique for establishing sub linear convergence of  gradient descent type methods
-on smooth convex functions \cite{Cartisetal2012}. However, due to the non smooth nature of our function the analysis requires significant extensions,
+for smooth convex functions \cite{Cartisetal2012}. However, due to the non smooth nature of our function the analysis requires significant extensions,
 especially in the inexact case. Moreover, it does not apply to the line-search algorithm, we will rely on the fact that a proximal quasi-Newton method is used in that each new iteration $x^{k+1}$ is an approximate minimizer of the function $Q(H_k, u, x^k)$. Our analysis, hence, also applies to proximal gradient methods. 
 
 First we prove the following simple result.
@@ -708,15 +712,15 @@ Then the iterates $\{x^k\}$ generated by Algorithm \ref{alg:ISTA-SD} satisfy
 
 
 
-	Finally, combining the lower bound on $F(x^{k+1})-F(x^k)$ together with the upper bound on $\Delta F_k^2$  we can conclude that
+	Finally, combining the lower bound on $F(x^k)-F(x^{k+1})$ together with the upper bound on $\Delta F_k^2$  we can conclude that
 	\[
-	F(x^{k+1})-F(x^k)=\Delta F_{k+1}-\Delta F_k\geq  \frac{\rho\sigma_k}{2M_k^2 (D_{\Xcal_0}+\frac{2L_g}{\sigma_k})^2}\Delta F_k^2,
+	F(x^{k})-F(x^{k+1})=\Delta F_{k}-\Delta F_{k+1}\geq  \frac{\rho\sigma_k}{2M_k^2 (D_{\Xcal_0}+\frac{2L_g}{\sigma_k})^2}\Delta F_k^2,
 	\]
 	which establishes \eqref{eq:mainbnd} with $c_k= \frac{\rho\sigma_k^3}{2M_k^2 (D_{\Xcal_0}\sigma_k+2L_g)^2}$. 
 
 	Dividing both sides of the inequality above  by $\Delta F_{k+1}\Delta F_k$ we have
 	\[
-	\frac{1}{\Delta F_{k}}-\frac{1}{\Delta F_{k+1}}\geq c_k\frac{\Delta F_{k}}{\Delta F_{k+1}}\geq c_k.
+	\frac{1}{\Delta F_{k+1}}-\frac{1}{\Delta F_{k}}\geq c_k\frac{\Delta F_{k}}{\Delta F_{k+1}}\geq c_k.
 	\]
 	% Let us note that $\forall k, c_k\geq  \frac{\rho\sigma^3}{2M^2 (DM+2L_g)^2}$. 
 	Summing the above expression for  $i=0, \ldots, k-1$ we have
@@ -834,7 +838,7 @@ $\Delta F_{k}$ in terms of $\phi_k$. Specifically, we have the following theorem
 	\label{equ:bound_bk_ck}
 	    b_k = \theta D_{\Xcal_0}\sqrt{2M_k}+  \frac{2(1+\theta)L_g}{\sigma_k}\sqrt{2M_k} + 2, 
 	    ~
-	    c_k=\frac{\rho(\sigma_k^3(\theta-1)^2 - 2\sigma_kM_k^2(1+\theta) - \sigma_k^3M_k )}{(\sqrt{2}D_{\Xcal_0}\theta\sigma_kM_k + 2\sqrt{2}L_g(1+\theta)M_k + \sigma_k\sqrt{M_k} )^2}.
+	    c_k=\frac{\rho(\sigma_k^3(\theta-1)^2 - 2\sigma_kM_k^2(1+\theta) - \sigma_k^2M_k )}{(\sqrt{2}D_{\Xcal_0}\theta\sigma_kM_k + 2\sqrt{2}L_g(1+\theta)M_k + \sigma_k\sqrt{M_k} )^2}.
 	\end{align}
 \end{lemma}
 \begin{proof}	      
@@ -914,10 +918,10 @@ First, applying \eqref{equ:bound_F_u_w_inexact} with $u = x^k, w = x^*$ and $v =
 	    F(x^k) - F(x^{k+1})\geq \rho t_k \| \nabla f(x^k) + \gamma_{g, \phi}^{k+1} \|^2,
 	\end{align}
 	for $t_k=\frac{\sigma_k}{2}(\frac{\theta-1}{\theta M_k})^2 - \frac{1+\theta}{\theta^2\sigma_k}- \frac{1}{2\theta^2M_k}>0$. 
-	Finally, combining the lower bound \eqref{eq:lowerbndinexact} on $F(x^{k+1})-F(x^k)$ together with the upper bound \eqref{eq:upperbndinexact}
+	Finally, combining the lower bound \eqref{eq:lowerbndinexact} on $F(x^{k})-F(x^{k+1})$ together with the upper bound \eqref{eq:upperbndinexact}
 	on $\Delta F_k^2$  we can conclude that \eqref{eq:mainbnd} holds with 
 	\begin{align*}
-		c_k= \frac{\rho t_k}{(D_{\Xcal_0} + \frac{2L_g(1+\theta)}{\theta\sigma_k} + \frac{2}{\theta\sqrt{2M_k}})^2} = \frac{\rho(\sigma_k^3(\theta-1)^2 - 2\sigma_kM_k^2(1+\theta) - \sigma_k^3M_k )}{(\sqrt{2}D_{\Xcal_0}\theta\sigma_kM_k + 2\sqrt{2}L_g(1+\theta)M_k + 2\sigma_k\sqrt{M_k} )^2}.    
+		c_k= \frac{\rho t_k}{(D_{\Xcal_0} + \frac{2L_g(1+\theta)}{\theta\sigma_k} + \frac{2}{\theta\sqrt{2M_k}})^2} = \frac{\rho(\sigma_k^3(\theta-1)^2 - 2\sigma_kM_k^2(1+\theta) - \sigma_k^2M_k )}{(\sqrt{2}D_{\Xcal_0}\theta\sigma_kM_k + 2\sqrt{2}L_g(1+\theta)M_k + 2\sigma_k\sqrt{M_k} )^2}.    
 	\end{align*}
 	Finally, \eqref{equ:bound_F_inexact_case2} follows from \eqref{eq:mainbnd} divided by $\Delta F_k\Delta F_{k+1}$ and using the fact that $\frac{\Delta F_k}{\Delta F_{k+1}} \geq 1$.
 	
@@ -926,12 +930,12 @@ First, applying \eqref{equ:bound_F_u_w_inexact} with $u = x^k, w = x^*$ and $v =
 
 \begin{remark} Let us discuss the result of the above lemma. The lemma applies for any value of $\theta$ for which
 $t_k$, and hence, $c_k$ is positive for all $k$.  It is easy to see that large values of  $\theta$ 
-imply large values of $c_k$. On the other hand, large $\theta$ is likely to cause  Case 1 to hold (i.e., \eqref{equ:bound_F_inexact_case1}) 
+imply potentially larger values of $c_k$. On the other hand, large $\theta$ is likely to cause  Case 1 to hold (i.e., \eqref{equ:bound_F_inexact_case1}) 
 instead of Case 2 (i.e., \eqref{equ:bound_F_inexact_case2}) on any given iteration, with $b_k$ also growing with the size of $\theta$. 
 As we will show below the overall rate of convergence of the algorithm is derived using the two bounds - \eqref{equ:bound_F_inexact_case1}, where
 the rate is controlled by the rate of $\phi_k\to 0$ and \eqref{equ:bound_F_inexact_case2}, which is similar to the bound in the exact case.
 The overall bound, thus, will depend on the upper bound on $b_k$'s and the inverse of 
-the lower bound on $c_k$'s. If, again, we assume that $\sigma_k=M_k=L(f)$ for all $k$, then $\theta=O(\sqrt{L(f)})$ is sufficient to ensure that $c_k>0$
+the lower bound on $c_k$'s. If, again, we assume that $\sigma_k=M_k=L(f)$ for all $k$, then $\theta\geq 5$ is sufficient to ensure that $c_k>0$
 and this results in $b_k\leq O(D_{\Xcal_0}L(f))$ and $1/c_k\geq O(D_{\Xcal_0}^2L(f))$, thus again, we obtain a bound which is comparable to that of proximal gradient methods, although with more complex constants. 
 \end{remark}
 
@@ -976,7 +980,7 @@ Consider all iterations before a particular iteration $k$.  From Lemma~\ref{lem:
        Let $k_1 <k$  denote the index of the last iteration before $k$,  for which \eqref{equ:bound_F_inexact_case1} holds. If no such $k_1$ exists, then \eqref{equ:bound_F_inexact_case2} holds for all $k$ and without loss of generality we can consider $k_1=0$. From \eqref{equ:bound_F_inexact_case1} and from the fact that the function value never increases
 	 \begin{align}
 	\label{equ:_thm_conv_rate_case1}
-	    \Delta F_{k_1+1}=F(x^{k_1+1}) - F(x^*) \leq   F(x^{k_1}) - F(x^*) =\Delta F_{k_1} \leq b_{k_1} \sqrt{\phi_{k_1}k_1} \leq  \frac {a b_{k_1}}{k_1}
+	    \Delta F_{k_1+1}=F(x^{k_1+1}) - F(x^*) \leq   F(x^{k_1}) - F(x^*) =\Delta F_{k_1} \leq b_{k_1} \sqrt{\phi_{k_1}} \leq  \frac {a b_{k_1}}{k_1}
 	\end{align}
 	which is the same as
 		 \begin{align}\label{equ:_thm_conv_rate_Fk1_upper}
@@ -1082,16 +1086,16 @@ $\phi_i\leq a^2/i^2$  for some $a<1$ and all iterations $i=0, \ldots, k$.
 In contrast,  the bounds in \cite{Schmidtetal} and in Section \ref{sec:inexact_prox} 
 require that $\sum_{i=0}^{\infty} \sqrt{\phi_i}$ is  bounded. 
 This bound  on the overall sequence is clearly 
-stronger than $\phi_i\leq a^2/i^2$, since $\sum_{i=0}^{\infty} \frac{a}{i}=\infty$. 
+tighter than $\phi_i\leq a^2/i^2$, since $\sum_{i=0}^{\infty} \frac{a}{i}=\infty$. 
 On the other hand, it does not impose any particular requirement on any given iteration, except that 
-each $\phi_i$ is finite, which our bound on $\phi_i$ is assumed to hold at each iteration, so far. 
+each $\phi_i$ is finite, which our bound on $\phi_i$ is assumed to hold at each iteration, so far. In Section \ref{sec:random} we will relax this assumption. 
 \end{remark}
 
 \subsection{Complexity in terms of subproblem solver iterations}
-Let us discuss  conditions on the sequence of $\phi_i$ established above and how they can be ensured. 
+Let us discuss  conditions on the sequence  $\{\phi_i\}$ established above and how they can be ensured. 
 Firstly, let us note that condition $a<1$ in Theorem \ref{th:inexact_conv_rate} can easily be removed. 
 We introduced it for the sake of brevity, to ensure that $\phi_i\leq 1$ on each iteration. Clearly, an arbitrarily large $a$ can be used and in that case
-$\phi_i\leq 1$ for all $i\geq 1/a$. Moreover, the condition $\phi_i\leq 1$ is only needed to replace $\phi_i$ with $\sqrt{\phi_i}$ in 
+$\phi_i\leq 1$ for all $i\geq a$. Moreover, the condition $\phi_i\leq 1$ is only needed to replace $\phi_i$ with $\sqrt{\phi_i}$ in 
 Lemma \ref{lem:bound_iter_inexact} in inequality \eqref{eq:phi_k_replaced}. Instead we can use bound \eqref{eq:case2} and 
 upper bounds on $\nabla f(x^i)$ and $\gamma^{i+1}_{g,\phi}$ to replace $\phi_k$ with a constant multiple of $\sqrt{\phi_i}$. 
 In conclusion, it is sufficient to solve the subproblem on the $i$-th iteration to accuracy $O(1/i^2)$. 
@@ -1113,7 +1117,7 @@ $\sum_{i=0}^{\infty} \sqrt{\phi_i}$ is  bounded.   Note that the same property h
  Also, it is easy to see that $\phi_i\leq a^2/i^2$ holds for some $a>0$ for all $i$.   
 One can also can use FISTA \cite{Beck2009} to optimize $Q_i$ which will ensure 
 $\phi_i\leq a^2/i^2$ for some $a>0$ but will not guarantee $\sum_{i=0}^{\infty} \sqrt{\phi_i}$.
-The advantage of using FISTA and its resulting rate is that ist does not depend on the strong convexity constant,
+The advantage of using FISTA and its resulting rate is that it does not depend on the strong convexity constant,
  hence the subproblem complexity does 
 not depend on  $\sigma$ - the lower bound on the smallest eigenvalues of the Hessian approximations.
  In conclusion, we have the following overall bounds. 
@@ -1121,24 +1125,25 @@ not depend on  $\sigma$ - the lower bound on the smallest eigenvalues of the Hes
 
 
 \begin{theorem}\label{th:inexact_total_conv_rate_k2}
-Suppose that Assumptions~\ref{as:exact_conv_rate} hold and that at the $k$-th iteration of inexact Algorithm \ref{alg:ISTA-SD} 
+Suppose that Assumptions~\ref{as:exact_conv_rate} hold and that for all $k$, at the $k$-th iteration of inexact Algorithm \ref{alg:ISTA-SD} 
 function $Q(H_k, u, x^k)$ is approximately minimized, to obtain $x^{k+1}$ by applying $l(k)=\alpha k+\beta$ steps of any algorithm which guarantees that
  $Q(H_k, x^{k+1}, x^k)\leq Q(H_k, x^k, x^k)$ and whose convergence 
-rate ensures  the error bound $\phi_k\leq a^2/(\alpha k+\beta)^2$ for some $a>0$.  Then accuracy $F(x^k) - F(x^*)\leq \epsilon$ is achieved after at most 
+rate ensures  the error bound $\phi_k\leq a^2/(\alpha k+\beta)^2$ for some $a>0$.  Then accuracy $F(x^t) - F(x^*)\leq \epsilon$ is achieved after at most 
 \begin{align}
     \label{eq:total_bound_F_F*}
-	K=\beta( { \frac{\max\{b a, \frac{1}{c}\}}{\epsilon}} +1)+ \frac{\alpha}{2}({ \frac{\max\{b a, \frac{1}{c}\}}{\epsilon}})({ \frac{\max\{b a, \frac{1}{c}\}}{\epsilon}}+1)
+	K=\beta t+ \frac{\alpha}{2}(t-1)t
 \end{align}
 inner iterations (of the chosen algorithm), 
-with $b, c$  given in Theorem \ref{th:inexact_conv_rate}. 
+with $t=\lceil \frac{\max\{b a, \frac{1}{c}\}}{\epsilon} +1\rceil$
+ and $b, c$  given in Theorem \ref{th:inexact_conv_rate}. 
 \end{theorem}
 \proof{A proof follows trivially from Theorem  \ref{th:inexact_conv_rate}. }
 \begin{theorem}\label{th:inexact_total_conv_rate_klogk}
-Suppose that Assumptions~\ref{as:exact_conv_rate} hold and that at the $k$-th iteration of inexact Algorithm \ref{alg:ISTA-SD} 
+Suppose that Assumptions~\ref{as:exact_conv_rate} hold and that or all $k$ at the $k$-th iteration of inexact Algorithm \ref{alg:ISTA-SD} 
 function $Q(H_k, u, x^k)$ is approximately minimized, to obtain $x^{k+1}$ by applying  $l(k)$ steps of an algorithm, which guarantees that
  $Q(H_k, x^{k+1}, x^k)\leq Q(H_k, x^k, x^k)$ and whose convergence 
 rate ensures  the error bound $\phi_k\leq \delta^{l(k)}M_Q$, for some constants $0<\delta<1$ and $M_Q>0$. 
- Then, by setting $l_k= 2 log_{\frac{1}{\delta}}(k)$, accuracy $F(x^k) - F(x^*)\leq \epsilon$ is achieved after at most 
+ Then, by setting $l(k)= 2 log_{\frac{1}{\delta}}(k)$, accuracy $F(x^t) - F(x^*)\leq \epsilon$ is achieved after at most 
 \begin{align}
     \label{eq:total_bound_F_F*}
 	K=\sum_{k=0}^t 2 \log_{\frac{1}{\delta}}(k)\leq 2t \log_{\frac{1}{\delta}}(t)
@@ -1224,7 +1229,7 @@ As in  the proof of Theorem \ref{th:inexact_conv_rate} consider all iterations b
 	\end{align}
 	To bound the term $\sum_{i=1}^{k-1} ( p^{i-1}+\frac{i-1}{k-i}p^{i-1})$ observe that $\frac{i-1}{k-i}p^{i-1}\leq (i-1)p^{i-1}$ and hence
 	\[
-	\sum_{i=1}^{k-1} ( p^{i-1}+\frac{i-1}{k-i}p^{i-1})\leq \frac{1}{(1-p)}+\frac{1}{(1-p)^2}\leq \frac{2-p}{(1-p)^2},
+	\sum_{i=1}^{k-1} ( p^{i-1}+\frac{i-1}{k-i}p^{i-1})\leq \frac{1}{(1-p)}+\frac{1}{(1-p)^2}= \frac{2-p}{(1-p)^2},
 	\]
 which gives us the final bound on the expected error. 
 \end{proof}
@@ -1285,8 +1290,8 @@ where $\mu(H)$ is a constant that measures conditioning of $H$ along the coordin
 number of $H$.
 \end{lemma}
 
-Let us now state the version of  Algorithms \ref{alg:ISTA-SD} and \ref{alg:Backtrack_SD} which is close to what implement in practice and 
-discuss in the following sections  and for which the complexity  bound can be applied.
+Let us now state the version of  Algorithms \ref{alg:ISTA-SD} and \ref{alg:Backtrack_SD} which is close to what  is implemented in practice and 
+ for which the complexity  bound can be applied.
 
 \begin{algorithm2e}\caption{Proximal Quasi-Newton method using randomized coordinate descent}
     \label{alg:ISTA-SD_RCD}%
@@ -1307,7 +1312,7 @@ Find  $H_k=G_k+\frac{1}{2\mu_k}I$ and  $x^{k+1}  := p_{H_k,\phi_k}(x^k)$  \\ by 
     \label{alg:Backtrack_SD_RCD}%
 %\linesnumberedhidden \dontprintsemicolon 
 Select $0<\beta<1$ and set $\mu=\bar \mu$\; \For{$i=1,2,\cdots$}{
-Define $H=G+\frac{1}{2\mu} I$,  and compute $p(x):=p_{H,\phi}(x)$\\ by applying {\em RCD \ }$(Q(H,  v,x), x, \lceil ak+b\rceil)$\;
+Define $H=G+\frac{1}{2\mu} I$,  and compute $p(x):=p_{H,\phi}(x)$\\ by applying {\em RCD \ }$(Q(H,  v,x), x, l(k))$\;
 If $F(p(x))- F(x) \leq \rho (Q(H,  p(x),x)- F(x))$, then output $H$ and $p(x)$, {\bf Exit} \;
 Else $\mu=\beta^{i}\bar  \mu$\;
 }
@@ -1508,8 +1513,8 @@ Else $\mu=\beta^{i}\bar  \mu$\;
 \section{Optimization Algorithm}
 \label{sec:alg}
 
-In this section we briefly describe the specifics of the general purpose algorithm that we propose within the framework of Algorithms 
-\ref{alg:ISTA-SD_RCD}, \ref{alg:Backtrack_SD_RCD} and \ref{alg:randomized_cd} and that takes advantage of approximate second order information while maintaining low complexity of subproblem optimization steps.
+In this section we briefly describe the specifics of the general purpose algorithm that we propose within the framework of Algorithms \ref{alg:randomized_cd}, 
+\ref{alg:ISTA-SD_RCD} and \ref{alg:Backtrack_SD_RCD} and that takes advantage of approximate second order information while maintaining low complexity of subproblem optimization steps.
 The algorithm is designed to solve problems of the form \eqref{prob:P} with $g(x)=\lambda \|x\|_1$, but it does not use any special structure of the smooth part of the objective, $f(x)$.
 
 
@@ -1822,7 +1827,7 @@ On the largest data set \emph{epsilon}, LHAC and LHAC-L is faster than LIBLINEAR
 \section{Conclusion} In this paper we presented analysis of global convergence rate of inexact proximal quasi-Newton framework, and showed that randomized coordinate descent, among other subproblem methods,  can be used effectively to find inexact quasi-Newton directions, which guarantee sub linear convergence rate of the algorithm, in expectation. This is the first global convergence rate result for an algorithm that uses coordinate descent to inexactly optimize subproblems at each iteration. Moreover, we improve upon results for inexact proximal gradient method in \cite{Schmidtetal} in that our requirements on the error in subproblem solution are 
 weaker and the resulting bound on the total number of inner solver iterations is smaller. 
 
-Our framework does not rely on or exploit the accuracy of second order information, and hence we do not obtain fast local convergence rates. We also do not assume strong convexity of our objective function, hence a sublinear conference rate is  the best global rate we can hope to obtain. In \cite{Jiangetal2012} an accelerated scheme related to our framework is studied and an optimal sublinear convergence rate is shown, but  the assumptions on the Hessian approximations are a lot stronger in  \cite{Jiangetal2012} than in our paper, hence the accelerated method is not as widely applicable. The framework studied by us in this paper covers several existing efficient algorithms for large scale sparse optimization. However, to provide convergence rates we had to depart from some standard techniques, such as line-search, replacing it instead by a prox-parameter updating mechanism with a trust-region-like sufficient decrease condition for acceptance of iterates. We also use randomized coordinate descent instead of a cyclic one. We demonstrated  that this modified framework is,  nevertheless, very effective in practice and is competitive with state-of-the-art specialized methods.
+Our framework does not rely on or exploit the accuracy of second order information, and hence we do not obtain fast local convergence rates. We also do not assume strong convexity of our objective function, hence a sublinear conference rate is  the best global rate we can hope to obtain. In \cite{Jiangetal2012} an accelerated scheme related to our framework is studied and an optimal sublinear convergence rate is shown, but  the assumptions on the Hessian approximations are a lot stronger in  \cite{Jiangetal2012} than in our paper and appear to be impractical, hence the accelerated method is not as widely applicable. The framework studied by us in this paper covers several existing efficient algorithms for large scale sparse optimization. However, to provide convergence rates we had to depart from some standard techniques, such as line-search, replacing it instead by a prox-parameter updating mechanism with a trust-region-like sufficient decrease condition for acceptance of iterates. We also use randomized coordinate descent instead of a cyclic one. We demonstrated  that this modified framework is,  nevertheless, very effective in practice and is competitive with state-of-the-art specialized methods.
 %\clearpage
 
 \bibliographystyle{siam}
